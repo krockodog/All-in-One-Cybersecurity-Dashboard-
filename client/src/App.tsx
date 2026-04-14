@@ -1,39 +1,60 @@
 import { Toaster } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
-import { Route, Switch } from "wouter";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { useEffect, useState } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
+import { LoadingScreen } from "./components/cyber/CyberShell";
+import { AuditProvider } from "./contexts/AuditContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import Home from "./pages/Home";
+import DashboardPage from "./pages/DashboardPage";
+import OsintGuidePage from "./pages/OsintGuidePage";
+import ReportsPage from "./pages/ReportsPage";
+import SettingsPage from "./pages/SettingsPage";
+import { OsintToolsPage, PentestToolsPage, ReconnaissancePage } from "./pages/ToolWorkspacePages";
 
-
-function Router() {
+/**
+ * Design philosophy reminder — Forensischer Kontrollraum:
+ * dunkle Bühne, präzise Routenstruktur, initiales Loading als kontrollierter Einsatzraum,
+ * danach persistenter Workspace mit klaren Fluchtwegen zwischen allen Modulen.
+ */
+function AppRouter() {
   return (
-    <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/404"} component={NotFound} />
-      {/* Final fallback route */}
-      <Route component={NotFound} />
-    </Switch>
+    <Routes>
+      <Route path="/" element={<DashboardPage />} />
+      <Route path="/dashboard" element={<Navigate to="/" replace />} />
+      <Route path="/osint-tools" element={<OsintToolsPage />} />
+      <Route path="/pentest-tools" element={<PentestToolsPage />} />
+      <Route path="/reconnaissance" element={<ReconnaissancePage />} />
+      <Route path="/reports" element={<ReportsPage />} />
+      <Route path="/settings" element={<SettingsPage />} />
+      <Route path="/osint-guide" element={<OsintGuidePage />} />
+      <Route path="/404" element={<NotFound />} />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
   );
 }
 
-// NOTE: About Theme
-// - First choose a default theme according to your design style (dark or light bg), than change color palette in index.css
-//   to keep consistent foreground/background color across components
-// - If you want to make theme switchable, pass `switchable` ThemeProvider and use `useTheme` hook
-
 function App() {
+  const [isBooting, setIsBooting] = useState(true);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setIsBooting(false), 6200);
+    return () => window.clearTimeout(timer);
+  }, []);
+
   return (
     <ErrorBoundary>
-      <ThemeProvider
-        defaultTheme="light"
-        // switchable
-      >
-        <TooltipProvider>
+      <ThemeProvider defaultTheme="dark">
+        <AuditProvider>
           <Toaster />
-          <Router />
-        </TooltipProvider>
+          {isBooting ? (
+            <LoadingScreen />
+          ) : (
+            <BrowserRouter>
+              <AppRouter />
+            </BrowserRouter>
+          )}
+        </AuditProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );

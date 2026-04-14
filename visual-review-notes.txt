@@ -1,0 +1,10 @@
+2026-04-14 visual review
+
+1. Loading screen renders successfully with the requested dark cyber tone, central globe visual, left hacker silhouette, right cyber expert silhouette, matrix-rain background, and lower-right attribution.
+2. Main dashboard loads after the delay and shows a left sidebar, disclaimer banner, hero section, stat strip, quick-launch cards, central active jobs panel, left Pentest Guide rail, and right OSINT Guide rail.
+3. Visual hierarchy is strong and consistent with the chosen "Forensischer Kontrollraum" direction; glassmorphism is present on UI panels while terminal outputs remain dark and non-glass.
+4. Remaining validation to perform: tool workspace route rendering, interactive tool cards, export actions, and final deployment.
+
+5. OSINT Tools route loads correctly after the loading sequence and renders all requested tool cards in a dense two-column glassmorphism workspace.
+6. Verified visible per-card UI elements: tool name/icon, risk label, pwnagotchi face, target input, options textarea, Run button, command preview, guide notes, and a non-glass terminal output box.
+7. The routing stack works on direct route load as well, though the initial loading screen appears again after a full-page route request, which is acceptable for the current boot-sequence design.

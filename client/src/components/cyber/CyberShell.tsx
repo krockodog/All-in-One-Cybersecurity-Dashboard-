@@ -47,59 +47,31 @@ function cx(...values: Array<string | false | null | undefined>) {
 export function LoadingScreen() {
   return (
     <div className="loading-screen relative min-h-screen overflow-hidden bg-[#04070a] text-white">
-      <MatrixRain dense />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.16),transparent_32%),radial-gradient(circle_at_80%_20%,rgba(34,211,238,0.2),transparent_24%),linear-gradient(135deg,rgba(5,8,13,0.96),rgba(3,7,10,0.92))]" />
-      <img
-        src={assetUrls.hacker}
-        alt="Hacker-Silhouette"
-        className="loading-figure loading-figure-left hidden max-h-[72vh] object-contain opacity-70 lg:block"
-      />
-      <img
-        src={assetUrls.analyst}
-        alt="Cyber-Experte-Silhouette"
-        className="loading-figure loading-figure-right hidden max-h-[76vh] object-contain opacity-80 lg:block"
-      />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(34,211,238,0.08),transparent_24%),linear-gradient(180deg,rgba(4,7,10,0.98),rgba(4,7,10,0.92))]" />
+      <div className="pointer-events-none absolute inset-0 opacity-[0.04] [background-image:linear-gradient(rgba(148,163,184,0.35)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.35)_1px,transparent_1px)] [background-size:72px_72px]" />
       <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-6 text-center">
-        <div className="loading-core relative mx-auto flex h-[320px] w-[320px] items-center justify-center sm:h-[420px] sm:w-[420px]">
-          <svg
-            viewBox="0 0 400 400"
-            className="pointer-events-none absolute inset-0 h-full w-full animate-[spin_32s_linear_infinite] opacity-80"
-            aria-hidden="true"
-          >
-            <defs>
-              <linearGradient id="orbit-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="rgba(34,211,238,0.0)" />
-                <stop offset="50%" stopColor="rgba(34,211,238,0.7)" />
-                <stop offset="100%" stopColor="rgba(16,185,129,0.0)" />
-              </linearGradient>
-            </defs>
-            <ellipse cx="200" cy="200" rx="172" ry="98" fill="none" stroke="url(#orbit-gradient)" strokeWidth="1.5" />
-            <ellipse cx="200" cy="200" rx="156" ry="144" fill="none" stroke="rgba(34,211,238,0.35)" strokeWidth="1.2" />
-            <ellipse cx="200" cy="200" rx="122" ry="176" fill="none" stroke="rgba(16,185,129,0.26)" strokeWidth="1.2" />
-          </svg>
-          <img
-            src={assetUrls.earth}
-            alt="Cyber Earth"
-            className="relative z-10 h-[72%] w-[72%] animate-[pulse_3.6s_ease-in-out_infinite] object-contain drop-shadow-[0_0_40px_rgba(34,211,238,0.35)]"
-          />
-          <div className="absolute inset-x-0 top-[14%] z-20">
-            <p className="font-mono text-[0.72rem] uppercase tracking-[0.55em] text-cyan-300/70">
-              Authorized Use Only
-            </p>
-            <h1 className="mt-3 font-display text-4xl font-bold tracking-[0.14em] text-white sm:text-6xl">
-              OSINT Framework Pro
-            </h1>
-            <p className="mx-auto mt-4 max-w-xl text-sm text-slate-300 sm:text-base">
-              Initialisiere autorisierte Analyseumgebung, sichere Evidenzpfade und operative Workspaces.
-            </p>
+        <div className="relative flex w-full max-w-4xl flex-col items-center justify-center">
+          <p className="font-mono text-[0.66rem] uppercase tracking-[0.52em] text-cyan-200/55 sm:text-[0.72rem]">
+            Authorized Use Only
+          </p>
+          <h1 className="mt-5 font-display text-4xl font-semibold tracking-[0.12em] text-white sm:text-6xl">
+            OSINT Framework Pro
+          </h1>
+          <div className="relative mt-10 flex h-[300px] w-[300px] items-center justify-center sm:h-[420px] sm:w-[420px]">
+            <div className="absolute h-[72%] w-[72%] rounded-full bg-cyan-400/8 blur-3xl" />
+            <img
+              src={assetUrls.earth}
+              alt="Cyber Earth"
+              className="relative z-10 h-full w-full object-contain drop-shadow-[0_0_28px_rgba(34,211,238,0.18)]"
+            />
+          </div>
+          <div className="mt-10 flex items-center gap-3 rounded-full border border-white/8 bg-white/[0.03] px-4 py-2 font-mono text-[0.68rem] uppercase tracking-[0.34em] text-slate-300/80 backdrop-blur-sm">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+            Loading
           </div>
         </div>
-        <div className="mt-10 flex items-center gap-3 rounded-full border border-cyan-400/20 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.34em] text-cyan-100/80 backdrop-blur-sm">
-          <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.7)]" />
-          Loading secure workspace
-        </div>
       </div>
-      <p className="absolute bottom-5 right-5 z-20 font-mono text-xs uppercase tracking-[0.3em] text-slate-400">
+      <p className="absolute bottom-5 right-5 z-20 font-mono text-xs uppercase tracking-[0.3em] text-slate-500">
         written by krockodog
       </p>
     </div>

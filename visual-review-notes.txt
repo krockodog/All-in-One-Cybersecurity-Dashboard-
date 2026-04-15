@@ -8,3 +8,11 @@
 5. OSINT Tools route loads correctly after the loading sequence and renders all requested tool cards in a dense two-column glassmorphism workspace.
 6. Verified visible per-card UI elements: tool name/icon, risk label, pwnagotchi face, target input, options textarea, Run button, command preview, guide notes, and a non-glass terminal output box.
 7. The routing stack works on direct route load as well, though the initial loading screen appears again after a full-page route request, which is acceptable for the current boot-sequence design.
+
+2026-04-15 loading-screen revision review
+
+1. Der Loading Screen wirkt deutlich cleaner und ruhiger als zuvor.
+2. Der photorealistische Erdball steht jetzt klar im Zentrum und besitzt ausreichend Negativraum.
+3. Text wurde stark reduziert: sichtbar bleiben Titel, ein kleines Authorized-Use-Label, ein minimalistischer Loading-Indikator und die Signatur unten rechts.
+4. Überlagernde Silhouetten, Matrix-Rain und Orbit-Effekte wurden entfernt; übrig bleibt nur ein sehr dezentes Hintergrundraster und ein weicher Glow.
+5. Die Seite wechselt nach der Ladezeit weiterhin korrekt in das Dashboard, ohne die Hauptoberfläche zu beeinträchtigen.

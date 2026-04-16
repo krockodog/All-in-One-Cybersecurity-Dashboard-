@@ -142,12 +142,14 @@ export function SidebarNav() {
             </div>
           </div>
         </div>
-        <div className="rounded-2xl border border-white/8 bg-black/30 p-3">
-          <img
-            src={assetUrls.heroReference}
-            alt="Forensischer Kontrollraum"
-            className="h-40 w-full rounded-xl object-cover opacity-90"
-          />
+        <div className="rounded-2xl border border-white/8 bg-[linear-gradient(160deg,rgba(3,10,14,0.88),rgba(4,12,10,0.78))] p-4">
+          <div className="flex h-40 items-center justify-center rounded-xl border border-cyan-400/10 bg-[radial-gradient(circle_at_center,rgba(34,211,238,0.12),transparent_48%),linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] px-6 py-4">
+            <img
+              src={assetUrls.krockodogLogo}
+              alt="krockodog Logo"
+              className="h-full w-full object-contain opacity-95 drop-shadow-[0_0_24px_rgba(34,211,238,0.14)]"
+            />
+          </div>
         </div>
         <nav className="space-y-2">
           {navigationItems.map((item) => {
@@ -247,17 +249,28 @@ export function HeroPanel() {
             ))}
           </div>
         </div>
-        <div className="relative flex min-h-[320px] items-end overflow-hidden rounded-[28px] border border-white/8 bg-[linear-gradient(160deg,rgba(4,8,12,0.65),rgba(7,16,24,0.9))] p-4">
-          <img src={assetUrls.heroReference} alt="Cyber Operations" className="absolute inset-0 h-full w-full object-cover opacity-45" />
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(3,6,8,0.08),rgba(3,6,8,0.88))]" />
-          <div className="relative z-10 grid w-full gap-4 sm:grid-cols-2">
-            <div className="rounded-2xl border border-cyan-400/15 bg-[rgba(2,8,14,0.7)] p-4 backdrop-blur-sm">
-              <p className="font-mono text-[0.72rem] uppercase tracking-[0.32em] text-cyan-300/75">Command Chain</p>
-              <p className="mt-3 text-sm leading-6 text-slate-200">Route-basierte Workspaces, simulierte Kommandoausführung, Status-basierte Pwnagotchi-Faces und Report-fähige Output-Konsolen.</p>
+        <div className="relative overflow-hidden rounded-[28px] border border-white/8 bg-[linear-gradient(160deg,rgba(4,8,12,0.82),rgba(5,14,18,0.94))] p-5">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(34,211,238,0.18),transparent_28%),radial-gradient(circle_at_72%_78%,rgba(16,185,129,0.12),transparent_24%)]" />
+          <div className="relative z-10 flex h-full flex-col gap-4">
+            <div className="rounded-[24px] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] px-5 py-6 backdrop-blur-sm">
+              <p className="font-mono text-[0.72rem] uppercase tracking-[0.32em] text-cyan-300/75">Brand Signature</p>
+              <div className="mt-4 flex items-center justify-center rounded-[20px] border border-cyan-400/10 bg-[radial-gradient(circle_at_center,rgba(34,211,238,0.12),transparent_48%),rgba(2,9,14,0.72)] p-6">
+                <img
+                  src={assetUrls.krockodogLogo}
+                  alt="krockodog Logo"
+                  className="h-40 w-full object-contain drop-shadow-[0_0_28px_rgba(34,211,238,0.14)] sm:h-48"
+                />
+              </div>
             </div>
-            <div className="rounded-2xl border border-emerald-400/15 bg-[rgba(3,11,10,0.74)] p-4 backdrop-blur-sm">
-              <p className="font-mono text-[0.72rem] uppercase tracking-[0.32em] text-emerald-300/75">Evidence Ready</p>
-              <p className="mt-3 text-sm leading-6 text-slate-200">JSON- und Markdown-Export, priorisierte Findings, zentrale Job-Übersicht und OSINT-/Pentest-Guides mit operativem Kontext.</p>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="rounded-2xl border border-cyan-400/15 bg-[rgba(2,8,14,0.7)] p-4 backdrop-blur-sm">
+                <p className="font-mono text-[0.72rem] uppercase tracking-[0.32em] text-cyan-300/75">Command Chain</p>
+                <p className="mt-3 text-sm leading-6 text-slate-200">Route-basierte Workspaces, simulierte Kommandoausführung, Status-basierte Pwnagotchi-Faces und Report-fähige Output-Konsolen.</p>
+              </div>
+              <div className="rounded-2xl border border-emerald-400/15 bg-[rgba(3,11,10,0.74)] p-4 backdrop-blur-sm">
+                <p className="font-mono text-[0.72rem] uppercase tracking-[0.32em] text-emerald-300/75">Evidence Ready</p>
+                <p className="mt-3 text-sm leading-6 text-slate-200">JSON- und Markdown-Export, priorisierte Findings, zentrale Job-Übersicht und OSINT-/Pentest-Guides mit operativem Kontext.</p>
+              </div>
             </div>
           </div>
         </div>

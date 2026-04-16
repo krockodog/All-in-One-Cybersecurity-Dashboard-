@@ -1,5 +1,4 @@
-- [ ] Loading Screen visuell entschlacken und überflüssige Effekte entfernen
-- [ ] Zentralen photorealistischen Erdball mit mehr Negativraum neu inszenieren
-- [ ] Loading-Screen-Typografie auf Titel und Signatur reduzieren
+- [ ] Erdball im Loading Screen beibehalten
+- [ ] Neues krockodog-Logo auf der Frontpage gestalten und integrieren
 - [ ] Aktualisierte Startansicht im Browser prüfen und Build validieren
 - [ ] Überarbeitete Version erneut öffentlich deployen und URL ausliefern

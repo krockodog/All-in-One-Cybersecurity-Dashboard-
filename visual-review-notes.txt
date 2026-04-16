@@ -16,3 +16,10 @@
 3. Text wurde stark reduziert: sichtbar bleiben Titel, ein kleines Authorized-Use-Label, ein minimalistischer Loading-Indikator und die Signatur unten rechts.
 4. Überlagernde Silhouetten, Matrix-Rain und Orbit-Effekte wurden entfernt; übrig bleibt nur ein sehr dezentes Hintergrundraster und ein weicher Glow.
 5. Die Seite wechselt nach der Ladezeit weiterhin korrekt in das Dashboard, ohne die Hauptoberfläche zu beeinträchtigen.
+
+2026-04-16 frontpage-logo revision review
+
+1. Der Loading Screen zeigt weiterhin den reduzierten zentralen Erdball; dort wurde kein Logo eingebaut.
+2. Die bisher störenden Gebäudebilder auf der Frontpage wurden durch das neue krockodog-Logo ersetzt.
+3. Das Logo erscheint sowohl in der linken Frontpage-Seitenleiste als auch im rechten Hero-Bereich als Brand-Signature-Element.
+4. Die Frontpage wirkt dadurch thematisch konsistenter und näher an der gewünschten Markenidentität.

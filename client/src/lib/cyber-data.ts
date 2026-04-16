@@ -744,6 +744,8 @@ export const assetUrls = {
     "https://d2xsxph8kpxj0f.cloudfront.net/310519663552661904/XNBpKyMBuA4rXy2AbmJ3JH/cyber-control-room-reference-YuiGUiu5E8SwHPBbxaxfTj.webp",
   earth:
     "https://d2xsxph8kpxj0f.cloudfront.net/310519663552661904/XNBpKyMBuA4rXy2AbmJ3JH/cyber-earth-core-5Qav3BvyDf2yAtd4zZwSEy.webp",
+  krockodogLogo:
+    "https://d2xsxph8kpxj0f.cloudfront.net/310519663552661904/XNBpKyMBuA4rXy2AbmJ3JH/krockodog-frontpage-logo-dXLNrmhcavSYdiUsvafheK.webp",
   hacker:
     "https://d2xsxph8kpxj0f.cloudfront.net/310519663552661904/XNBpKyMBuA4rXy2AbmJ3JH/hacker-silhouette-left-bHUYArjwMEio4ZonpasiZe.webp",
   analyst:

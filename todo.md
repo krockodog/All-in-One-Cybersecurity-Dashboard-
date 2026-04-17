@@ -1,4 +1,5 @@
-- [ ] Erdball im Loading Screen beibehalten
-- [ ] Neues krockodog-Logo auf der Frontpage gestalten und integrieren
-- [ ] Aktualisierte Startansicht im Browser prüfen und Build validieren
+- [ ] Informationsarchitektur entschlacken und Textmengen deutlich reduzieren
+- [ ] Direkte ausführbare Tool-Flows statt rein simulierter Karten umsetzen
+- [ ] Sichere technische Architektur für autorisierte Tool-Ausführung festlegen
+- [ ] Workspaces, Statusanzeige und Reports funktional validieren
 - [ ] Überarbeitete Version erneut öffentlich deployen und URL ausliefern

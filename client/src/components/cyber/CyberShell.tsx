@@ -20,15 +20,30 @@ import { useAudit, type AuditJob } from "@/contexts/AuditContext";
 import {
   assetUrls,
   categoryLabel,
-  dashboardHighlights,
-  overviewMetrics,
-  quickLaunchTargets,
   riskLabel,
-  type GuideSection,
   type JobStatus,
   type ToolCategory,
   type ToolDefinition,
 } from "@/lib/cyber-data";
+
+const dashboardHighlights = [
+  { title: "Authorized Use Only", body: "Dieses Interface simuliert autorisierte Prüf-Workflows für eigene Netze und Ziele mit expliziter Erlaubnis." },
+  { title: "OSINT zuerst, Aktionen danach", body: "Passive Informationsgewinnung schafft die Grundlage für sichere operative Entscheidungen." },
+  { title: "Report-fähige Evidenz", body: "Jeder Lauf erzeugt strukturierte Spur aus Befehl, Status, Zeitstempel und terminalähnlicher Ausgabe." },
+];
+
+const overviewMetrics = [
+  { label: "Aktive Tools", value: "42", delta: "+8", tone: "cyan" as const },
+  { label: "Abgeschlossene Audits", value: "127", delta: "+23", tone: "emerald" as const },
+  { label: "Kritische Findings", value: "3", delta: "-1", tone: "amber" as const },
+];
+
+const quickLaunchTargets = [
+  "corp.example.com",
+  "10.0.10.0/24",
+  "api.target.local",
+  "mail.example.org",
+];
 
 const navigationItems = [
   { to: "/", label: "Dashboard", icon: Gauge },
@@ -204,7 +219,7 @@ export function DisclaimerBanner() {
 export function StatStrip() {
   return (
     <div className="grid gap-4 md:grid-cols-3">
-      {overviewMetrics.map((metric) => (
+      {overviewMetrics.map((metric: any) => (
         <article key={metric.label} className="glass-panel px-5 py-5">
           <p className="font-mono text-[0.72rem] uppercase tracking-[0.32em] text-slate-400">{metric.label}</p>
           <div className="mt-4 flex items-end justify-between gap-4">
@@ -241,7 +256,7 @@ export function HeroPanel() {
             Die Oberfläche verbindet Quick-Launch, aktive Jobs, Tool-Simulation, Evidenzketten und Report-Export in einem dunklen Kontrollraum mit konsequenter Glassmorphism-Ästhetik.
           </p>
           <div className="mt-7 grid gap-3 sm:grid-cols-3">
-            {dashboardHighlights.map((item) => (
+            {dashboardHighlights.map((item: any) => (
               <article key={item.title} className="rounded-2xl border border-white/8 bg-black/30 p-4 backdrop-blur-sm">
                 <h3 className="font-display text-lg text-white">{item.title}</h3>
                 <p className="mt-2 text-sm leading-6 text-slate-300">{item.body}</p>
@@ -295,7 +310,7 @@ export function QuickLaunchPanel() {
         </Link>
       </div>
       <div className="mt-5 grid gap-3 lg:grid-cols-2 xl:grid-cols-4">
-        {quickLaunchTargets.map((target, index) => (
+        {quickLaunchTargets.map((target: string, index: number) => (
           <button
             key={target}
             type="button"
@@ -346,7 +361,7 @@ function JobRow({ job }: { job: AuditJob }) {
       <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
         <div className="flex items-start gap-4">
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/8 bg-white/[0.03] text-xl">
-            {job.icon}
+            {job.category === "osint" ? "🔍" : job.category === "pentest" ? "⚔️" : "📡"}
           </div>
           <div>
             <div className="flex flex-wrap items-center gap-2">
@@ -368,7 +383,7 @@ function JobRow({ job }: { job: AuditJob }) {
   );
 }
 
-export function GuideColumn({ title, eyebrow, sections, accent }: { title: string; eyebrow: string; sections: GuideSection[]; accent: "cyan" | "emerald" }) {
+export function GuideColumn({ title, eyebrow, sections, accent }: { title: string; eyebrow: string; sections: any[]; accent: "cyan" | "emerald" }) {
   return (
     <section className="glass-panel px-5 py-5">
       <p className={cx("font-mono text-[0.72rem] uppercase tracking-[0.34em]", accent === "cyan" ? "text-cyan-300/75" : "text-emerald-300/75")}>{eyebrow}</p>
@@ -379,7 +394,7 @@ export function GuideColumn({ title, eyebrow, sections, accent }: { title: strin
             <h4 className="font-display text-lg text-white">{section.title}</h4>
             <p className="mt-2 text-sm leading-6 text-slate-300">{section.summary}</p>
             <ul className="mt-4 space-y-2 text-sm text-slate-200">
-              {section.checkpoints.map((checkpoint) => (
+              {section.checkpoints?.map((checkpoint: any) => (
                 <li key={checkpoint} className="flex gap-2">
                   <span className={cx("mt-1.5 h-2 w-2 rounded-full", accent === "cyan" ? "bg-cyan-300" : "bg-emerald-300")} />
                   <span className="leading-6">{checkpoint}</span>
@@ -423,18 +438,19 @@ export function ToolGrid({ tools, accent }: { tools: ToolDefinition[]; accent: "
 
 export function ToolCard({ tool, accent }: { tool: ToolDefinition; accent: "cyan" | "emerald" }) {
   const { runTool } = useAudit();
-  const [target, setTarget] = useState(tool.sampleTarget);
-  const [options, setOptions] = useState(tool.defaultOptions);
+  const [target, setTarget] = useState("");
+  const [options, setOptions] = useState("");
   const [status, setStatus] = useState<JobStatus>("idle");
   const [output, setOutput] = useState(
-    "[ready] Tool-Simulation bereit. Ziel anpassen, Optionen prüfen und autorisierten Lauf starten.",
+    "[ready] Tool ready. Configure target and options, then execute.",
   );
 
   const preview = useMemo(() => {
     const normalizedOptions = options.trim();
     const suffix = normalizedOptions.length > 0 ? ` ${normalizedOptions}` : "";
-    return `${tool.baseCommand}${suffix} ${target}`.trim();
-  }, [options, target, tool.baseCommand]);
+    const template = tool.commandTemplate || tool.name;
+    return `${template}${suffix} ${target}`.trim();
+  }, [options, target, tool.commandTemplate, tool.name]);
 
   async function handleRun() {
     setStatus("scanning");
@@ -449,7 +465,7 @@ export function ToolCard({ tool, accent }: { tool: ToolDefinition; accent: "cyan
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-start gap-3">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-black/25 text-2xl shadow-[0_10px_30px_rgba(2,8,16,0.35)]">
-            {tool.icon}
+            {tool.category === "osint" ? "🔍" : tool.category === "pentest" ? "⚔️" : "📡"}
           </div>
           <div>
             <div className="flex flex-wrap items-center gap-2">
@@ -480,7 +496,7 @@ export function ToolCard({ tool, accent }: { tool: ToolDefinition; accent: "cyan
             value={target}
             onChange={(event) => setTarget(event.target.value)}
             className="h-12 w-full rounded-2xl border border-white/8 bg-[rgba(10,14,20,0.8)] px-4 text-sm text-white outline-none transition focus:border-cyan-300/30 focus:ring-2 focus:ring-cyan-400/15"
-            placeholder={tool.sampleTarget}
+            placeholder="example.com"
           />
         </label>
         <label className="space-y-2">
@@ -501,11 +517,9 @@ export function ToolCard({ tool, accent }: { tool: ToolDefinition; accent: "cyan
       </div>
       <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap gap-2">
-          {tool.tags.map((tag) => (
-            <span key={tag} className="rounded-full border border-white/8 px-3 py-1 text-[0.68rem] uppercase tracking-[0.2em] text-slate-300">
-              {tag}
-            </span>
-          ))}
+          <span className="rounded-full border border-white/8 px-3 py-1 text-[0.68rem] uppercase tracking-[0.2em] text-slate-300">
+            {tool.executionMode}
+          </span>
         </div>
         <button
           type="button"
@@ -521,20 +535,8 @@ export function ToolCard({ tool, accent }: { tool: ToolDefinition; accent: "cyan
           Run
         </button>
       </div>
-      <div className="mt-5 grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+      <div className="mt-5">
         <TerminalOutput output={output} />
-        <div className="rounded-2xl border border-white/8 bg-black/20 px-4 py-4">
-          <p className="font-mono text-[0.72rem] uppercase tracking-[0.3em] text-slate-400">Guide Notes</p>
-          <p className="mt-3 text-sm leading-6 text-slate-300">{tool.guide.objective}</p>
-          <ul className="mt-4 space-y-2 text-sm leading-6 text-slate-200">
-            {tool.guide.workflow.map((step) => (
-              <li key={step} className="flex gap-2">
-                <Binary className="mt-1 h-4 w-4 shrink-0 text-cyan-300/80" />
-                <span>{step}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
       </div>
     </article>
   );

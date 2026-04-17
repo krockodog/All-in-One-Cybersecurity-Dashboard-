@@ -1,711 +1,382 @@
+/**
+ * Zentrale Datendefinitionen für das Cybersecurity Dashboard.
+ * Tool-Katalog, Kategorien, Ausführungsmodi und operative Konfiguration.
+ */
+
 export type ToolCategory = "osint" | "pentest" | "recon";
+export type ToolRisk = "passiv" | "kontrolliert" | "aktiv";
+export type ExecutionMode = "web-integrated" | "command-reference" | "external";
 export type JobStatus = "idle" | "scanning" | "success" | "error";
 
-export type ToolDefinition = {
+export interface ToolDefinition {
   id: string;
   name: string;
-  icon: string;
   category: ToolCategory;
-  description: string;
-  baseCommand: string;
-  sampleTarget: string;
-  defaultOptions: string;
-  risk: "passiv" | "kontrolliert" | "aktiv";
-  tags: string[];
-  guide: {
-    objective: string;
-    workflow: string[];
-    notes: string[];
-  };
-};
-
-export type OverviewMetric = {
-  label: string;
-  value: string;
-  delta: string;
-  tone: "cyan" | "emerald" | "amber";
-};
-
-export type GuideSection = {
-  title: string;
-  summary: string;
-  checkpoints: string[];
-};
-
-export const overviewMetrics: OverviewMetric[] = [
-  { label: "Aktive Assessments", value: "12", delta: "+3 diese Woche", tone: "cyan" },
-  { label: "Verifizierte Findings", value: "37", delta: "91% reproduzierbar", tone: "emerald" },
-  { label: "Offene Risiko-Cluster", value: "08", delta: "2 mit hoher Priorität", tone: "amber" },
-];
-
-export const quickLaunchTargets = [
-  "corp.example.com",
-  "vpn.example.net",
-  "portal.intern",
-  "172.16.10.0/24",
-];
-
-export const pentestGuideSections: GuideSection[] = [
-  {
-    title: "Scope zuerst validieren",
-    summary:
-      "Vor jedem aktiven Test werden Zielraum, Authentisierung, Zeitfenster und Notfallkontakte bestätigt. Das Dashboard behandelt alle Abläufe als autorisierte Audits.",
-    checkpoints: [
-      "Freigaben und Kontaktwege dokumentieren",
-      "Rate Limits und Produktivitätsfenster festlegen",
-      "Out-of-Scope Hosts, Anwendungen und Daten definieren",
-    ],
-  },
-  {
-    title: "Enumeration vor Exploitation",
-    summary:
-      "Aktive Tests werden aus einer belastbaren Recon- und Fingerprinting-Phase abgeleitet. Je sauberer die Voranalyse, desto präziser und risikoärmer die nächsten Schritte.",
-    checkpoints: [
-      "Dienste und Versionen verifizieren",
-      "Angriffsoberfläche nach Technologie clustern",
-      "Nur passende Module und Wortlisten verwenden",
-    ],
-  },
-  {
-    title: "Belege reproduzierbar sichern",
-    summary:
-      "Jeder Befund braucht verwertbare Belege: Request/Response, Zeitstempel, Scope-Bezug und technische Auswirkungen. So werden Reports belastbar und remediation-tauglich.",
-    checkpoints: [
-      "Screenshots und Terminal-Output konsistent sammeln",
-      "Impact und Business-Kontext getrennt dokumentieren",
-      "Remediation immer direkt am Finding notieren",
-    ],
-  },
-];
-
-export const osintGuideSections: GuideSection[] = [
-  {
-    title: "Passive Sammlung priorisieren",
-    summary:
-      "OSINT startet mit öffentlichen und historisierten Quellen, bevor Profile, Infrastruktur und Beziehungen konsolidiert werden. Ziel ist ein verwertbares Lagebild ohne unnötige Berührung des Targets.",
-    checkpoints: [
-      "Primäre Identitäten und Markenbegriffe sammeln",
-      "Domains, Social Handles und historische Artefakte korrelieren",
-      "Öffentliche Leaks, Metadaten und Archive in Evidenzlisten ablegen",
-    ],
-  },
-  {
-    title: "Quellen quer validieren",
-    summary:
-      "Ein einzelner Datenpunkt reicht nicht aus. Ergebnisse werden immer mit mindestens einer zweiten Quelle gegengeprüft, bevor sie im Report oder in der Priorisierung auftauchen.",
-    checkpoints: [
-      "WHOIS, DNS und Certificate-Transparenz abgleichen",
-      "Social Media mit Archiv- und Suchquellen verknüpfen",
-      "Zeitliche Veränderungen dokumentieren",
-    ],
-  },
-  {
-    title: "Kontext statt Datensammlung",
-    summary:
-      "Gute OSINT ist nicht nur Sammlung, sondern Interpretation. Das Dashboard ordnet Beziehungen, liefert Hypothesen und markiert, welche Erkenntnisse in Recon oder Pentest überführt werden dürfen.",
-    checkpoints: [
-      "Assets nach Organisationseinheit gruppieren",
-      "Exposure nach Relevanz und Aktualität bewerten",
-      "Nur autorisierte Folgeschritte zur aktiven Prüfung einleiten",
-    ],
-  },
-];
+  risk: ToolRisk;
+  description: string; // Kurz, max 60 Zeichen
+  executionMode: ExecutionMode;
+  inputFields: Array<{
+    name: string;
+    label: string;
+    type: "text" | "textarea" | "select";
+    placeholder?: string;
+    options?: string[];
+  }>;
+  commandTemplate?: string; // Für command-reference Mode
+}
 
 export const toolCatalog: ToolDefinition[] = [
+  // OSINT Tools
   {
     id: "sherlock",
     name: "Sherlock",
-    icon: "🕵️",
     category: "osint",
-    description: "Prüft Benutzernamen plattformübergreifend und konsolidiert öffentliche Treffer für Social-Attribution.",
-    baseCommand: "sherlock",
-    sampleTarget: "krockodog",
-    defaultOptions: "--print-found --timeout 15",
     risk: "passiv",
-    tags: ["Usernames", "Social", "Attribution"],
-    guide: {
-      objective: "Öffentliche Benutzernamen auf mehreren Plattformen prüfen und Trefferliste validieren.",
-      workflow: ["Handle normalisieren", "Plattformtreffer verifizieren", "False Positives manuell ausfiltern"],
-      notes: ["Ideal für Alias-Korrelation", "Screenshots für sensible Treffer separat sichern"],
-    },
+    description: "Benutzernamen-Suche über Netzwerke",
+    executionMode: "command-reference",
+    inputFields: [{ name: "username", label: "Benutzername", type: "text" }],
+    commandTemplate: "sherlock {{username}}",
   },
   {
     id: "theharvester",
     name: "theHarvester",
-    icon: "📇",
     category: "osint",
-    description: "Sammelt E-Mail-Adressen, Hosts und öffentliche Beziehungen aus Suchmaschinen und offenen Quellen.",
-    baseCommand: "theHarvester",
-    sampleTarget: "example.com",
-    defaultOptions: "-b all -l 200",
     risk: "passiv",
-    tags: ["Email", "Hosts", "OSINT"],
-    guide: {
-      objective: "Öffentlich exponierte Identitäten, Hosts und Kontakte einer Organisation sammeln.",
-      workflow: ["Quelle wählen", "Domains und Markenbegriffe prüfen", "Duplikate und Leaks taggen"],
-      notes: ["Ergebnisse mit WHOIS und DNS abgleichen", "Nicht jede Suchquelle liefert konsistente Treffer"],
-    },
+    description: "E-Mails, Subdomains und Hosts sammeln",
+    executionMode: "command-reference",
+    inputFields: [
+      { name: "domain", label: "Domain", type: "text" },
+      {
+        name: "source",
+        label: "Quelle",
+        type: "select",
+        options: ["google", "bing", "linkedin"],
+      },
+    ],
+    commandTemplate: "theHarvester -d {{domain}} -b {{source}}",
   },
   {
     id: "maltego",
     name: "Maltego",
-    icon: "🕸️",
     category: "osint",
-    description: "Visualisiert Entitäten, Beziehungen und Transformationspfade für komplexe Ermittlungsbilder.",
-    baseCommand: "maltego",
-    sampleTarget: "example.com",
-    defaultOptions: "--graph entity-map",
     risk: "passiv",
-    tags: ["Graphs", "Entities", "Correlation"],
-    guide: {
-      objective: "Beziehungen zwischen Domains, Personen, Infrastruktur und Metadaten sichtbar machen.",
-      workflow: ["Seed-Entität festlegen", "Transform-Kette ausführen", "Graph-Hotspots priorisieren"],
-      notes: ["Starke Wirkung im Reporting", "Korrelationen immer quellenbasiert verifizieren"],
-    },
+    description: "Visuelle Daten-Korrelation",
+    executionMode: "external",
+    inputFields: [{ name: "entity", label: "Entity", type: "text" }],
   },
   {
     id: "recon-ng",
     name: "Recon-ng",
-    icon: "🧭",
     category: "osint",
-    description: "Modulares Framework für passive Recherche, Entitäts-Management und Workflow-Automatisierung.",
-    baseCommand: "recon-ng",
-    sampleTarget: "example.com",
-    defaultOptions: "-m marketplace install all",
     risk: "passiv",
-    tags: ["Framework", "Modules", "Automation"],
-    guide: {
-      objective: "OSINT-Workflows modular orchestrieren und Ergebnisse strukturiert sammeln.",
-      workflow: ["Workspace anlegen", "Module passend zum Ziel laden", "Resultate exportieren"],
-      notes: ["Für wiederkehrende Workflows besonders nützlich", "API-Schlüssel sauber trennen"],
-    },
+    description: "Web-Reconnaissance Framework",
+    executionMode: "command-reference",
+    inputFields: [{ name: "target", label: "Ziel-Domain", type: "text" }],
+    commandTemplate: "recon-ng -w {{target}}",
   },
   {
     id: "spiderfoot",
     name: "SpiderFoot",
-    icon: "🕷️",
     category: "osint",
-    description: "Automatisiert breit angelegte Open-Source-Recherche mit Korrelations- und Exposure-Sicht.",
-    baseCommand: "spiderfoot",
-    sampleTarget: "example.com",
-    defaultOptions: "-m sfp_dns,sfp_whois,sfp_accounts",
     risk: "passiv",
-    tags: ["Automation", "Exposure", "Correlation"],
-    guide: {
-      objective: "Breite passive Quellensammlung mit anschließender Bewertung der Auffälligkeiten.",
-      workflow: ["Scan-Modulset definieren", "Findings deduplizieren", "High-Signal-Treffer verifizieren"],
-      notes: ["Hoher Abdeckungsgrad", "Priorisierung im Nachgang entscheidend"],
-    },
+    description: "Automatisierte OSINT-Automatisierung",
+    executionMode: "external",
+    inputFields: [{ name: "target", label: "Ziel", type: "text" }],
   },
   {
     id: "shodan",
     name: "Shodan",
-    icon: "🌐",
     category: "osint",
-    description: "Durchsucht öffentlich exponierte Dienste, Banner, Zertifikate und Geräteprofile.",
-    baseCommand: "shodan search",
-    sampleTarget: "ssl:example.com",
-    defaultOptions: "country:de org:\"Example\"",
     risk: "passiv",
-    tags: ["Exposure", "Banners", "Devices"],
-    guide: {
-      objective: "Internet-exponierte Dienste und auffällige Banner schnell korrelieren.",
-      workflow: ["Suchfingerabdruck erstellen", "Treffer clustern", "kritische Exposures markieren"],
-      notes: ["Ideal für externe Sicht", "Mit Censys und Certificate Transparency abgleichen"],
-    },
+    description: "IoT & Netzwerk-Suche",
+    executionMode: "web-integrated",
+    inputFields: [{ name: "query", label: "Suchanfrage", type: "text" }],
   },
   {
     id: "censys",
     name: "Censys",
-    icon: "📡",
     category: "osint",
-    description: "Analysiert Zertifikate, Hosts und Internetoberflächen aus globalen Scan-Daten.",
-    baseCommand: "censys search",
-    sampleTarget: "services.tls.certificates.leaf_data.subject.common_name: example.com",
-    defaultOptions: "--index-type hosts",
     risk: "passiv",
-    tags: ["Certificates", "Hosts", "Internet"],
-    guide: {
-      objective: "Zertifikats- und Hostdaten für Exposure-Mapping konsolidieren.",
-      workflow: ["Query eingrenzen", "Zertifikatspfad prüfen", "Assets nach Relevanz priorisieren"],
-      notes: ["Sehr stark bei Infrastruktur-Korrelation", "Hilfreich für Shadow-IT-Erkennung"],
-    },
+    description: "Zertifikate und Host-Daten",
+    executionMode: "web-integrated",
+    inputFields: [{ name: "query", label: "Suchanfrage", type: "text" }],
   },
   {
     id: "google-dorking",
     name: "Google Dorking",
-    icon: "🔎",
     category: "osint",
-    description: "Nutzt präzise Suchoperatoren, um öffentlich indexierte Artefakte und Leaks zu finden.",
-    baseCommand: "google-dork",
-    sampleTarget: "site:example.com filetype:pdf confidential",
-    defaultOptions: "intitle:index.of OR ext:sql",
     risk: "passiv",
-    tags: ["Search", "Leaks", "Documents"],
-    guide: {
-      objective: "Offen indexierte Dokumente, Verzeichnisse und Fehlkonfigurationen identifizieren.",
-      workflow: ["Dorks nach Asset-Typ entwerfen", "Treffer manuell validieren", "kritische Funde exportieren"],
-      notes: ["Nur öffentlich zugängliche Inhalte bewerten", "Archiv-Quellen ergänzen"],
-    },
+    description: "Erweiterte Google-Suche",
+    executionMode: "web-integrated",
+    inputFields: [{ name: "query", label: "Dork-Query", type: "text" }],
   },
   {
-    id: "wayback-machine",
+    id: "wayback",
     name: "Wayback Machine",
-    icon: "🕰️",
     category: "osint",
-    description: "Vergleicht historische Snapshots, um vergangene Exposures und Strukturänderungen zu erkennen.",
-    baseCommand: "waybackurls",
-    sampleTarget: "example.com",
-    defaultOptions: "| sort -u",
     risk: "passiv",
-    tags: ["History", "URLs", "Archive"],
-    guide: {
-      objective: "Historische Angriffsoberflächen, verwaiste Pfade und alte Inhalte rekonstruieren.",
-      workflow: ["Snapshot-Zeiträume prüfen", "alte Pfade deduplizieren", "aktive Relevanz bewerten"],
-      notes: ["Ideal für Legacy-Pfade", "Mit ffuf und httpx kombinieren"],
-    },
+    description: "Historische Website-Snapshots",
+    executionMode: "web-integrated",
+    inputFields: [{ name: "url", label: "URL", type: "text" }],
   },
   {
-    id: "social-media-analysis",
+    id: "social-media",
     name: "Social Media Analysis",
-    icon: "💬",
     category: "osint",
-    description: "Bewertet öffentliche Profile, Beziehungen, Veröffentlichungsmuster und Markenexposition.",
-    baseCommand: "social-analyzer",
-    sampleTarget: "examplecorp",
-    defaultOptions: "--metadata --profiles",
     risk: "passiv",
-    tags: ["Profiles", "Brand", "Behavior"],
-    guide: {
-      objective: "Öffentliche Personen- und Markeninformationen für Attribution und Awareness sammeln.",
-      workflow: ["Profile identifizieren", "Verknüpfungen prüfen", "Metadaten und Zeitpunkt clustern"],
-      notes: ["Besonders stark in Spear-Phishing-Prävention", "Datenschutz und Autorisierung beachten"],
-    },
+    description: "Profil- und Aktivitäts-Analyse",
+    executionMode: "web-integrated",
+    inputFields: [{ name: "profile", label: "Profil/Handle", type: "text" }],
   },
   {
     id: "exiftool",
     name: "ExifTool",
-    icon: "🖼️",
     category: "osint",
-    description: "Extrahiert Metadaten aus Dokumenten und Bildern, um Geräte-, Orts- oder Workflow-Hinweise zu finden.",
-    baseCommand: "exiftool",
-    sampleTarget: "evidence.jpg",
-    defaultOptions: "-a -u -g1",
     risk: "passiv",
-    tags: ["Metadata", "Images", "Documents"],
-    guide: {
-      objective: "Metadaten aus publizierten Dateien auslesen und sicher interpretieren.",
-      workflow: ["Datei isolieren", "relevante Felder extrahieren", "Artefakte historisch einordnen"],
-      notes: ["Sehr nützlich für Awareness und Leak-Analysen", "Hash-Werte für Chain-of-Custody erfassen"],
-    },
+    description: "Metadaten aus Dateien extrahieren",
+    executionMode: "command-reference",
+    inputFields: [{ name: "file", label: "Datei-URL", type: "text" }],
+    commandTemplate: "exiftool {{file}}",
   },
   {
     id: "whois",
     name: "WHOIS",
-    icon: "📛",
     category: "osint",
-    description: "Liefert Registrierungsdaten, Registrar-Hinweise und Ownership-Kontext zu Domains und IPs.",
-    baseCommand: "whois",
-    sampleTarget: "example.com",
-    defaultOptions: "--verbose",
     risk: "passiv",
-    tags: ["Ownership", "Registration", "Domains"],
-    guide: {
-      objective: "Besitz- und Registrierungsinformationen sauber dokumentieren.",
-      workflow: ["Domain oder IP prüfen", "Registrar/Nameserver extrahieren", "Datenschutz-Lücken interpretieren"],
-      notes: ["Mit DNS und Historical WHOIS kombinieren", "Privacy-Redaction ist häufig normal"],
-    },
+    description: "Domain-Registrierungsdaten",
+    executionMode: "web-integrated",
+    inputFields: [{ name: "domain", label: "Domain", type: "text" }],
   },
   {
-    id: "dns-enumeration",
+    id: "dns-enum",
     name: "DNS Enumeration",
-    icon: "🧬",
     category: "osint",
-    description: "Erfasst Nameserver, Zonenhinweise, Records und technische Beziehungen einer Domäne.",
-    baseCommand: "dig",
-    sampleTarget: "example.com",
-    defaultOptions: "ANY +noall +answer",
     risk: "passiv",
-    tags: ["DNS", "Records", "Infrastructure"],
-    guide: {
-      objective: "DNS-Struktur und delegierte Beziehungen eines Targets nachvollziehen.",
-      workflow: ["Record-Typen gezielt abfragen", "Nameserver korrelieren", "Shadow-Domains markieren"],
-      notes: ["Grundlage für Recon und Asset-Inventar", "Zonentransfer nur mit Erlaubnis testen"],
-    },
+    description: "DNS-Records und Zonen auflösen",
+    executionMode: "web-integrated",
+    inputFields: [{ name: "domain", label: "Domain", type: "text" }],
   },
+
+  // Pentest Tools
   {
     id: "nmap",
     name: "Nmap",
-    icon: "🛰️",
     category: "pentest",
-    description: "Netzwerk-Scanning, Port-Erkennung und Versionsermittlung mit kontextabhängigen Profilen.",
-    baseCommand: "nmap",
-    sampleTarget: "10.0.10.21",
-    defaultOptions: "-sV -Pn -T4",
-    risk: "aktiv",
-    tags: ["Ports", "Services", "Enumeration"],
-    guide: {
-      objective: "Ports, Dienste und mögliche Eintrittspunkte präzise erfassen.",
-      workflow: ["Host-Scope prüfen", "Profil an Risiko anpassen", "offene Dienste priorisieren"],
-      notes: ["Masscan nur gezielt als Vorfilter nutzen", "Nicht jede Umgebung verträgt aggressive Timings"],
-    },
+    risk: "kontrolliert",
+    description: "Port-Scanning und Host-Erkennung",
+    executionMode: "command-reference",
+    inputFields: [{ name: "target", label: "Ziel-IP/Host", type: "text" }],
+    commandTemplate: "nmap -sV {{target}}",
   },
   {
     id: "nikto",
     name: "Nikto",
-    icon: "🧪",
     category: "pentest",
-    description: "Prüft Webserver auf bekannte Fehlkonfigurationen, schwache Defaults und auffällige Artefakte.",
-    baseCommand: "nikto",
-    sampleTarget: "https://portal.example.com",
-    defaultOptions: "-Tuning bde -ask no",
-    risk: "aktiv",
-    tags: ["Web", "Misconfig", "HTTP"],
-    guide: {
-      objective: "Schnell sichtbare Webserver-Risiken erfassen und für manuelle Prüfung markieren.",
-      workflow: ["URL validieren", "Tuning-Satz wählen", "False Positives im Response-Kontext prüfen"],
-      notes: ["Gut als frühe Signalquelle", "Ergebnisse nicht ungeprüft reporten"],
-    },
+    risk: "kontrolliert",
+    description: "Web-Server-Schwachstellen-Scanner",
+    executionMode: "command-reference",
+    inputFields: [{ name: "url", label: "Ziel-URL", type: "text" }],
+    commandTemplate: "nikto -h {{url}}",
   },
   {
     id: "burp-suite",
     name: "Burp Suite",
-    icon: "🧰",
     category: "pentest",
-    description: "Interaktives Testen von Requests, Parametern, Sessions und Web-Flows.",
-    baseCommand: "burpsuite",
-    sampleTarget: "https://portal.example.com/login",
-    defaultOptions: "--project-file advisor-session.burp",
     risk: "kontrolliert",
-    tags: ["Proxy", "Web", "Manual"],
-    guide: {
-      objective: "Anwendungslogik, Requests und Authentisierungsflüsse gezielt prüfen.",
-      workflow: ["Proxy verbinden", "Scope setzen", "Intruder/Repeater nur kontrolliert einsetzen"],
-      notes: ["Stark für reproduzierbare Nachweise", "Session-Handling sauber dokumentieren"],
-    },
+    description: "Web-Application-Pentest-Plattform",
+    executionMode: "external",
+    inputFields: [{ name: "target", label: "Ziel-URL", type: "text" }],
   },
   {
     id: "metasploit",
     name: "Metasploit",
-    icon: "🚀",
     category: "pentest",
-    description: "Framework für modulare Validierung, Exploit-Prüfung und Nachweis technisch ausnutzbarer Schwachstellen.",
-    baseCommand: "msfconsole -qx",
-    sampleTarget: "use exploit/multi/http/example; set RHOSTS 10.0.10.21; run",
-    defaultOptions: "set VERBOSE true",
     risk: "aktiv",
-    tags: ["Exploit", "Framework", "Validation"],
-    guide: {
-      objective: "Technische Ausnutzbarkeit eines bereits bestätigten Befunds kontrolliert validieren.",
-      workflow: ["Modul gegen Fingerprint prüfen", "Payload-Risiko minimieren", "Nachweis klar abgrenzen"],
-      notes: ["Nur innerhalb autorisierter Testziele nutzen", "Cleanup und Spuren im Report dokumentieren"],
-    },
+    description: "Exploitation Framework",
+    executionMode: "external",
+    inputFields: [{ name: "target", label: "Ziel", type: "text" }],
   },
   {
     id: "sqlmap",
     name: "SQLMap",
-    icon: "🗄️",
     category: "pentest",
-    description: "Automatisiert SQL-Injection-Validierung, Fingerprinting und risikobasierte Datenbankabfragen.",
-    baseCommand: "sqlmap",
-    sampleTarget: "https://portal.example.com/item?id=5",
-    defaultOptions: "--batch --level 2 --risk 1",
-    risk: "aktiv",
-    tags: ["SQLi", "Web", "DB"],
-    guide: {
-      objective: "Verdächtige Parameter kontrolliert auf SQL-Injection prüfen.",
-      workflow: ["Parameter isolieren", "niedrige Risk/Level starten", "nur notwendige Bestätigung durchführen"],
-      notes: ["Mit Burp-Replay kombinierbar", "Exploit-Tiefe sauber mit Scope abgleichen"],
-    },
+    risk: "kontrolliert",
+    description: "SQL-Injection-Tester",
+    executionMode: "command-reference",
+    inputFields: [{ name: "url", label: "Ziel-URL", type: "text" }],
+    commandTemplate: "sqlmap -u {{url}} --dbs",
   },
   {
     id: "hydra",
     name: "Hydra",
-    icon: "🔐",
     category: "pentest",
-    description: "Validiert Authentisierungsresistenz kontrolliert mit rate-limit-sensitiven Login-Versuchen.",
-    baseCommand: "hydra",
-    sampleTarget: "ssh://10.0.10.21",
-    defaultOptions: "-L users.txt -P passwords.txt -t 4",
     risk: "aktiv",
-    tags: ["Auth", "Bruteforce", "Login"],
-    guide: {
-      objective: "Schwache Authentisierung im genehmigten Rahmen prüfen.",
-      workflow: ["Rate Limits abstimmen", "kleine Wortlisten starten", "Lockout-Risiko überwachen"],
-      notes: ["Nur mit expliziter Freigabe verwenden", "Benutzerstörung vermeiden"],
-    },
+    description: "Brute-Force-Login-Tester",
+    executionMode: "command-reference",
+    inputFields: [
+      { name: "target", label: "Ziel-Host", type: "text" },
+      { name: "service", label: "Service", type: "select", options: ["ssh", "ftp", "http"] },
+    ],
+    commandTemplate: "hydra -l admin -P wordlist.txt {{target}} {{service}}",
   },
   {
-    id: "john-the-ripper",
+    id: "john",
     name: "John the Ripper",
-    icon: "🧠",
     category: "pentest",
-    description: "Prüft Passwort-Hashes auf Widerstandsfähigkeit mit Wortlisten und Regelwerken.",
-    baseCommand: "john",
-    sampleTarget: "hashes.txt",
-    defaultOptions: "--wordlist=rockyou.txt --format=auto",
-    risk: "kontrolliert",
-    tags: ["Passwords", "Hashes", "Offline"],
-    guide: {
-      objective: "Offline-Hashprüfung zur Passwort-Härtungsbewertung durchführen.",
-      workflow: ["Hashformat bestimmen", "Wortliste und Regeln wählen", "Treffer nach Policy bewerten"],
-      notes: ["Offline bevorzugen", "Policy-Abweichungen im Report quantifizieren"],
-    },
+    risk: "passiv",
+    description: "Passwort-Hash-Cracker",
+    executionMode: "command-reference",
+    inputFields: [{ name: "hashfile", label: "Hash-Datei", type: "text" }],
+    commandTemplate: "john {{hashfile}}",
   },
   {
     id: "hashcat",
     name: "Hashcat",
-    icon: "⚡",
     category: "pentest",
-    description: "Leistungsstarke GPU-gestützte Analyse von Passwort-Hashes und Passwortmustern.",
-    baseCommand: "hashcat",
-    sampleTarget: "hashes.txt",
-    defaultOptions: "-m 0 -a 0 hashes.txt wordlist.txt",
-    risk: "kontrolliert",
-    tags: ["GPU", "Hashes", "Password Audit"],
-    guide: {
-      objective: "Hash-Resilienz skalierbar prüfen und Passwortmuster identifizieren.",
-      workflow: ["Hashmodus korrekt wählen", "Masken oder Wortlisten definieren", "Resultate nach Policy clustern"],
-      notes: ["Nur mit geschützten Testdaten arbeiten", "Resultate nicht unnötig persistieren"],
-    },
+    risk: "passiv",
+    description: "GPU-beschleunigtes Hash-Cracking",
+    executionMode: "command-reference",
+    inputFields: [{ name: "hashfile", label: "Hash-Datei", type: "text" }],
+    commandTemplate: "hashcat -m 0 {{hashfile}} wordlist.txt",
   },
   {
-    id: "aircrack-ng",
+    id: "aircrack",
     name: "Aircrack-ng",
-    icon: "📶",
     category: "pentest",
-    description: "Audit von WLAN-Sicherheit, Handshakes und Konfigurationsresistenz im autorisierten Umfeld.",
-    baseCommand: "aircrack-ng",
-    sampleTarget: "capture.cap",
-    defaultOptions: "-w wordlist.txt",
     risk: "aktiv",
-    tags: ["WiFi", "Wireless", "Handshake"],
-    guide: {
-      objective: "WLAN-Härtung und Authentisierungsresistenz bewerten.",
-      workflow: ["Adapter und Kanal abstimmen", "Handshake autorisiert sammeln", "Widerstand kontrolliert testen"],
-      notes: ["Funkumfeld kann störanfällig sein", "Sparrow WiFi und Wireshark ergänzen"],
-    },
+    description: "WiFi-Sicherheits-Audit",
+    executionMode: "external",
+    inputFields: [{ name: "interface", label: "Netzwerk-Interface", type: "text" }],
   },
   {
-    id: "sparrow-wifi",
+    id: "sparrow",
     name: "Sparrow WiFi",
-    icon: "🪽",
     category: "pentest",
-    description: "Visualisiert drahtlose Netze, Clients, Sicherheitstypen und geographische Beobachtungen.",
-    baseCommand: "sparrow-wifi",
-    sampleTarget: "wlan0mon",
-    defaultOptions: "--headless --scan-time 60",
     risk: "kontrolliert",
-    tags: ["Wireless", "Visualization", "Survey"],
-    guide: {
-      objective: "WLAN-Umgebungen kartieren und auffällige Konfigurationen entdecken.",
-      workflow: ["Interface aktivieren", "Netze clustern", "Verschlüsselung und Client-Muster dokumentieren"],
-      notes: ["Stark für Standortbegehungen", "Mit Aircrack und Wireshark kombinieren"],
-    },
+    description: "WiFi-Netzwerk-Analyzer",
+    executionMode: "external",
+    inputFields: [{ name: "interface", label: "Interface", type: "text" }],
   },
   {
     id: "wireshark",
     name: "Wireshark",
-    icon: "🦈",
     category: "pentest",
-    description: "Packet-Analyse für Protokollverhalten, Klartext-Leaks und Kommunikationsmuster.",
-    baseCommand: "wireshark",
-    sampleTarget: "capture.pcapng",
-    defaultOptions: "-r capture.pcapng",
-    risk: "kontrolliert",
-    tags: ["Packets", "Protocols", "Traffic"],
-    guide: {
-      objective: "Netzwerkverkehr strukturiert auf Fehlverhalten und Exposition untersuchen.",
-      workflow: ["Capture filtern", "Protokolle priorisieren", "sensitive Inhalte markieren"],
-      notes: ["Klartext und Auth-Leaks sofort kennzeichnen", "Zeitfenster sauber dokumentieren"],
-    },
+    risk: "passiv",
+    description: "Netzwerk-Packet-Analyzer",
+    executionMode: "external",
+    inputFields: [{ name: "interface", label: "Interface", type: "text" }],
   },
   {
     id: "gobuster",
     name: "Gobuster",
-    icon: "📂",
     category: "pentest",
-    description: "Findet versteckte Pfade, Dateien und virtuelle Hosts auf Webzielen.",
-    baseCommand: "gobuster dir",
-    sampleTarget: "https://portal.example.com",
-    defaultOptions: "-w wordlist.txt -k -t 20",
-    risk: "aktiv",
-    tags: ["Content Discovery", "Directories", "VHosts"],
-    guide: {
-      objective: "Versteckte Inhalte und administrative Endpunkte systematisch entdecken.",
-      workflow: ["Wortliste passend wählen", "Statuscodes interpretieren", "kritische Pfade verifizieren"],
-      notes: ["Rate und Wortlisten am Scope ausrichten", "Mit Wayback und ffuf kombinieren"],
-    },
+    risk: "kontrolliert",
+    description: "Directory & DNS Brute-Force",
+    executionMode: "command-reference",
+    inputFields: [{ name: "url", label: "Ziel-URL", type: "text" }],
+    commandTemplate: "gobuster dir -u {{url}} -w wordlist.txt",
   },
   {
     id: "wpscan",
     name: "WPScan",
-    icon: "🧱",
     category: "pentest",
-    description: "Spezialisierte WordPress-Prüfung für Plugins, Themes, Nutzer und Konfigurationsschwächen.",
-    baseCommand: "wpscan",
-    sampleTarget: "https://blog.example.com",
-    defaultOptions: "--enumerate ap,at,tt,u",
-    risk: "aktiv",
-    tags: ["WordPress", "CMS", "Plugins"],
-    guide: {
-      objective: "WordPress-Installationen gezielt auf bekannte Schwächen und Exposures prüfen.",
-      workflow: ["CMS-Fingerprint bestätigen", "Enumeration-Satz wählen", "kritische Komponenten priorisieren"],
-      notes: ["Nur bei bestätigtem WordPress einsetzen", "Versions- und Plugin-Treffer manuell gegenprüfen"],
-    },
+    risk: "kontrolliert",
+    description: "WordPress-Schwachstellen-Scanner",
+    executionMode: "command-reference",
+    inputFields: [{ name: "url", label: "WordPress-URL", type: "text" }],
+    commandTemplate: "wpscan --url {{url}} --enumerate p,u",
   },
   {
     id: "enum4linux",
     name: "enum4linux",
-    icon: "🪟",
     category: "pentest",
-    description: "Ermittelt SMB-, NetBIOS- und Windows-Domäneninformationen in internen Prüfungen.",
-    baseCommand: "enum4linux",
-    sampleTarget: "10.0.10.45",
-    defaultOptions: "-a",
-    risk: "aktiv",
-    tags: ["SMB", "Windows", "Enumeration"],
-    guide: {
-      objective: "SMB- und Windows-bezogene Angriffsflächen systematisch inventarisieren.",
-      workflow: ["Host und Segment bestätigen", "Shares/Benutzer prüfen", "unnötige Exposition hervorheben"],
-      notes: ["Im internen Scope sehr effektiv", "Mit Nmap-Skripten und Wireshark ergänzen"],
-    },
+    risk: "kontrolliert",
+    description: "SMB/NetBIOS-Enumeration",
+    executionMode: "command-reference",
+    inputFields: [{ name: "target", label: "Ziel-IP", type: "text" }],
+    commandTemplate: "enum4linux {{target}}",
   },
+
+  // Reconnaissance Tools
   {
     id: "subfinder",
     name: "Subfinder",
-    icon: "🧩",
     category: "recon",
-    description: "Sammelt Subdomains aus passiven Quellen als Einstieg in strukturierte Angriffsflächenanalyse.",
-    baseCommand: "subfinder",
-    sampleTarget: "example.com",
-    defaultOptions: "-silent -all",
     risk: "passiv",
-    tags: ["Subdomains", "Passive", "Asset Mapping"],
-    guide: {
-      objective: "Subdomains schnell und breit erfassen.",
-      workflow: ["Basisdomain prüfen", "Quellen ausweiten", "Ergebnisse deduplizieren"],
-      notes: ["Ideal als Startpunkt für httpx", "Mit Amass validieren"],
-    },
+    description: "Subdomain-Discovery",
+    executionMode: "command-reference",
+    inputFields: [{ name: "domain", label: "Domain", type: "text" }],
+    commandTemplate: "subfinder -d {{domain}}",
   },
   {
     id: "amass",
     name: "Amass",
-    icon: "🛰️",
     category: "recon",
-    description: "Kombiniert passive und aktive Asset-Recherche für tiefes Domain-Mapping.",
-    baseCommand: "amass enum",
-    sampleTarget: "example.com",
-    defaultOptions: "-passive -src",
-    risk: "kontrolliert",
-    tags: ["Subdomains", "Intel", "Enumeration"],
-    guide: {
-      objective: "Subdomains und Infrastrukturbeziehungen vertieft kartieren.",
-      workflow: ["Mode wählen", "Quellen priorisieren", "Assets nach Kritikalität clustern"],
-      notes: ["Besonders stark für Langläufer", "Aktive Features nur autorisiert nutzen"],
-    },
+    risk: "passiv",
+    description: "Umfassende Asset-Enumeration",
+    executionMode: "command-reference",
+    inputFields: [{ name: "domain", label: "Domain", type: "text" }],
+    commandTemplate: "amass enum -d {{domain}}",
   },
   {
     id: "masscan",
     name: "Masscan",
-    icon: "📍",
     category: "recon",
-    description: "Ultra-schnelles Port-Scanning zur Vorselektion großer Adressräume im genehmigten Rahmen.",
-    baseCommand: "masscan",
-    sampleTarget: "10.0.10.0/24",
-    defaultOptions: "-p1-1000 --rate 5000",
-    risk: "aktiv",
-    tags: ["Ports", "Speed", "Surface"],
-    guide: {
-      objective: "Große Netze schnell auf exponierte Dienste vorfiltern.",
-      workflow: ["Scope bestätigen", "Rate konservativ starten", "Treffer mit Nmap validieren"],
-      notes: ["Kann laut sein", "Immer mit Freigabe und Rate-Limits betreiben"],
-    },
+    risk: "kontrolliert",
+    description: "Schneller Port-Scanner",
+    executionMode: "command-reference",
+    inputFields: [{ name: "target", label: "Ziel-IP/Range", type: "text" }],
+    commandTemplate: "masscan {{target}} -p 1-65535",
   },
   {
     id: "nuclei",
     name: "Nuclei",
-    icon: "☢️",
     category: "recon",
-    description: "Template-basierte Prüfung auf bekannte Exposures, Fehlkonfigurationen und Fingerprints.",
-    baseCommand: "nuclei",
-    sampleTarget: "https://portal.example.com",
-    defaultOptions: "-severity critical,high,medium",
     risk: "kontrolliert",
-    tags: ["Templates", "Vulns", "Exposure"],
-    guide: {
-      objective: "Bekannte Muster und exposures schnell gegen Live-Ziele prüfen.",
-      workflow: ["Ziel validieren", "Template-Satz eingrenzen", "kritische Treffer manuell bestätigen"],
-      notes: ["Starke Geschwindigkeit bei guter Signalqualität", "Template-Qualität im Blick behalten"],
-    },
+    description: "Template-basierte Schwachstellen-Scanner",
+    executionMode: "command-reference",
+    inputFields: [{ name: "url", label: "Ziel-URL", type: "text" }],
+    commandTemplate: "nuclei -u {{url}} -t cves/",
   },
   {
     id: "httpx",
     name: "httpx",
-    icon: "🔗",
     category: "recon",
-    description: "Validiert Hosts, HTTP-Status, Titel, Fingerprints und TLS-Merkmale effizient.",
-    baseCommand: "httpx",
-    sampleTarget: "targets.txt",
-    defaultOptions: "-title -tech-detect -status-code",
     risk: "passiv",
-    tags: ["HTTP", "Validation", "Tech Detect"],
-    guide: {
-      objective: "Welche Hosts leben wirklich und welche Technologien laufen darauf?", 
-      workflow: ["Hostliste einspeisen", "Technologie-Fingerprints sammeln", "interessante Ziele markieren"],
-      notes: ["Sehr nützlich nach Subfinder/Amass", "Bildet die Grundlage für Nuclei und Burp"],
-    },
+    description: "HTTP-Probe für Hosts",
+    executionMode: "command-reference",
+    inputFields: [{ name: "input", label: "Host-Liste", type: "textarea" }],
+    commandTemplate: "httpx -l hosts.txt",
   },
   {
     id: "ffuf",
     name: "ffuf",
-    icon: "🎯",
     category: "recon",
-    description: "Schnelle Fuzzing-Enumeration für Verzeichnisse, Parameter und virtuelle Hosts.",
-    baseCommand: "ffuf",
-    sampleTarget: "https://portal.example.com/FUZZ",
-    defaultOptions: "-w wordlist.txt -mc all -fc 404",
-    risk: "aktiv",
-    tags: ["Fuzzing", "Discovery", "Web"],
-    guide: {
-      objective: "Versteckte Pfade und Variationen effizient aufdecken.",
-      workflow: ["Wortliste eingrenzen", "Response-Muster filtern", "hochwertige Treffer verifizieren"],
-      notes: ["Weniger laut mit präziser Wortliste", "Mit Wayback-URLs besonders wirkungsvoll"],
-    },
+    risk: "kontrolliert",
+    description: "Web-Fuzzer",
+    executionMode: "command-reference",
+    inputFields: [{ name: "url", label: "Ziel-URL", type: "text" }],
+    commandTemplate: "ffuf -u {{url}}/FUZZ -w wordlist.txt",
   },
   {
     id: "aquatone",
     name: "Aquatone",
-    icon: "🖥️",
     category: "recon",
-    description: "Erstellt visuelle Übersichten erreichbarer Weboberflächen und erleichtert Priorisierung nach Eindruck.",
-    baseCommand: "aquatone",
-    sampleTarget: "targets.txt",
-    defaultOptions: "-ports xlarge",
-    risk: "kontrolliert",
-    tags: ["Screenshots", "Web", "Triage"],
-    guide: {
-      objective: "Große Web-Asset-Mengen visuell triagieren.",
-      workflow: ["Hostliste vorbereiten", "Screenshots erzeugen", "auffällige Oberflächen clustern"],
-      notes: ["Hilfreich für schnelle Priorisierung", "Mit httpx und Nuclei kombinieren"],
-    },
+    risk: "passiv",
+    description: "Website-Screenshot-Sammler",
+    executionMode: "command-reference",
+    inputFields: [{ name: "domain", label: "Domain", type: "text" }],
+    commandTemplate: "aquatone -d {{domain}}",
   },
   {
     id: "fierce",
     name: "Fierce",
-    icon: "🧷",
     category: "recon",
-    description: "DNS-zentrierte Recon für Subdomains, Namensauflösung und Zonenhinweise.",
-    baseCommand: "fierce",
-    sampleTarget: "example.com",
-    defaultOptions: "--domain example.com --wide",
-    risk: "kontrolliert",
-    tags: ["DNS", "Subdomains", "Network"],
-    guide: {
-      objective: "DNS-Strukturen vertieft kartieren und auffällige Delegationen erkennen.",
-      workflow: ["Domain scope prüfen", "Wordlist/Mode wählen", "Treffer verifizieren"],
-      notes: ["Gute Ergänzung zu Subfinder und Amass", "Zonentransfers nur mit Erlaubnis testen"],
-    },
+    risk: "passiv",
+    description: "DNS-Rekursions-Scanner",
+    executionMode: "command-reference",
+    inputFields: [{ name: "domain", label: "Domain", type: "text" }],
+    commandTemplate: "fierce --domain {{domain}}",
   },
 ];
 
@@ -714,21 +385,6 @@ export const toolsByCategory = {
   pentest: toolCatalog.filter((tool) => tool.category === "pentest"),
   recon: toolCatalog.filter((tool) => tool.category === "recon"),
 };
-
-export const dashboardHighlights = [
-  {
-    title: "Authorized Use Only",
-    body: "Dieses Interface simuliert autorisierte Prüf-Workflows für eigene Netze und Ziele mit expliziter Erlaubnis. Aktive Maßnahmen sind immer scope- und freigabebasiert.",
-  },
-  {
-    title: "OSINT zuerst, Aktionen danach",
-    body: "Passive Informationsgewinnung, historische Korrelation und Host-Validierung schaffen die Grundlage für sichere operative Entscheidungen.",
-  },
-  {
-    title: "Report-fähige Evidenz",
-    body: "Jeder Lauf erzeugt eine strukturierte Spur aus Befehl, Status, Zeitstempel und terminalähnlicher Ausgabe für die spätere Aufbereitung im Reportbereich.",
-  },
-];
 
 export const defaultSettings = {
   mode: "advisor-controlled",
@@ -746,10 +402,6 @@ export const assetUrls = {
     "https://d2xsxph8kpxj0f.cloudfront.net/310519663552661904/XNBpKyMBuA4rXy2AbmJ3JH/cyber-earth-core-5Qav3BvyDf2yAtd4zZwSEy.webp",
   krockodogLogo:
     "https://d2xsxph8kpxj0f.cloudfront.net/310519663552661904/XNBpKyMBuA4rXy2AbmJ3JH/krockodog-frontpage-logo-dXLNrmhcavSYdiUsvafheK.webp",
-  hacker:
-    "https://d2xsxph8kpxj0f.cloudfront.net/310519663552661904/XNBpKyMBuA4rXy2AbmJ3JH/hacker-silhouette-left-bHUYArjwMEio4ZonpasiZe.webp",
-  analyst:
-    "https://d2xsxph8kpxj0f.cloudfront.net/310519663552661904/XNBpKyMBuA4rXy2AbmJ3JH/cyber-expert-silhouette-right-BmP8JZR8sfpX9hKLLpq6SV.webp",
 };
 
 export function categoryLabel(category: ToolCategory) {
@@ -758,8 +410,14 @@ export function categoryLabel(category: ToolCategory) {
   return "Reconnaissance";
 }
 
-export function riskLabel(risk: ToolDefinition["risk"]) {
+export function riskLabel(risk: ToolRisk) {
   if (risk === "passiv") return "Passiv";
   if (risk === "kontrolliert") return "Kontrolliert";
   return "Aktiv";
+}
+
+export function riskColor(risk: ToolRisk) {
+  if (risk === "passiv") return "text-green-400";
+  if (risk === "kontrolliert") return "text-yellow-400";
+  return "text-red-400";
 }

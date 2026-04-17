@@ -1,18 +1,17 @@
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import {
   defaultSettings,
-  type JobStatus,
   type ToolCategory,
   type ToolDefinition,
 } from "@/lib/cyber-data";
 
 type SettingsState = typeof defaultSettings;
+type JobStatus = "idle" | "scanning" | "success" | "error";
 
 export type AuditJob = {
   id: string;
   toolId: string;
   toolName: string;
-  icon: string;
   category: ToolCategory;
   target: string;
   options: string;
@@ -37,7 +36,8 @@ const AuditContext = createContext<AuditContextValue | undefined>(undefined);
 function buildCommand(tool: ToolDefinition, target: string, options: string) {
   const normalizedOptions = options.trim();
   const suffix = normalizedOptions.length > 0 ? ` ${normalizedOptions}` : "";
-  return `${tool.baseCommand}${suffix} ${target}`.trim();
+  const template = tool.commandTemplate || tool.name;
+  return `${template}${suffix} ${target}`.trim();
 }
 
 function buildOutput(tool: ToolDefinition, target: string, options: string, status: JobStatus) {
@@ -50,7 +50,7 @@ function buildOutput(tool: ToolDefinition, target: string, options: string, stat
   const lines = [
     `[${timestamp}] advisor@secure-console:~$ ${buildCommand(tool, target, options)}`,
     `[${timestamp}] scope_check: authorization confirmed for ${target}`,
-    `[${timestamp}] fingerprint: ${tool.name} mapped ${tool.guide.objective.toLowerCase()}`,
+    `[${timestamp}] fingerprint: ${tool.name} mapped to ${tool.description.toLowerCase()}`,
   ];
 
   if (tool.category === "osint") {
@@ -89,7 +89,6 @@ export function AuditProvider({ children }: { children: React.ReactNode }) {
       id: "seed-job-1",
       toolId: "subfinder",
       toolName: "Subfinder",
-      icon: "🧩",
       category: "recon",
       target: "corp.example.com",
       options: "-silent -all",
@@ -105,7 +104,6 @@ export function AuditProvider({ children }: { children: React.ReactNode }) {
       id: "seed-job-2",
       toolId: "theharvester",
       toolName: "theHarvester",
-      icon: "📇",
       category: "osint",
       target: "example.com",
       options: "-b all -l 200",
@@ -120,7 +118,6 @@ export function AuditProvider({ children }: { children: React.ReactNode }) {
       id: "seed-job-3",
       toolId: "nmap",
       toolName: "Nmap",
-      icon: "🛰️",
       category: "pentest",
       target: "10.0.10.21",
       options: "-sV -Pn -T4",
@@ -136,8 +133,8 @@ export function AuditProvider({ children }: { children: React.ReactNode }) {
 
   const runTool = useCallback(
     async (tool: ToolDefinition, payload: { target: string; options: string }) => {
-      const target = payload.target.trim() || tool.sampleTarget;
-      const options = payload.options.trim() || tool.defaultOptions;
+      const target = payload.target.trim() || "example.com";
+      const options = payload.options.trim() || "";
       const command = buildCommand(tool, target, options);
       const startedAt = new Date().toISOString();
       const id = `${tool.id}-${Date.now()}`;
@@ -145,7 +142,6 @@ export function AuditProvider({ children }: { children: React.ReactNode }) {
         id,
         toolId: tool.id,
         toolName: tool.name,
-        icon: tool.icon,
         category: tool.category,
         target,
         options,

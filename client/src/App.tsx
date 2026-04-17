@@ -18,6 +18,7 @@ import { OsintToolsPage, PentestToolsPage, ReconnaissancePage } from "./pages/To
  * danach persistenter Workspace mit klaren Fluchtwegen zwischen allen Modulen.
  */
 function AppRouter() {
+  // make sure to consider if you need authentication for certain routes
   return (
     <Routes>
       <Route path="/" element={<DashboardPage />} />

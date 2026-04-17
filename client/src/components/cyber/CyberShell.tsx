@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAudit, type AuditJob } from "@/contexts/AuditContext";
+import { useToolExecution } from "@/hooks/useToolExecution";
 import {
   assetUrls,
   categoryLabel,
@@ -437,7 +438,8 @@ export function ToolGrid({ tools, accent }: { tools: ToolDefinition[]; accent: "
 }
 
 export function ToolCard({ tool, accent }: { tool: ToolDefinition; accent: "cyan" | "emerald" }) {
-  const { runTool } = useAudit();
+  const { runTool: addToHistory } = useAudit();
+  const { executeToolWithFallback } = useToolExecution();
   const [target, setTarget] = useState("");
   const [options, setOptions] = useState("");
   const [status, setStatus] = useState<JobStatus>("idle");
@@ -455,9 +457,18 @@ export function ToolCard({ tool, accent }: { tool: ToolDefinition; accent: "cyan
   async function handleRun() {
     setStatus("scanning");
     setOutput(`[dispatch] ${tool.name} initialisiert autorisierte Prüfung für ${target} ...`);
-    const result = await runTool(tool, { target, options });
-    setStatus(result.status);
-    setOutput(result.output);
+    try {
+      // Verwende tRPC-basierte Ausführung mit lokalem Fallback
+      const result = await executeToolWithFallback(tool, { target, options });
+      setOutput(result.output);
+      setStatus(result.success ? "success" : "error");
+      // Füge auch zur History hinzu
+      await addToHistory(tool, { target, options });
+    } catch (error) {
+      console.error("Tool execution error:", error);
+      setStatus("error");
+      setOutput(`[error] Tool execution failed: ${error instanceof Error ? error.message : "Unknown error"}`);
+    }
   }
 
   return (

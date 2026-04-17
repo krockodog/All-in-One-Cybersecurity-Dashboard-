@@ -1,5 +1,5 @@
-- [ ] Informationsarchitektur entschlacken und Textmengen deutlich reduzieren
-- [ ] Direkte ausführbare Tool-Flows statt rein simulierter Karten umsetzen
-- [ ] Sichere technische Architektur für autorisierte Tool-Ausführung festlegen
-- [ ] Workspaces, Statusanzeige und Reports funktional validieren
+- [x] Informationsarchitektur entschlacken und Textmengen deutlich reduzieren
+- [x] Direkte ausführbare Tool-Flows statt rein simulierter Karten umsetzen (Frontend-Backend-Integration)
+- [x] Sichere technische Architektur für autorisierte Tool-Ausführung festlegen
+- [x] Workspaces, Statusanzeige und Reports funktional validieren (End-to-End Tests)
 - [ ] Überarbeitete Version erneut öffentlich deployen und URL ausliefern

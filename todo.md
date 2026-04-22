@@ -2,4 +2,4 @@
 - [x] Direkte ausführbare Tool-Flows statt rein simulierter Karten umsetzen (Frontend-Backend-Integration)
 - [x] Sichere technische Architektur für autorisierte Tool-Ausführung festlegen
 - [x] Workspaces, Statusanzeige und Reports funktional validieren (End-to-End Tests)
-- [ ] Überarbeitete Version erneut öffentlich deployen und URL ausliefern
+- [x] Überarbeitete Version erneut öffentlich deployen und URL ausliefern

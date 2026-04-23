@@ -15,6 +15,13 @@
       "when": 1776878165467,
       "tag": "0001_previous_eternals",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1776974974112,
+      "tag": "0002_gorgeous_rawhide_kid",
+      "breakpoints": true
     }
   ]
 }

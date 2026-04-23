@@ -62,3 +62,25 @@
 - [x] Tool-Specific Usage Examples
 - [x] Scope Definition & Authorization Templates
 - [x] Finding Classification & Risk Assessment Guide
+
+
+## Phase 10: Notification System
+- [ ] Real-Time Notification Engine (Workflow, Findings, Engagements)
+- [ ] Toast & Bell Icon UI Components
+- [ ] Notification Center mit History
+- [ ] User Preferences für Benachrichtigungen
+- [ ] Email/Push Notification Integration
+
+## Phase 11: Multi-AI Integration
+- [ ] AI Service Registry (ChatGPT, Claude, DeepSeek, Nemotron, Gemini, Meta, Mistral, Perplexity, Hermes)
+- [ ] API Key Management & Encryption
+- [ ] AI Agent Framework (Independent Operation)
+- [ ] AI-Assisted Finding Analysis
+- [ ] AI-Assisted Vulnerability Assessment
+- [ ] AI-Assisted Remediation Recommendations
+- [ ] AI Routing & Load Balancing
+
+## Phase 12: Navigation Reorganization
+- [ ] Pentest Guide unter OSINT Guide verschieben
+- [ ] Unified Navigation Structure
+- [ ] Dashboard Navigation Update

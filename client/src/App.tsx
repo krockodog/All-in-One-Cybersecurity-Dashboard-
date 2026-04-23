@@ -4,6 +4,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { useEffect, useState } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { LoadingScreen } from "./components/cyber/CyberShell";
+import { NotificationToast } from "./components/NotificationToast";
 import { AuditProvider } from "./contexts/AuditContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import DashboardPage from "./pages/DashboardPage";
@@ -13,6 +14,7 @@ import SettingsPage from "./pages/SettingsPage";
 import EngagementDashboard from "./pages/EngagementDashboard";
 import PentestGuide from "./pages/PentestGuide";
 import Templates from "./pages/Templates";
+import AISettings from "./pages/AISettings";
 import { OsintToolsPage, PentestToolsPage, ReconnaissancePage } from "./pages/ToolWorkspacePages";
 
 /**
@@ -29,6 +31,7 @@ function AppRouter() {
       <Route path="/engagements" element={<EngagementDashboard />} />
       <Route path="/pentest-guide" element={<PentestGuide />} />
       <Route path="/templates" element={<Templates />} />
+      <Route path="/ai-settings" element={<AISettings />} />
       <Route path="/osint-tools" element={<OsintToolsPage />} />
       <Route path="/pentest-tools" element={<PentestToolsPage />} />
       <Route path="/reconnaissance" element={<ReconnaissancePage />} />
@@ -54,7 +57,8 @@ function App() {
       <ThemeProvider defaultTheme="dark">
         <AuditProvider>
           <Toaster />
-          {isBooting ? (
+          <NotificationToast />
+        {isBooting ? (
             <LoadingScreen />
           ) : (
             <BrowserRouter>

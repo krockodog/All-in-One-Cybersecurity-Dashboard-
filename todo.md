@@ -53,3 +53,12 @@
 - [ ] Security Tests für Authorization
 - [ ] Performance Tests (100+ concurrent scans)
 - [ ] Production Deployment
+
+
+## Phase 9: Pentest Guide & Documentation
+- [x] Interactive Pentest Guide (Getting Started bis Reporting)
+- [x] Phase-by-Phase Workflow Documentation
+- [x] Best Practices & Common Pitfalls
+- [x] Tool-Specific Usage Examples
+- [x] Scope Definition & Authorization Templates
+- [x] Finding Classification & Risk Assessment Guide

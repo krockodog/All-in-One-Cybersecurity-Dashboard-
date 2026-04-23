@@ -149,3 +149,82 @@ export async function aggressiveScan(target: string): Promise<NmapResult> {
     scriptScan: true,
   });
 }
+
+/**
+ * Parse Nmap XML output (for testing)
+ */
+export function parseNmapXml(xmlOutput: string): NmapResult {
+  if (!xmlOutput || xmlOutput.trim().length === 0) {
+    throw new Error("Empty XML output");
+  }
+
+  try {
+    const result: NmapResult = {
+      hosts: [],
+      summary: {
+        startTime: new Date().toISOString(),
+        endTime: new Date().toISOString(),
+        duration: 0,
+        hostsUp: 0,
+        hostsDown: 0,
+      },
+    };
+
+    // Simple synchronous XML parsing for testing
+    const hostMatches = xmlOutput.match(/<host[^>]*>[\s\S]*?<\/host>/g) || [];
+
+    for (const hostXml of hostMatches) {
+      const ipMatch = hostXml.match(/<address[^>]*addr="([^"]+)"/);
+      const statusMatch = hostXml.match(/<status[^>]*state="([^"]+)"/);
+      const hostnameMatch = hostXml.match(/<hostname[^>]*name="([^"]+)"/);
+      const osMatch = hostXml.match(/<osmatch[^>]*name="([^"]+)"/);
+
+      if (!ipMatch) continue;
+
+      const hostEntry: (typeof result.hosts)[0] = {
+        ip: ipMatch[1],
+        hostname: hostnameMatch?.[1],
+        status: statusMatch?.[1] || "unknown",
+        ports: [],
+        os: osMatch?.[1],
+      };
+
+      // Extract ports
+      const portMatches = hostXml.match(/<port[^>]*portid="([^"]+)"[^>]*>[\s\S]*?<\/port>/g) || [];
+
+      for (const portXml of portMatches) {
+        const portIdMatch = portXml.match(/portid="([^"]+)"/);
+        const protocolMatch = portXml.match(/protocol="([^"]+)"/);
+        const stateMatch = portXml.match(/<state[^>]*state="([^"]+)"/);
+        const serviceMatch = portXml.match(/<service[^>]*name="([^"]+)"/);
+        const productMatch = portXml.match(/<service[^>]*product="([^"]+)"/);
+        const versionMatch = portXml.match(/<service[^>]*version="([^"]+)"/);
+
+        if (portIdMatch) {
+          const portNum = parseInt(portIdMatch[1].split("/")[0]);
+          hostEntry.ports.push({
+            port: portNum,
+            protocol: protocolMatch?.[1] || "tcp",
+            state: stateMatch?.[1] || "unknown",
+            service: serviceMatch?.[1] || "unknown",
+            version: versionMatch?.[1] || productMatch?.[1],
+          });
+        }
+      }
+
+      if (hostEntry.status === "up") {
+        result.summary.hostsUp++;
+      } else {
+        result.summary.hostsDown++;
+      }
+
+      result.hosts.push(hostEntry);
+    }
+
+    return result;
+  } catch (error) {
+    throw new Error(
+      `Failed to parse Nmap XML: ${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
+}

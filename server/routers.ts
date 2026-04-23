@@ -4,6 +4,8 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { runTool } from "./toolRunner";
+import { engagementRouter } from "./routers/engagements";
+import { workflowRouter } from "./routers/workflows";
 
 const toolRunSchema = z.object({
   toolId: z.string().min(1),
@@ -35,6 +37,8 @@ export const appRouter = router({
       } as const;
     }),
   }),
+  engagements: engagementRouter,
+  workflows: workflowRouter,
 });
 
 export type AppRouter = typeof appRouter;

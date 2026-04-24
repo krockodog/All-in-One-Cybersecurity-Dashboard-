@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Eye, EyeOff, Trash2, Save } from "lucide-react";
+import { Eye, EyeOff, Trash2, Save, ArrowLeft } from "lucide-react";
+import { useLocation } from "wouter";
 
 const AI_PROVIDERS = [
   { id: "chatgpt", name: "ChatGPT", icon: "🤖", color: "from-green-500 to-green-600" },
@@ -18,6 +19,7 @@ const AI_PROVIDERS = [
 ];
 
 export default function AISettings() {
+  const [, setLocation] = useLocation();
   const [apiKeys, setApiKeys] = useState<Record<string, string>>({});
   const [visibleKeys, setVisibleKeys] = useState<Set<string>>(new Set());
   const [savedMessage, setSavedMessage] = useState("");
@@ -52,14 +54,25 @@ export default function AISettings() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-8">
+    <div className="min-h-screen bg-background p-4 sm:p-8">
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-foreground mb-2">AI Integration Settings</h1>
-          <p className="text-muted-foreground">
-            Configure your AI provider API keys for intelligent analysis and recommendations
-          </p>
+        {/* Header with Back Button */}
+        <div className="mb-8 flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setLocation("/settings")}
+            className="h-10 w-10 shrink-0"
+            aria-label="Go back"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div className="flex-1">
+            <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-2">AI Integration Settings</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
+              Configure your AI provider API keys for intelligent analysis and recommendations
+            </p>
+          </div>
         </div>
 
         {/* Success Message */}
@@ -70,32 +83,33 @@ export default function AISettings() {
         )}
 
         {/* AI Providers Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 mb-8">
           {AI_PROVIDERS.map((provider) => (
             <Card key={provider.id} className="flex flex-col">
-              <CardHeader>
-                <div className="flex items-center gap-3 mb-2">
-                  <span className="text-3xl">{provider.icon}</span>
-                  <div>
-                    <CardTitle className="text-lg">{provider.name}</CardTitle>
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                  <span className="text-2xl sm:text-3xl">{provider.icon}</span>
+                  <div className="min-w-0">
+                    <CardTitle className="text-base sm:text-lg truncate">{provider.name}</CardTitle>
                     <CardDescription className="text-xs">
                       {apiKeys[provider.id] ? "✓ Configured" : "Not configured"}
                     </CardDescription>
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="flex-1 flex flex-col gap-3">
+              <CardContent className="flex-1 flex flex-col gap-2 sm:gap-3">
                 <div className="relative">
                   <Input
                     type={visibleKeys.has(provider.id) ? "text" : "password"}
-                    placeholder="Enter API Key"
+                    placeholder="API Key"
                     value={apiKeys[provider.id] || ""}
                     onChange={(e) => updateApiKey(provider.id, e.target.value)}
-                    className="pr-10"
+                    className="pr-10 text-sm"
                   />
                   <button
                     onClick={() => toggleKeyVisibility(provider.id)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label="Toggle visibility"
                   >
                     {visibleKeys.has(provider.id) ? (
                       <EyeOff className="h-4 w-4" />
@@ -109,9 +123,9 @@ export default function AISettings() {
                     variant="destructive"
                     size="sm"
                     onClick={() => deleteApiKey(provider.id)}
-                    className="w-full"
+                    className="w-full text-xs sm:text-sm"
                   >
-                    <Trash2 className="h-4 w-4 mr-2" />
+                    <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                     Remove
                   </Button>
                 )}
@@ -121,13 +135,13 @@ export default function AISettings() {
         </div>
 
         {/* Save Button */}
-        <div className="flex justify-end gap-4">
-          <Button variant="outline" onClick={() => setApiKeys({})}>
+        <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-4">
+          <Button variant="outline" onClick={() => setApiKeys({})} className="text-sm">
             Clear All
           </Button>
-          <Button onClick={saveApiKeys} className="gap-2">
+          <Button onClick={saveApiKeys} className="gap-2 text-sm">
             <Save className="h-4 w-4" />
-            Save API Keys
+            Save
           </Button>
         </div>
 

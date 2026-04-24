@@ -12,7 +12,7 @@ import OsintGuidePage from "./pages/OsintGuidePage";
 import ReportsPage from "./pages/ReportsPage";
 import SettingsPage from "./pages/SettingsPage";
 import EngagementDashboard from "./pages/EngagementDashboard";
-import PentestGuide from "./pages/PentestGuide";
+import PentestGuideImproved from "./pages/PentestGuideImproved";
 import Templates from "./pages/Templates";
 import AISettings from "./pages/AISettings";
 import { OsintToolsPage, PentestToolsPage, ReconnaissancePage } from "./pages/ToolWorkspacePages";
@@ -29,7 +29,7 @@ function AppRouter() {
       <Route path="/" element={<DashboardPage />} />
       <Route path="/dashboard" element={<Navigate to="/" replace />} />
       <Route path="/engagements" element={<EngagementDashboard />} />
-      <Route path="/pentest-guide" element={<PentestGuide />} />
+      <Route path="/pentest-guide" element={<PentestGuideImproved />} />
       <Route path="/templates" element={<Templates />} />
       <Route path="/ai-settings" element={<AISettings />} />
       <Route path="/osint-tools" element={<OsintToolsPage />} />

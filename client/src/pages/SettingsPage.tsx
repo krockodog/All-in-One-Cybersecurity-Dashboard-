@@ -1,6 +1,7 @@
 import { AppFrame, EmptyState, SectionBadge } from "@/components/cyber/CyberShell";
 import { useAudit } from "@/contexts/AuditContext";
-import { Settings2, ShieldCheck, SlidersHorizontal } from "lucide-react";
+import { Settings2, ShieldCheck, SlidersHorizontal, Zap } from "lucide-react";
+import { Link } from "react-router-dom";
 
 /**
  * Design philosophy reminder — Forensischer Kontrollraum:
@@ -129,10 +130,23 @@ export default function SettingsPage() {
               Verlauf leeren
             </button>
           </div>
-          <EmptyState
-            title="Frontend-only Konfiguration"
-            body="Diese Version bleibt bewusst client-seitig. Einstellungen verändern die simulierte UX, Exportzuschnitte und Navigationslogik, ohne Backend oder reale Security-Tools im Browser auszuführen."
-          />
+          <div className="glass-panel px-5 py-5">
+            <div className="flex items-center gap-3 mb-4">
+              <Zap className="h-5 w-5 text-yellow-300" />
+              <div>
+                <p className="font-mono text-[0.72rem] uppercase tracking-[0.34em] text-yellow-300/75">AI Integration</p>
+                <h3 className="mt-1 font-display text-2xl text-white">KI-Assistenten</h3>
+              </div>
+            </div>
+            <p className="text-sm text-slate-300 mb-4">
+              Konfiguriere deine KI-Provider (ChatGPT, Claude, DeepSeek, etc.) für intelligente Analyse und Empfehlungen.
+            </p>
+            <Link to="/ai-settings">
+              <button className="rounded-full border border-yellow-400/20 bg-yellow-500/10 px-4 py-2.5 text-sm text-yellow-100 transition hover:bg-yellow-500/16">
+                AI Settings öffnen →
+              </button>
+            </Link>
+          </div>
         </section>
       </div>
     </AppFrame>

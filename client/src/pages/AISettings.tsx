@@ -8,6 +8,7 @@ const AI_PROVIDERS = [
   { id: "chatgpt", name: "ChatGPT", icon: "🤖", color: "from-green-500 to-green-600" },
   { id: "claude", name: "Claude", icon: "🧠", color: "from-purple-500 to-purple-600" },
   { id: "deepseek", name: "DeepSeek", icon: "🔍", color: "from-blue-500 to-blue-600" },
+  { id: "kimi", name: "Kimi (Moonshot)", icon: "🌙", color: "from-violet-500 to-violet-600" },
   { id: "nemotron", name: "Nemotron", icon: "⚡", color: "from-orange-500 to-orange-600" },
   { id: "gemini", name: "Gemini", icon: "✨", color: "from-red-500 to-red-600" },
   { id: "meta", name: "Meta Llama", icon: "🦙", color: "from-indigo-500 to-indigo-600" },
@@ -154,6 +155,16 @@ export default function AISettings() {
                   console.anthropic.com
                 </a>{" "}
                 and generate an API key
+              </p>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-1">Kimi (Moonshot AI)</h3>
+              <p className="text-muted-foreground">
+                Visit{" "}
+                <a href="https://platform.moonshot.cn" className="text-primary hover:underline">
+                  platform.moonshot.cn
+                </a>{" "}
+                and create an API key
               </p>
             </div>
             <div>

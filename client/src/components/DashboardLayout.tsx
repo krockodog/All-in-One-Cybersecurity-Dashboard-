@@ -28,8 +28,12 @@ import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "Page 1", path: "/" },
-  { icon: Users, label: "Page 2", path: "/some-path" },
+  { icon: LayoutDashboard, label: "Dashboard", path: "/" },
+  { icon: Users, label: "Engagements", path: "/engagements" },
+  { icon: LayoutDashboard, label: "OSINT Guide", path: "/osint-guide" },
+  { icon: LayoutDashboard, label: "Pentest Tools", path: "/pentest-tools" },
+  { icon: LayoutDashboard, label: "Reports", path: "/reports" },
+  { icon: LayoutDashboard, label: "Settings", path: "/settings" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";

@@ -33,7 +33,30 @@ type HttpProbeResult = {
   title: string;
   server: string;
   headers: Record<string, string>;
+  bodySnippet: string;
 };
+
+const SSRF_BLOCKED_RE = /^(localhost|.*\.local|.*\.internal)$/i;
+const SSRF_BLOCKED_IPS = [
+  /^127\./,
+  /^10\./,
+  /^172\.(1[6-9]|2\d|3[01])\./,
+  /^192\.168\./,
+  /^169\.254\./,
+  /^::1$/,
+  /^fc[0-9a-f]{2}:/i,
+  /^fd[0-9a-f]{2}:/i,
+  /^fe80:/i,
+  /^0\.0\.0\.0$/,
+];
+
+function validateTarget(raw: string): void {
+  const host = hostFromTarget(raw).toLowerCase();
+  if (SSRF_BLOCKED_RE.test(host)) throw new Error(`Gesperrtes Ziel: ${host}`);
+  for (const re of SSRF_BLOCKED_IPS) {
+    if (re.test(host)) throw new Error(`Gesperrtes Ziel (private/loopback): ${host}`);
+  }
+}
 
 function buildCommand(baseCommand: string, target: string, options: string) {
   const normalizedOptions = options.trim();
@@ -110,6 +133,7 @@ async function probeHttp(target: string): Promise<HttpProbeResult> {
         title: titleMatch?.[1]?.trim() || "Kein Title erkannt",
         server: headers.server || "unbekannt",
         headers,
+        bodySnippet: html.slice(0, 4000).toLowerCase(),
       };
     } catch (error) {
       lastError = error;
@@ -495,7 +519,7 @@ async function runSherlock(input: ToolRunInput): Promise<ToolRunResult> {
     platforms.map(async (p) => {
       try {
         const res = await safeFetch(p.url, { redirect: "follow" });
-        return { ...p, status: res.status, found: res.status < 404 };
+        return { ...p, status: res.status, found: res.ok };
       } catch {
         return { ...p, status: 0, found: false };
       }
@@ -917,7 +941,7 @@ async function runBurpSuite(input: ToolRunInput): Promise<ToolRunResult> {
 // ─── SQLMap: SQL-Error-Detection (passiv) ────────────────────────────────────
 async function runSqlMap(input: ToolRunInput): Promise<ToolRunResult> {
   const probe = await probeHttp(input.target);
-  const body = probe.title;
+  const body = probe.bodySnippet;
   const sqlErrors = [
     "sql syntax", "mysql_fetch", "ora-", "postgresql", "sqlite", "unclosed quotation",
     "syntax error", "unexpected token", "division by zero",
@@ -1133,6 +1157,9 @@ function guidedFallback(input: ToolRunInput, reason: string): ToolRunResult {
 
 export async function runTool(input: ToolRunInput): Promise<ToolRunResult> {
   try {
+    // Reject private/loopback targets to prevent SSRF
+    if (input.target.trim()) validateTarget(input.target);
+
     switch (input.toolId) {
       // ── Original integrations ──────────────────────────────────────────────
       case "dns-enumeration":

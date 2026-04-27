@@ -22,6 +22,7 @@ import {
   assetUrls,
   categoryLabel,
   riskLabel,
+  toolCatalog,
   type JobStatus,
   type ToolCategory,
   type ToolDefinition,
@@ -34,7 +35,7 @@ const dashboardHighlights = [
 ];
 
 const overviewMetrics = [
-  { label: "Aktive Tools", value: "42", delta: "+8", tone: "cyan" as const },
+  { label: "Aktive Tools", value: String(toolCatalog.length), delta: `${toolCatalog.length}`, tone: "cyan" as const },
   { label: "Abgeschlossene Audits", value: "127", delta: "+23", tone: "emerald" as const },
   { label: "Kritische Findings", value: "3", delta: "-1", tone: "amber" as const },
 ];
@@ -141,60 +142,85 @@ export function AppFrame({ children, title, eyebrow, action }: { children: React
 }
 
 export function SidebarNav() {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   return (
-    <aside className="sticky top-0 z-20 border-b border-white/8 bg-[rgba(4,8,12,0.9)] px-4 py-4 backdrop-blur-xl lg:h-screen lg:w-[290px] lg:border-b-0 lg:border-r lg:px-5 lg:py-6">
-      <div className="glass-panel glass-panel-strong flex flex-col gap-6 px-5 py-5">
-        <div>
-          <p className="font-mono text-[0.72rem] uppercase tracking-[0.32em] text-cyan-300/70">Cybersecurity Advisor</p>
-          <div className="mt-3 flex items-start justify-between gap-3">
-            <div>
-              <h2 className="font-display text-2xl font-semibold text-white">Control Nexus</h2>
-              <p className="mt-2 text-sm leading-6 text-slate-300">
-                Glass-basierte Kommandooberfläche für autorisierte OSINT-, Recon- und Pentest-Workflows.
-              </p>
-            </div>
-            <div className="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1 font-mono text-[0.7rem] uppercase tracking-[0.25em] text-emerald-200">
-              Live
+    <aside className="sticky top-0 z-20 border-b border-white/8 bg-[rgba(4,8,12,0.9)] backdrop-blur-xl lg:h-screen lg:w-[290px] lg:border-b-0 lg:border-r">
+      {/* Mobile top bar */}
+      <div className="flex items-center justify-between px-4 py-3 lg:hidden">
+        <div className="flex items-center gap-3">
+          <span className="font-mono text-[0.72rem] uppercase tracking-[0.32em] text-cyan-300/70">Control Nexus</span>
+          <span className="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 font-mono text-[0.65rem] uppercase tracking-[0.2em] text-emerald-200">Live</span>
+        </div>
+        <button
+          type="button"
+          aria-label="Toggle navigation menu"
+          onClick={() => setMobileOpen((prev) => !prev)}
+          className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/8 bg-white/[0.03] text-slate-200 transition hover:border-cyan-400/20 hover:text-white"
+        >
+          {mobileOpen ? (
+            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12" /></svg>
+          ) : (
+            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 12h18M3 6h18M3 18h18" /></svg>
+          )}
+        </button>
+      </div>
+
+      {/* Sidebar content — always visible on lg, toggleable on mobile */}
+      <div className={cx("overflow-y-auto px-4 pb-4 lg:h-full lg:px-5 lg:py-6", mobileOpen ? "block" : "hidden lg:block")}>
+        <div className="glass-panel glass-panel-strong flex flex-col gap-6 px-5 py-5">
+          <div className="hidden lg:block">
+            <p className="font-mono text-[0.72rem] uppercase tracking-[0.32em] text-cyan-300/70">Cybersecurity Advisor</p>
+            <div className="mt-3 flex items-start justify-between gap-3">
+              <div>
+                <h2 className="font-display text-2xl font-semibold text-white">Control Nexus</h2>
+                <p className="mt-2 text-sm leading-6 text-slate-300">
+                  Glass-basierte Kommandooberfläche für autorisierte OSINT-, Recon- und Pentest-Workflows.
+                </p>
+              </div>
+              <div className="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1 font-mono text-[0.7rem] uppercase tracking-[0.25em] text-emerald-200">
+                Live
+              </div>
             </div>
           </div>
-        </div>
-        <div className="rounded-2xl border border-white/8 bg-[linear-gradient(160deg,rgba(3,10,14,0.88),rgba(4,12,10,0.78))] p-4">
-          <div className="flex h-40 items-center justify-center rounded-xl border border-cyan-400/10 bg-[radial-gradient(circle_at_center,rgba(34,211,238,0.12),transparent_48%),linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] px-6 py-4">
-            <img
-              src={assetUrls.krockodogLogo}
-              alt="krockodog Logo"
-              className="h-full w-full object-contain opacity-95 drop-shadow-[0_0_24px_rgba(34,211,238,0.14)]"
-            />
+          <div className="hidden rounded-2xl border border-white/8 bg-[linear-gradient(160deg,rgba(3,10,14,0.88),rgba(4,12,10,0.78))] p-4 lg:block">
+            <div className="flex h-40 items-center justify-center rounded-xl border border-cyan-400/10 bg-[radial-gradient(circle_at_center,rgba(34,211,238,0.12),transparent_48%),linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] px-6 py-4">
+              <img
+                src={assetUrls.krockodogLogo}
+                alt="krockodog Logo"
+                className="h-full w-full object-contain opacity-95 drop-shadow-[0_0_24px_rgba(34,211,238,0.14)]"
+              />
+            </div>
           </div>
-        </div>
-        <nav className="space-y-2">
-          {navigationItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                className={({ isActive }) =>
-                  cx(
-                    "group flex items-center justify-between rounded-2xl border px-4 py-3 text-sm transition duration-300",
-                    isActive
-                      ? "border-cyan-400/35 bg-cyan-400/12 text-white shadow-[0_0_0_1px_rgba(34,211,238,0.08),0_12px_40px_rgba(6,182,212,0.16)]"
-                      : "border-white/5 bg-white/[0.03] text-slate-300 hover:border-emerald-400/20 hover:bg-white/[0.05] hover:text-white",
-                  )
-                }
-              >
-                <span className="flex items-center gap-3">
-                  <Icon className="h-4 w-4" />
-                  {item.label}
-                </span>
-                <ChevronRight className="h-4 w-4 opacity-50 transition duration-300 group-hover:translate-x-1" />
-              </NavLink>
-            );
-          })}
-        </nav>
-        <div className="rounded-2xl border border-emerald-400/15 bg-emerald-500/8 px-4 py-4 text-sm leading-6 text-emerald-100/85">
-          <p className="font-mono text-[0.72rem] uppercase tracking-[0.32em] text-emerald-300/70">Audit Safety</p>
-          <p className="mt-2">Aktive Validierungen werden in der UI immer als kontrollierte Simulation innerhalb genehmigter Scopes dargestellt.</p>
+          <nav className="space-y-2" onClick={() => setMobileOpen(false)}>
+            {navigationItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  className={({ isActive }) =>
+                    cx(
+                      "group flex min-h-[44px] items-center justify-between rounded-2xl border px-4 py-3 text-sm transition duration-300",
+                      isActive
+                        ? "border-cyan-400/35 bg-cyan-400/12 text-white shadow-[0_0_0_1px_rgba(34,211,238,0.08),0_12px_40px_rgba(6,182,212,0.16)]"
+                        : "border-white/5 bg-white/[0.03] text-slate-300 hover:border-emerald-400/20 hover:bg-white/[0.05] hover:text-white",
+                    )
+                  }
+                >
+                  <span className="flex items-center gap-3">
+                    <Icon className="h-4 w-4" />
+                    {item.label}
+                  </span>
+                  <ChevronRight className="h-4 w-4 opacity-50 transition duration-300 group-hover:translate-x-1" />
+                </NavLink>
+              );
+            })}
+          </nav>
+          <div className="rounded-2xl border border-emerald-400/15 bg-emerald-500/8 px-4 py-4 text-sm leading-6 text-emerald-100/85">
+            <p className="font-mono text-[0.72rem] uppercase tracking-[0.32em] text-emerald-300/70">Audit Safety</p>
+            <p className="mt-2">Aktive Validierungen werden in der UI immer als kontrollierte Simulation innerhalb genehmigter Scopes dargestellt.</p>
+          </div>
         </div>
       </div>
     </aside>
@@ -536,7 +562,7 @@ export function ToolCard({ tool, accent }: { tool: ToolDefinition; accent: "cyan
           type="button"
           onClick={handleRun}
           className={cx(
-            "inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium transition duration-300",
+            "inline-flex min-h-[44px] items-center gap-2 rounded-full px-5 py-3 text-sm font-medium transition duration-300",
             accent === "cyan"
               ? "bg-cyan-400/90 text-slate-950 hover:bg-cyan-300"
               : "bg-emerald-400/90 text-slate-950 hover:bg-emerald-300",

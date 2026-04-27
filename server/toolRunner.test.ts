@@ -6,7 +6,7 @@ describe("toolRunner", () => {
   describe("runTool", () => {
     it("should execute DNS enumeration for a domain", async () => {
       const input: ToolRunInput = {
-        toolId: "dns-enum",
+        toolId: "dns-enumeration",
         toolName: "DNS Enumeration",
         baseCommand: "dig",
         target: "example.com",
@@ -28,7 +28,7 @@ describe("toolRunner", () => {
 
     it("should return success status for valid DNS queries", async () => {
       const input: ToolRunInput = {
-        toolId: "dns-enum",
+        toolId: "dns-enumeration",
         toolName: "DNS Enumeration",
         baseCommand: "dig",
         target: "example.com",
@@ -44,7 +44,7 @@ describe("toolRunner", () => {
 
     it("should build correct command string", async () => {
       const input: ToolRunInput = {
-        toolId: "dns-enum",
+        toolId: "dns-enumeration",
         toolName: "DNS Enumeration",
         baseCommand: "dig",
         target: "example.com",
@@ -61,7 +61,7 @@ describe("toolRunner", () => {
 
     it("should include output in result", async () => {
       const input: ToolRunInput = {
-        toolId: "dns-enum",
+        toolId: "dns-enumeration",
         toolName: "DNS Enumeration",
         baseCommand: "dig",
         target: "example.com",
@@ -78,7 +78,7 @@ describe("toolRunner", () => {
 
     it("should have findings array", async () => {
       const input: ToolRunInput = {
-        toolId: "dns-enum",
+        toolId: "dns-enumeration",
         toolName: "DNS Enumeration",
         baseCommand: "dig",
         target: "example.com",
@@ -94,7 +94,7 @@ describe("toolRunner", () => {
 
     it("should have valid mode", async () => {
       const input: ToolRunInput = {
-        toolId: "dns-enum",
+        toolId: "dns-enumeration",
         toolName: "DNS Enumeration",
         baseCommand: "dig",
         target: "example.com",
@@ -109,7 +109,7 @@ describe("toolRunner", () => {
 
     it("should preserve target and options in result", async () => {
       const input: ToolRunInput = {
-        toolId: "dns-enum",
+        toolId: "dns-enumeration",
         toolName: "DNS Enumeration",
         baseCommand: "dig",
         target: "example.com",

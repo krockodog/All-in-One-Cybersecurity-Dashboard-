@@ -111,7 +111,7 @@ export const toolCatalog: ToolDefinition[] = [
     inputFields: [{ name: "query", label: "Dork-Query", type: "text" }],
   },
   {
-    id: "wayback",
+    id: "wayback-machine",
     name: "Wayback Machine",
     category: "osint",
     risk: "passiv",

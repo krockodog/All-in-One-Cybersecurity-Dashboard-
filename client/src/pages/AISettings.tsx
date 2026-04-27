@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Eye, EyeOff, Trash2, Save, ArrowLeft } from "lucide-react";
-import { useLocation } from "wouter";
+import { useNavigate } from "react-router-dom";
 
 const AI_PROVIDERS = [
   { id: "chatgpt", name: "ChatGPT", icon: "🤖", color: "from-green-500 to-green-600" },
@@ -19,7 +19,7 @@ const AI_PROVIDERS = [
 ];
 
 export default function AISettings() {
-  const [, setLocation] = useLocation();
+  const navigate = useNavigate();
   const [apiKeys, setApiKeys] = useState<Record<string, string>>({});
   const [visibleKeys, setVisibleKeys] = useState<Set<string>>(new Set());
   const [savedMessage, setSavedMessage] = useState("");
@@ -61,7 +61,7 @@ export default function AISettings() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setLocation("/settings")}
+            onClick={() => navigate("/settings")}
             className="h-10 w-10 shrink-0"
             aria-label="Go back"
           >

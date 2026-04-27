@@ -15,6 +15,7 @@ import EngagementDashboard from "./pages/EngagementDashboard";
 import PentestGuideImproved from "./pages/PentestGuideImproved";
 import Templates from "./pages/Templates";
 import AISettings from "./pages/AISettings";
+import AIChatPage from "./pages/AIChatPage";
 import { OsintToolsPage, PentestToolsPage, ReconnaissancePage } from "./pages/ToolWorkspacePages";
 
 /**
@@ -32,6 +33,7 @@ function AppRouter() {
       <Route path="/pentest-guide" element={<PentestGuideImproved />} />
       <Route path="/templates" element={<Templates />} />
       <Route path="/ai-settings" element={<AISettings />} />
+      <Route path="/ai-chat" element={<AIChatPage />} />
       <Route path="/osint-tools" element={<OsintToolsPage />} />
       <Route path="/pentest-tools" element={<PentestToolsPage />} />
       <Route path="/reconnaissance" element={<ReconnaissancePage />} />

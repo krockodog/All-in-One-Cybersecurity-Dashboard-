@@ -4,6 +4,7 @@ import {
   ArrowRight,
   Binary,
   BookOpenText,
+  Bot,
   ChevronRight,
   Download,
   Gauge,
@@ -52,6 +53,7 @@ const navigationItems = [
   { to: "/osint-tools", label: "OSINT Tools", icon: Globe },
   { to: "/pentest-tools", label: "Pentest Tools", icon: ShieldEllipsis },
   { to: "/reconnaissance", label: "Reconnaissance", icon: Radar },
+  { to: "/ai-chat", label: "AI Chat", icon: Bot },
   { to: "/reports", label: "Reports", icon: Download },
   { to: "/settings", label: "Settings", icon: Settings2 },
   { to: "/osint-guide", label: "OSINT Guide", icon: BookOpenText },
@@ -697,5 +699,61 @@ export function EmptyState({ title, body }: { title: string; body: string }) {
       <h3 className="mt-4 font-display text-2xl text-white">{title}</h3>
       <p className="mx-auto mt-3 max-w-2xl text-sm leading-7 text-slate-300">{body}</p>
     </div>
+  );
+}
+
+const trygitTopics = [
+  { icon: "🌿", label: "Git Grundlagen", desc: "Commits, Branches, Merge & Rebase verständlich erklärt" },
+  { icon: "🔁", label: "GitHub Workflows", desc: "Pull Requests, Reviews und CI/CD Pipelines" },
+  { icon: "🛡️", label: "Sicheres Versionieren", desc: "Secrets schützen, signed Commits, Security Policies" },
+  { icon: "🚀", label: "DevOps Integration", desc: "Git in modernen Deployment-Pipelines und IaC" },
+];
+
+export function TrygitBanner() {
+  return (
+    <section className="glass-panel relative overflow-hidden px-5 py-6">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_0%_50%,rgba(34,211,238,0.10),transparent_30%),radial-gradient(circle_at_100%_50%,rgba(16,185,129,0.10),transparent_30%)]" />
+      <div className="relative">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p className="font-mono text-[0.72rem] uppercase tracking-[0.34em] text-emerald-300/75">Lernressource</p>
+            <h2 className="mt-2 font-display text-2xl font-semibold text-white sm:text-3xl">
+              Git & DevOps lernen auf <span className="text-cyan-300">trygit.me</span>
+            </h2>
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-300">
+              Professionelles Git-Wissen für Security-Engineers und Pentester — von Basics bis zu sicheren CI/CD-Workflows,
+              Secrets-Management und produktionsreifen Repository-Strukturen.
+            </p>
+          </div>
+          <a
+            href="http://trygit.me"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex shrink-0 min-h-[44px] items-center gap-2 rounded-full bg-emerald-400/90 px-6 py-3 text-sm font-medium text-slate-950 transition hover:bg-emerald-300"
+          >
+            <span>Jetzt lernen</span>
+            <ArrowRight className="h-4 w-4" />
+          </a>
+        </div>
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {trygitTopics.map((t) => (
+            <a
+              key={t.label}
+              href="http://trygit.me"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group rounded-2xl border border-white/8 bg-black/25 p-4 transition hover:border-emerald-400/20 hover:bg-emerald-400/6"
+            >
+              <span className="text-2xl">{t.icon}</span>
+              <p className="mt-3 font-display text-base text-white">{t.label}</p>
+              <p className="mt-1 text-sm leading-6 text-slate-400">{t.desc}</p>
+              <span className="mt-3 inline-flex items-center gap-1 text-xs text-emerald-300/70 transition group-hover:text-emerald-300">
+                Öffnen <ChevronRight className="h-3 w-3" />
+              </span>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }

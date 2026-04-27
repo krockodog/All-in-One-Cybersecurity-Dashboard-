@@ -5,6 +5,7 @@ import {
   QuickLaunchPanel,
   SectionBadge,
   StatStrip,
+  TrygitBanner,
 } from "@/components/cyber/CyberShell";
 import { Binary, ShieldCheck } from "lucide-react";
 
@@ -24,6 +25,7 @@ export default function DashboardPage() {
         <HeroPanel />
         <StatStrip />
         <QuickLaunchPanel />
+        <TrygitBanner />
         <JobsPanel compact />
       </div>
     </AppFrame>

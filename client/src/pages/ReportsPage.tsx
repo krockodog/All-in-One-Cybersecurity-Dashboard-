@@ -21,42 +21,84 @@ export default function ReportsPage() {
     URL.revokeObjectURL(url);
   }
 
-  function exportJson() {
-    downloadFile(
-      "cybersecurity-report.json",
-      JSON.stringify(
-        {
-          generatedAt: new Date().toISOString(),
-          summary,
-          jobs,
-        },
-        null,
-        2,
-      ),
-      "application/json",
-    );
+  function buildHtmlContent() {
+    const generatedAt = new Date().toLocaleString("de-DE");
+    const rows = jobs
+      .map(
+        (job) => `
+        <tr>
+          <td>${job.toolName}</td>
+          <td>${job.category}</td>
+          <td class="mono">${job.target}</td>
+          <td><span class="badge badge-${job.status}">${job.status}</span></td>
+          <td>${job.summary}</td>
+        </tr>
+        <tr class="output-row">
+          <td colspan="5"><pre>${job.output}</pre></td>
+        </tr>`,
+      )
+      .join("");
+
+    return `<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cybersecurity Advisor Report</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #04070a; color: #cbd5e1; padding: 2rem; }
+    h1 { color: #fff; font-size: 2rem; margin-bottom: 0.5rem; }
+    .meta { font-family: monospace; font-size: 0.75rem; letter-spacing: 0.1em; color: #64748b; margin-bottom: 2rem; }
+    .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem; }
+    .stat { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 1rem; }
+    .stat-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.2em; color: #64748b; }
+    .stat-value { font-size: 2.5rem; font-weight: 700; color: #fff; margin-top: 0.5rem; }
+    table { width: 100%; border-collapse: collapse; background: rgba(255,255,255,0.02); border-radius: 12px; overflow: hidden; }
+    th { background: rgba(255,255,255,0.06); padding: 0.75rem 1rem; text-align: left; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.18em; color: #94a3b8; }
+    td { padding: 0.75rem 1rem; border-top: 1px solid rgba(255,255,255,0.06); font-size: 0.875rem; vertical-align: top; }
+    .mono { font-family: monospace; font-size: 0.75rem; color: #67e8f9; }
+    .output-row td { background: #05090d; padding: 0.5rem 1rem 1rem; }
+    pre { font-family: monospace; font-size: 0.75rem; color: #6ee7b7; white-space: pre-wrap; word-break: break-all; }
+    .badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 9999px; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.18em; }
+    .badge-success { background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.25); color: #6ee7b7; }
+    .badge-error { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.25); color: #fca5a5; }
+    .badge-scanning { background: rgba(34,211,238,0.12); border: 1px solid rgba(34,211,238,0.25); color: #67e8f9; }
+    .badge-idle { background: rgba(148,163,184,0.1); border: 1px solid rgba(148,163,184,0.2); color: #cbd5e1; }
+  </style>
+</head>
+<body>
+  <h1>Cybersecurity Advisor Report</h1>
+  <p class="meta">Generiert: ${generatedAt} &nbsp;·&nbsp; Gesamt: ${summary.total} &nbsp;·&nbsp; Erfolgreich: ${summary.completed} &nbsp;·&nbsp; Markiert: ${summary.flagged}</p>
+  <div class="summary">
+    <div class="stat"><div class="stat-label">Total</div><div class="stat-value">${summary.total}</div></div>
+    <div class="stat"><div class="stat-label">Completed</div><div class="stat-value">${summary.completed}</div></div>
+    <div class="stat"><div class="stat-label">Flagged</div><div class="stat-value">${summary.flagged}</div></div>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Tool</th><th>Kategorie</th><th>Target</th><th>Status</th><th>Summary</th>
+      </tr>
+    </thead>
+    <tbody>${rows}</tbody>
+  </table>
+</body>
+</html>`;
   }
 
-  function exportMarkdown() {
-    const markdown = [
-      "# Cybersecurity Advisor Report",
-      "",
-      `- Generiert: ${new Date().toLocaleString("de-DE")}`,
-      `- Gesamtjobs: ${summary.total}`,
-      `- Erfolgreich: ${summary.completed}`,
-      `- Markiert zur Prüfung: ${summary.flagged}`,
-      "",
-      "## Findings",
-      ...jobs.map(
-        (job) =>
-          `- **${job.toolName}** | Status: ${job.status} | Target: ${job.target} | Summary: ${job.summary}`,
-      ),
-      "",
-      "## Terminal Output",
-      ...jobs.map((job) => `### ${job.toolName}\n\n\`\`\`text\n${job.output}\n\`\`\``),
-    ].join("\n");
+  function exportHtml() {
+    downloadFile("cybersecurity-report.html", buildHtmlContent(), "text/html;charset=utf-8");
+  }
 
-    downloadFile("cybersecurity-report.md", markdown, "text/markdown;charset=utf-8");
+  function exportPdf() {
+    const win = window.open("", "_blank");
+    if (!win) return;
+    win.document.write(buildHtmlContent());
+    win.document.close();
+    win.focus();
+    win.print();
+    win.close();
   }
 
   return (
@@ -65,8 +107,8 @@ export default function ReportsPage() {
       title="Reports"
       action={
         <>
-          <ExportButton label="Export JSON" onClick={exportJson} />
-          <ExportButton label="Export Markdown" onClick={exportMarkdown} />
+          <ExportButton label="Export HTML" onClick={exportHtml} />
+          <ExportButton label="Export PDF" onClick={exportPdf} />
         </>
       }
     >
@@ -166,7 +208,7 @@ export default function ReportsPage() {
               </li>
               <li className="flex gap-3">
                 <FileText className="mt-1 h-4 w-4 shrink-0 text-cyan-300" />
-                JSON eignet sich für Weiterverarbeitung; Markdown für Review, Freigabe und Berichtsentwürfe.
+                HTML erzeugt ein vollständiges, druckfertiges Dossier; PDF öffnet den Browser-Druckdialog für direkte Ausgabe oder Archivierung.
               </li>
             </ul>
           </div>

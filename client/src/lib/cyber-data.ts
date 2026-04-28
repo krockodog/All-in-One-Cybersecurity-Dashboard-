@@ -33,9 +33,8 @@ export const toolCatalog: ToolDefinition[] = [
     category: "osint",
     risk: "passiv",
     description: "Benutzernamen-Suche über Netzwerke",
-    executionMode: "command-reference",
+    executionMode: "web-integrated",
     inputFields: [{ name: "username", label: "Benutzername", type: "text" }],
-    commandTemplate: "sherlock {{username}}",
   },
   {
     id: "theharvester",
@@ -61,7 +60,7 @@ export const toolCatalog: ToolDefinition[] = [
     category: "osint",
     risk: "passiv",
     description: "Visuelle Daten-Korrelation",
-    executionMode: "external",
+    executionMode: "web-integrated",
     inputFields: [{ name: "entity", label: "Entity", type: "text" }],
   },
   {
@@ -70,9 +69,8 @@ export const toolCatalog: ToolDefinition[] = [
     category: "osint",
     risk: "passiv",
     description: "Web-Reconnaissance Framework",
-    executionMode: "command-reference",
+    executionMode: "web-integrated",
     inputFields: [{ name: "target", label: "Ziel-Domain", type: "text" }],
-    commandTemplate: "recon-ng -w {{target}}",
   },
   {
     id: "spiderfoot",
@@ -80,7 +78,7 @@ export const toolCatalog: ToolDefinition[] = [
     category: "osint",
     risk: "passiv",
     description: "Automatisierte OSINT-Automatisierung",
-    executionMode: "external",
+    executionMode: "web-integrated",
     inputFields: [{ name: "target", label: "Ziel", type: "text" }],
   },
   {
@@ -134,9 +132,8 @@ export const toolCatalog: ToolDefinition[] = [
     category: "osint",
     risk: "passiv",
     description: "Metadaten aus Dateien extrahieren",
-    executionMode: "command-reference",
+    executionMode: "web-integrated",
     inputFields: [{ name: "file", label: "Datei-URL", type: "text" }],
-    commandTemplate: "exiftool {{file}}",
   },
   {
     id: "whois",
@@ -148,7 +145,7 @@ export const toolCatalog: ToolDefinition[] = [
     inputFields: [{ name: "domain", label: "Domain", type: "text" }],
   },
   {
-    id: "dns-enum",
+    id: "dns-enumeration",
     name: "DNS Enumeration",
     category: "osint",
     risk: "passiv",
@@ -184,7 +181,7 @@ export const toolCatalog: ToolDefinition[] = [
     category: "pentest",
     risk: "kontrolliert",
     description: "Web-Application-Pentest-Plattform",
-    executionMode: "external",
+    executionMode: "web-integrated",
     inputFields: [{ name: "target", label: "Ziel-URL", type: "text" }],
   },
   {
@@ -202,9 +199,8 @@ export const toolCatalog: ToolDefinition[] = [
     category: "pentest",
     risk: "kontrolliert",
     description: "SQL-Injection-Tester",
-    executionMode: "command-reference",
+    executionMode: "web-integrated",
     inputFields: [{ name: "url", label: "Ziel-URL", type: "text" }],
-    commandTemplate: "sqlmap -u {{url}} --dbs",
   },
   {
     id: "hydra",
@@ -282,9 +278,8 @@ export const toolCatalog: ToolDefinition[] = [
     category: "pentest",
     risk: "kontrolliert",
     description: "WordPress-Schwachstellen-Scanner",
-    executionMode: "command-reference",
+    executionMode: "web-integrated",
     inputFields: [{ name: "url", label: "WordPress-URL", type: "text" }],
-    commandTemplate: "wpscan --url {{url}} --enumerate p,u",
   },
   {
     id: "enum4linux",
@@ -292,9 +287,8 @@ export const toolCatalog: ToolDefinition[] = [
     category: "pentest",
     risk: "kontrolliert",
     description: "SMB/NetBIOS-Enumeration",
-    executionMode: "command-reference",
+    executionMode: "web-integrated",
     inputFields: [{ name: "target", label: "Ziel-IP", type: "text" }],
-    commandTemplate: "enum4linux {{target}}",
   },
 
   // Reconnaissance Tools
@@ -324,9 +318,8 @@ export const toolCatalog: ToolDefinition[] = [
     category: "recon",
     risk: "kontrolliert",
     description: "Schneller Port-Scanner",
-    executionMode: "command-reference",
+    executionMode: "web-integrated",
     inputFields: [{ name: "target", label: "Ziel-IP/Range", type: "text" }],
-    commandTemplate: "masscan {{target}} -p 1-65535",
   },
   {
     id: "nuclei",
@@ -364,9 +357,8 @@ export const toolCatalog: ToolDefinition[] = [
     category: "recon",
     risk: "passiv",
     description: "Website-Screenshot-Sammler",
-    executionMode: "command-reference",
+    executionMode: "web-integrated",
     inputFields: [{ name: "domain", label: "Domain", type: "text" }],
-    commandTemplate: "aquatone -d {{domain}}",
   },
   {
     id: "fierce",

@@ -10,6 +10,25 @@ export function useToolExecution() {
       const target = payload.target.trim() || "example.com";
       const options = payload.options.trim() || "";
 
+      // External tools require a native binary or hardware — never send to server
+      if (tool.executionMode === "external") {
+        const timestamp = new Date().toLocaleTimeString("de-DE", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        });
+        return {
+          success: true,
+          output: [
+            `[${timestamp}] ${tool.name} requires a local installation`,
+            `[${timestamp}] target: ${target}`,
+            `[${timestamp}] mode: external — run this tool in an authorized lab environment`,
+            `[${timestamp}] result: external tool cannot be executed inside the dashboard`,
+          ].join("\n"),
+          executedAt: Date.now(),
+        };
+      }
+
       try {
         // Versuche, das Tool über tRPC auszuführen
         const result = await runToolMutation.mutateAsync({

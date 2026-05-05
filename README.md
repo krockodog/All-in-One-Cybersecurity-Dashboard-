@@ -1,9 +1,9 @@
 # OSINT-Dashboard
- beim Einstieg und legt am Ende sogar ein Repository für dich an【422529910247355†L54-L83】. Diese Integration im Dashboard macht es nicht nur einfacher, deine Ergebnisse zu versionieren, sondern unterstützt auch die Vorbereitung auf gängige **Security‑Zertifizierungen**. Wenn du dich auf Prüfungen wie **CompTIA Security+**, **Certified Ethical Hacker (CEH)** oder **Certified Information Systems Security Professional (CISSP)** vorbereitest, ist solide Git‑Kompetenz unerlässlich.
+Diese Integration im Dashboard macht es nicht nur einfacher, deine Ergebnisse zu versionieren, sondern unterstützt auch die Vorbereitung auf gängige **Security‑Zertifizierungen**. Wenn du dich auf Prüfungen wie **CompTIA Security+**, **Certified Ethical Hacker (CEH)** oder **Certified Information Systems Security Professional (CISSP)** vorbereitest, ist solide Git‑Kompetenz unerlässlich.
 
-* **CompTIA Security+** validiert grundlegende Fähigkeiten in der Einschätzung von Sicherheitsrisiken, dem Überwachen und Absichern von Cloud‑, Mobile‑ und IoT‑Umgebungen und ist ideal für den Einstieg in das Thema Informationssicherheit【186836393290221†L81-L108】.
+* **CompTIA Security+** validiert grundlegende Fähigkeiten in der Einschätzung von Sicherheitsrisiken, dem Überwachen und Absichern von Cloud‑, Mobile‑ und IoT‑Umgebungen und ist ideal für den Einstieg in das Thema Informationssicherheit.
 * **Certified Ethical Hacker (CEH)** fokussiert sich auf das Vorgehen von Angreifern, das Aufdecken von Schwachstellen und das Durchführen von Penetration‑Tests – ein ideales Anwendungsfeld für die Tools in diesem Dashboard.
-* **CISSP – Certified Information Systems Security Professional** ist eine anspruchsvolle Zertifizierung für erfahrene Expertinnen und Experten mit mindestens fünf Jahren Berufserfahrung und deckt acht verschiedene Sicherheitsdomänen ab【186836393290221†L116-L140】. Das Dashboard hilft dir, praktische Erfahrungen zu sammeln und fundiertes Wissen zu vertiefen.
+* **CISSP – Certified Information Systems Security Professional** ist eine anspruchsvolle Zertifizierung für erfahrene Expertinnen und Experten mit mindestens fünf Jahren Berufserfahrung und deckt acht verschiedene Sicherheitsdomänen ab. Das Dashboard hilft dir, praktische Erfahrungen zu sammeln und fundiertes Wissen zu vertiefen.
 
 ### Verantwortung und Sicherheit
 
@@ -107,7 +107,7 @@ pnpm db:seed
 
 ## Marketing & Vision
 
-Stell dir vor, du öffnest eine Plattform, auf der alle wichtigen Sicherheits‑Tools harmonisch zusammenarbeiten. Das **OSINT Dashboard** ist mehr als ein Werkzeugkasten – es ist dein **Begleiter** auf dem Weg zum zertifizierten Security‑Professional. Während andere noch nach Screenshots, Terminalfenstern und Notizen suchen, arbeitest du strukturiert im gleichen Workspace. Die integrierte **TryGit**‑Funktion nimmt dir die Berührungsängste mit Git: In wenigen Minuten lernst du, wie man Repositories erstellt, Commits verwaltet und Branches richtig nutzt【422529910247355†L54-L83】. So kannst du deine Erkenntnisse sofort versionieren und verlierst keine Zeit im Prüfungsstress.
+Stell dir vor, du öffnest eine Plattform, auf der alle wichtigen Sicherheits‑Tools harmonisch zusammenarbeiten. Das **OSINT Dashboard** ist mehr als ein Werkzeugkasten – es ist dein **Begleiter** auf dem Weg zum zertifizierten Security‑Professional. Während andere noch nach Screenshots, Terminalfenstern und Notizen suchen, arbeitest du strukturiert im gleichen Workspace. Die integrierte **TryGit**‑Funktion nimmt dir die Berührungsängste mit Git: In wenigen Minuten lernst du, wie man Repositories erstellt, Commits verwaltet und Branches richtig nutzt. So kannst du deine Erkenntnisse sofort versionieren und verlierst keine Zeit im Prüfungsstress.
 
 Ob du für die **Security+** lernst, dich auf den **CEH** vorbereitest oder die **CISSP** anstrebst – das Dashboard hilft dir, Theorie in die Praxis umzusetzen. Jede Sicherheitslücke, die du mit Nmap oder Burp Suite findest, bringt dich dem Zertifikat einen Schritt näher. Und wenn du mal eine Frage hast, steht der KI‑Assistent bereit, um Anleitungen und Hintergrundwissen zu liefern.
 
@@ -118,3 +118,4 @@ Ob du für die **Security+** lernst, dich auf den **CEH** vorbereitest oder die 
 ---
 
 © 2026 OSINT Dashboard – Entwickelt von engagierten Pentestern für eine sichere digitale Welt.
+weitere tools kommen :-) "stay save"

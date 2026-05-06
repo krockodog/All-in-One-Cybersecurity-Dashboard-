@@ -1,7 +1,12 @@
+import { ReactElement } from "react";
 import { Target } from "@/types";
 import { formatDate } from "@/utils/formatters";
 
-export const TargetList = ({ targets }: { targets: Target[] }) => {
+interface TargetListProps {
+  targets: Target[];
+}
+
+export const TargetList = ({ targets }: TargetListProps): ReactElement => {
   return (
     <div className="overflow-x-auto rounded-xl border border-white/10" data-testid="target-list">
       <table className="min-w-full text-left text-sm">

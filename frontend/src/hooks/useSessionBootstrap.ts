@@ -10,7 +10,7 @@ interface SessionBootstrapArgs {
 export const useSessionBootstrap = ({ setUser, setAuthenticated }: SessionBootstrapArgs) => {
   const [checkingSession, setCheckingSession] = useState(true);
   const mountedRef = useRef(true);
-  const payload = useRef<{ user: User } | null>(null);
+  const fetchedSessionPayload = useRef<{ user: User } | null>(null);
   const sessionActionsRef = useRef({ setUser, setAuthenticated, setCheckingSession });
 
   sessionActionsRef.current = { setUser, setAuthenticated, setCheckingSession };
@@ -19,12 +19,12 @@ export const useSessionBootstrap = ({ setUser, setAuthenticated }: SessionBootst
 
   const runSessionCheck = useCallback(async (): Promise<void> => {
     try {
-      const fetchedSessionPayload = await fetchSessionUser();
-      payload.current = fetchedSessionPayload;
+      const payload = await fetchSessionUser();
+      fetchedSessionPayload.current = payload;
       if (!mountedRef.current) {
         return;
       }
-      sessionActionsRef.current.setUser(fetchedSessionPayload.user);
+      sessionActionsRef.current.setUser(payload.user);
       sessionActionsRef.current.setAuthenticated(true);
     } catch {
       if (mountedRef.current) {
@@ -35,7 +35,7 @@ export const useSessionBootstrap = ({ setUser, setAuthenticated }: SessionBootst
         sessionActionsRef.current.setCheckingSession(false);
       }
     }
-  }, [fetchSessionUser, mountedRef, payload, sessionActionsRef]);
+  }, [fetchSessionUser, fetchedSessionPayload, mountedRef, sessionActionsRef]);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -46,7 +46,7 @@ export const useSessionBootstrap = ({ setUser, setAuthenticated }: SessionBootst
       mountedRef.current = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- `User` is type-only; refs are lifecycle containers.
-  }, [mountedRef, payload, runSessionCheck]);
+  }, [fetchedSessionPayload, mountedRef, runSessionCheck]);
 
   return { checkingSession };
 };

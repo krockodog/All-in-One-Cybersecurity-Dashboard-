@@ -1,3 +1,4 @@
+import { ReactElement } from "react";
 import { DashboardStats } from "@/types";
 
 const cardConfig: Array<{ key: keyof DashboardStats; label: string }> = [
@@ -8,7 +9,11 @@ const cardConfig: Array<{ key: keyof DashboardStats; label: string }> = [
   { key: "mediumFindings", label: "Medium Findings" }
 ];
 
-export const StatsCards = ({ stats }: { stats: DashboardStats }) => {
+interface StatsCardsProps {
+  stats: DashboardStats;
+}
+
+export const StatsCards = ({ stats }: StatsCardsProps): ReactElement => {
   return (
     <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-5" data-testid="dashboard-stats-cards">
       {cardConfig.map((card) => (

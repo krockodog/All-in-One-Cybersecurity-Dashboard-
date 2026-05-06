@@ -9,7 +9,11 @@ interface ThemeContextValue {
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
-export const ThemeProvider = ({ children }: { children: ReactNode }) => {
+interface ThemeProviderProps {
+  children: ReactNode;
+}
+
+export const ThemeProvider = ({ children }: ThemeProviderProps): ReactNode => {
   const [theme, setTheme] = useState<Theme>("dark");
   const toggleTheme = (): void => {
     setTheme((previous) => (previous === "dark" ? "light" : "dark"));
@@ -24,7 +28,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 };
 
-export const useTheme = () => {
+export const useTheme = (): ThemeContextValue => {
   const context = useContext(ThemeContext);
   if (!context) {
     throw new Error("useTheme must be used inside ThemeProvider");

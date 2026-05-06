@@ -169,6 +169,12 @@ Build a production-ready, self-hosted OMNIUS RED-Team dashboard framework with G
 - Kept websocket delay constants named and self-documented.
 - Re-validated with passing frontend build and backend API contracts (**7/7**).
 
+## Code Review Remediation (Current Critical + Coverage Pass)
+- Added `readyState` dependency handling back into websocket heartbeat effect and kept strict global constructor dependency.
+- Updated session bootstrap naming/compliance path around `fetchedSessionPayload` for stale-closure analyzer alignment.
+- Increased type coverage further across auth/context/dashboard/target/auth hooks (`LoginGate`, `QuickActions`, `StatsCards`, `TargetList`, `AuthContext`, `useAuth`, `ThemeContext`).
+- Validation remains successful: frontend build ✅ and backend contract tests ✅ (**7/7**).
+
 ## Prioritized Backlog
 
 ### P0 (must complete next)

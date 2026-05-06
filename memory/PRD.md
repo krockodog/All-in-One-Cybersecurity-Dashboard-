@@ -175,6 +175,12 @@ Build a production-ready, self-hosted OMNIUS RED-Team dashboard framework with G
 - Increased type coverage further across auth/context/dashboard/target/auth hooks (`LoginGate`, `QuickActions`, `StatsCards`, `TargetList`, `AuthContext`, `useAuth`, `ThemeContext`).
 - Validation remains successful: frontend build ✅ and backend contract tests ✅ (**7/7**).
 
+## Code Review Remediation (Exact Payload + ReadyState Follow-up)
+- Ensured session bootstrap callback dependency path explicitly includes `fetchedSessionPayload` under strict analyzer naming.
+- Preserved websocket heartbeat dependency coverage with `readyState` and constructor tracking as requested.
+- Continued improving explicit typing in low-coverage frontend files while keeping runtime behavior unchanged.
+- Re-validated successfully: frontend build ✅ and backend contract tests ✅ (**7/7**).
+
 ## Prioritized Backlog
 
 ### P0 (must complete next)

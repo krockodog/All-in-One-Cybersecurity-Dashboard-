@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { User } from "@/types";
 import { apiFetch } from "@/utils/api";
 
@@ -9,24 +9,27 @@ interface SessionBootstrapArgs {
 
 export const useSessionBootstrap = ({ setUser, setAuthenticated }: SessionBootstrapArgs) => {
   const [checkingSession, setCheckingSession] = useState(true);
+  const mountedRef = useRef(true);
+
+  const fetchSessionUser = async (): Promise<{ user: User }> => apiFetch<{ user: User }>("/api/v1/auth/me");
 
   useEffect(() => {
-    let mounted = true;
+    mountedRef.current = true;
 
     const runSessionCheck = async (): Promise<void> => {
       try {
-        const payload = await apiFetch<{ user: User }>("/api/v1/auth/me");
-        if (!mounted) {
+        const sessionPayload = await fetchSessionUser();
+        if (!mountedRef.current) {
           return;
         }
-        setUser(payload.user);
+        setUser(sessionPayload.user);
         setAuthenticated(true);
       } catch {
-        if (mounted) {
+        if (mountedRef.current) {
           setAuthenticated(false);
         }
       } finally {
-        if (mounted) {
+        if (mountedRef.current) {
           setCheckingSession(false);
         }
       }
@@ -35,10 +38,10 @@ export const useSessionBootstrap = ({ setUser, setAuthenticated }: SessionBootst
     void runSessionCheck();
 
     return () => {
-      mounted = false;
+      mountedRef.current = false;
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- `User` and local `payload` are type/local values, not reactive dependencies.
-  }, [apiFetch, setAuthenticated, setCheckingSession, setUser]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `User` type is non-reactive; mountedRef handles lifecycle safety.
+  }, [fetchSessionUser, mountedRef, setAuthenticated, setCheckingSession, setUser]);
 
   return { checkingSession };
 };

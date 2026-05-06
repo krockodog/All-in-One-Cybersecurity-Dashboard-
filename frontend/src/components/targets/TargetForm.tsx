@@ -18,6 +18,19 @@ interface TargetFormFieldsProps {
   onTagsChange: (event: ChangeEvent<HTMLInputElement>) => void;
 }
 
+interface TargetFormState {
+  name: string;
+  type: TargetType;
+  value: string;
+  tags: string;
+  error: string;
+  handleSubmit: (event: FormEvent<HTMLFormElement>) => void;
+  handleNameChange: (event: ChangeEvent<HTMLInputElement>) => void;
+  handleTypeChange: (event: ChangeEvent<HTMLSelectElement>) => void;
+  handleValueChange: (event: ChangeEvent<HTMLInputElement>) => void;
+  handleTagsChange: (event: ChangeEvent<HTMLInputElement>) => void;
+}
+
 const targetTypes: TargetType[] = ["domain", "ip", "cidr", "url", "email", "username", "phone", "address"];
 
 const TargetFormFields = ({
@@ -50,7 +63,7 @@ const TargetFormFields = ({
   </>
 );
 
-export const TargetForm = ({ onSubmit }: TargetFormProps): ReactElement => {
+const useTargetFormState = (onSubmit: TargetFormProps["onSubmit"]): TargetFormState => {
   const [name, setName] = useState("");
   const [type, setType] = useState<TargetType>("domain");
   const [value, setValue] = useState("");
@@ -69,34 +82,35 @@ export const TargetForm = ({ onSubmit }: TargetFormProps): ReactElement => {
     setError("");
   };
 
-  const handleNameChange = (event: ChangeEvent<HTMLInputElement>): void => {
-    setName(event.target.value);
+  return {
+    name,
+    type,
+    value,
+    tags,
+    error,
+    handleSubmit,
+    handleNameChange: (event) => setName(event.target.value),
+    handleTypeChange: (event) => setType(event.target.value as TargetType),
+    handleValueChange: (event) => setValue(event.target.value),
+    handleTagsChange: (event) => setTags(event.target.value),
   };
+};
 
-  const handleTypeChange = (event: ChangeEvent<HTMLSelectElement>): void => {
-    setType(event.target.value as TargetType);
-  };
-
-  const handleValueChange = (event: ChangeEvent<HTMLInputElement>): void => {
-    setValue(event.target.value);
-  };
-
-  const handleTagsChange = (event: ChangeEvent<HTMLInputElement>): void => {
-    setTags(event.target.value);
-  };
+export const TargetForm = ({ onSubmit }: TargetFormProps): ReactElement => {
+  const formState = useTargetFormState(onSubmit);
 
   return (
-    <form onSubmit={handleSubmit} className="grid gap-3 rounded-xl border border-white/10 bg-black/20 p-4" data-testid="target-form">
+    <form onSubmit={formState.handleSubmit} className="grid gap-3 rounded-xl border border-white/10 bg-black/20 p-4" data-testid="target-form">
       <TargetFormFields
-        name={name}
-        type={type}
-        value={value}
-        tags={tags}
-        error={error}
-        onNameChange={handleNameChange}
-        onTypeChange={handleTypeChange}
-        onValueChange={handleValueChange}
-        onTagsChange={handleTagsChange}
+        name={formState.name}
+        type={formState.type}
+        value={formState.value}
+        tags={formState.tags}
+        error={formState.error}
+        onNameChange={formState.handleNameChange}
+        onTypeChange={formState.handleTypeChange}
+        onValueChange={formState.handleValueChange}
+        onTagsChange={formState.handleTagsChange}
       />
       <button data-testid="target-submit-button" type="submit" className="rounded-lg bg-neon/20 px-4 py-2 transition hover:bg-neon/30">
         Add Target

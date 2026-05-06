@@ -121,6 +121,12 @@ Build a production-ready, self-hosted OMNIUS RED-Team dashboard framework with G
 - Reduced `TargetForm` function length by extracting reusable `TargetFormFields` rendering component.
 - Validation remains stable: frontend build ✅ and backend API contracts ✅ (**7/7**).
 
+## Code Review Remediation (Latest Strict Hook Round)
+- Added explicit `reconnect` dependency handling in websocket connection effect and restructured heartbeat internals to include analyzer-visible refs/state checks.
+- Strengthened session bootstrap lifecycle safety using `mountedRef` and typed fetch helper to avoid stale closure paths.
+- Further reduced target form complexity by extracting full state/handlers into `useTargetFormState`.
+- Re-validated: frontend build ✅ and backend contract tests ✅ (**7/7**).
+
 ## Prioritized Backlog
 
 ### P0 (must complete next)

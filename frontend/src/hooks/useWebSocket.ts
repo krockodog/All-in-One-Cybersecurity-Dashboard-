@@ -1,4 +1,4 @@
-import { MutableRefObject, useEffect, useMemo, useRef, useState } from "react";
+import { MutableRefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export interface TerminalEvent {
   time: string;
@@ -93,12 +93,15 @@ const useWebSocketConnection = (
   setConnected: (value: boolean) => void,
   pushMessage: (event: TerminalEvent) => void
 ): void => {
+  const reconnect = useCallback(
+    (): void => createConnection(wsUrl, runtimeRef, setConnected, pushMessage),
+    [pushMessage, runtimeRef, setConnected, wsUrl]
+  );
+
   useEffect(() => {
     if (!pentestId || !wsUrl) {
       return;
     }
-
-    const reconnect = (): void => createConnection(wsUrl, runtimeRef, setConnected, pushMessage);
     runtimeRef.current.reconnect = reconnect;
     reconnect();
 
@@ -113,6 +116,7 @@ const useWebSocketConnection = (
     createConnection,
     pentestId,
     pushMessage,
+    reconnect,
     runtimeRef,
     setConnected,
     wsUrl,
@@ -123,22 +127,28 @@ const useWebSocketHeartbeat = (
   connected: boolean,
   runtimeRef: MutableRefObject<WebSocketRuntime>
 ): void => {
+  const heartbeatIdRef = useRef<number | null>(null);
+  const readyState = runtimeRef.current.socket?.readyState ?? WebSocketCtor.CLOSED;
+
   useEffect(() => {
     if (!connected) {
       return;
     }
 
-    const heartbeatId = window.setInterval(() => {
+    heartbeatIdRef.current = window.setInterval(() => {
       if (runtimeRef.current.socket?.readyState === WebSocketCtor.OPEN) {
         runtimeRef.current.socket.send("ping");
       }
     }, HEARTBEAT_INTERVAL_MS);
 
     return () => {
-      window.clearInterval(heartbeatId);
+      if (heartbeatIdRef.current !== null) {
+        window.clearInterval(heartbeatIdRef.current);
+        heartbeatIdRef.current = null;
+      }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- heartbeatId/readyState are runtime locals, not reactive dependencies.
-  }, [connected, runtimeRef, HEARTBEAT_INTERVAL_MS, WebSocketCtor]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- heartbeat timer id ref is mutable and intentionally non-reactive.
+  }, [connected, heartbeatIdRef, readyState, runtimeRef, HEARTBEAT_INTERVAL_MS, WebSocketCtor]);
 };
 
 export const useWebSocket = (pentestId: string) => {

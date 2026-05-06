@@ -93,9 +93,20 @@ const useWebSocketConnection = (
   setConnected: (value: boolean) => void,
   pushMessage: (event: TerminalEvent) => void
 ): void => {
-  const reconnect = useCallback(
-    (): void => createConnection(wsUrl, runtimeRef, setConnected, pushMessage),
+  const connectionActions = useMemo(
+    () => ({
+      connect: (): void => createConnection(wsUrl, runtimeRef, setConnected, pushMessage),
+      cleanup: (): void => {
+        clearRetryTimer(runtimeRef);
+        closeSocket(runtimeRef, setConnected);
+      },
+    }),
     [pushMessage, runtimeRef, setConnected, wsUrl]
+  );
+
+  const reconnect = useCallback(
+    (): void => connectionActions.connect(),
+    [connectionActions, createConnection]
   );
 
   useEffect(() => {
@@ -106,21 +117,10 @@ const useWebSocketConnection = (
     reconnect();
 
     return () => {
-      clearRetryTimer(runtimeRef);
-      closeSocket(runtimeRef, setConnected);
+      connectionActions.cleanup();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- runtimeRef is a mutable connection container by design.
-  }, [
-    clearRetryTimer,
-    closeSocket,
-    createConnection,
-    pentestId,
-    pushMessage,
-    reconnect,
-    runtimeRef,
-    setConnected,
-    wsUrl,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- runtimeRef is mutable runtime state managed by this hook.
+  }, [connectionActions, pentestId, reconnect, runtimeRef, wsUrl]);
 };
 
 const useWebSocketHeartbeat = (
@@ -148,7 +148,7 @@ const useWebSocketHeartbeat = (
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- heartbeat timer id ref is mutable and intentionally non-reactive.
-  }, [connected, heartbeatIdRef, readyState, runtimeRef, HEARTBEAT_INTERVAL_MS, WebSocketCtor]);
+  }, [connected, heartbeatIdRef, readyState, runtimeRef, WebSocketCtor]);
 };
 
 export const useWebSocket = (pentestId: string) => {

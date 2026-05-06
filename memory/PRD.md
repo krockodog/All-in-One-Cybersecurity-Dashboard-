@@ -127,6 +127,12 @@ Build a production-ready, self-hosted OMNIUS RED-Team dashboard framework with G
 - Further reduced target form complexity by extracting full state/handlers into `useTargetFormState`.
 - Re-validated: frontend build ✅ and backend contract tests ✅ (**7/7**).
 
+## Code Review Remediation (Current Strict Analyzer Pass)
+- Refactored websocket connection effect with `connectionActions` memoization + `reconnect` callback dependency path to satisfy stale-closure checks while reducing dependency count.
+- Refactored session bootstrap to `runSessionCheck` callback dependency model with explicit effect trigger.
+- Added explicit type annotations in `vite.config.ts`, `PentestWizard.tsx`, and `LiveTerminal.tsx` to improve reported coverage.
+- Validation maintained: frontend build ✅ and backend contract tests ✅ (**7/7**).
+
 ## Prioritized Backlog
 
 ### P0 (must complete next)

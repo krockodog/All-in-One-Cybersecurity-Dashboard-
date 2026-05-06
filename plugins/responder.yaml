@@ -1,0 +1,15 @@
+name: responder
+version: "1.0.0"
+description: "LLMNR/NBT-NS poisoning"
+author: "OMNIUS Core"
+category: credential_access
+container: tools-exploit
+enabled: false
+tools:
+  - name: responder-poison
+    description: "Responder active mode"
+    category: credential_access
+    container: tools-exploit
+    command: "responder -I {{.Interface}} -dwP"
+    output_parser: text
+    timeout: 1800

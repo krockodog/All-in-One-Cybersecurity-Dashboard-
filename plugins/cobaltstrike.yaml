@@ -1,0 +1,15 @@
+name: cobaltstrike
+version: "1.0.0"
+description: "Cobalt Strike integration metadata"
+author: "OMNIUS Core"
+category: c2
+container: tools-c2
+enabled: false
+tools:
+  - name: cobaltstrike-teamserver
+    description: "Teamserver launch wrapper"
+    category: c2
+    container: tools-c2
+    command: "teamserver {{.Target}} {{.Password}}"
+    output_parser: text
+    timeout: 3600

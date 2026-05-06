@@ -1,0 +1,142 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_DB: omnius
+      POSTGRES_USER: omnius
+      POSTGRES_PASSWORD: omnius
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  neo4j:
+    image: neo4j:5-community
+    environment:
+      NEO4J_AUTH: neo4j/omniusneo4j
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - neo4jdata:/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.10
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+
+  minio:
+    image: minio/minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: omnius
+      MINIO_ROOT_PASSWORD: omniusminio
+    ports:
+      - "9001:9001"
+      - "9002:9000"
+    volumes:
+      - minio_data:/data
+
+  nats:
+    image: nats:2.10-alpine
+    ports:
+      - "4222:4222"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    env_file:
+      - ./backend/.env
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - neo4j
+      - redis
+      - minio
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    environment:
+      REACT_APP_BACKEND_URL: http://backend:8080
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+  tools-recon:
+    build:
+      context: .
+      dockerfile: docker/tools-recon/Dockerfile
+    profiles: ["tools"]
+
+  tools-exploit:
+    build:
+      context: .
+      dockerfile: docker/tools-exploit/Dockerfile
+    profiles: ["tools"]
+
+  tools-c2:
+    build:
+      context: .
+      dockerfile: docker/tools-c2/Dockerfile
+    profiles: ["tools"]
+
+  victoria-metrics:
+    image: victoriametrics/victoria-metrics:v1.106.1
+    command: ["--storageDataPath=/storage"]
+    ports:
+      - "8428:8428"
+
+  loki:
+    image: grafana/loki:3.2.1
+    command: -config.file=/etc/loki/local-config.yaml
+    ports:
+      - "3100:3100"
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.62
+    ports:
+      - "16686:16686"
+
+  langfuse:
+    image: langfuse/langfuse:2
+    environment:
+      DATABASE_URL: postgresql://omnius:omnius@postgres:5432/omnius
+      NEXTAUTH_SECRET: omniussecret
+      NEXTAUTH_URL: http://localhost:3001
+      SALT: omnius_salt
+    ports:
+      - "3001:3000"
+    depends_on:
+      - postgres
+
+  grafana:
+    image: grafana/grafana:11.2.2
+    volumes:
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: omniusgrafana
+    ports:
+      - "3000:3000"
+
+volumes:
+  pgdata:
+  neo4jdata:
+  minio_data:
+  clickhouse_data:

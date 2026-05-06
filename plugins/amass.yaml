@@ -1,0 +1,15 @@
+name: amass
+version: "1.0.0"
+description: "Subdomain enumeration"
+author: "OMNIUS Core"
+category: reconnaissance
+container: tools-recon
+enabled: true
+tools:
+  - name: amass-enum
+    description: "Enumerate subdomains"
+    category: reconnaissance
+    container: tools-recon
+    command: "amass enum -d {{.Target}} -o /output/{{.RunID}}_amass.txt"
+    output_parser: text
+    timeout: 1200

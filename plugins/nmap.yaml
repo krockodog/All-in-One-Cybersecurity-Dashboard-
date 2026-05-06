@@ -1,0 +1,15 @@
+name: nmap
+version: "1.0.0"
+description: "Nmap network scanner"
+author: "OMNIUS Core"
+category: scanning
+container: tools-recon
+enabled: true
+tools:
+  - name: nmap-full
+    description: "Full port and service scan"
+    category: scanning
+    container: tools-recon
+    command: "nmap -sV -sC -p- {{.Target}} -oN /output/{{.RunID}}_nmap.txt"
+    output_parser: text
+    timeout: 1200

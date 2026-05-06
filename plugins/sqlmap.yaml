@@ -1,0 +1,15 @@
+name: sqlmap
+version: "1.0.0"
+description: "SQL injection detection"
+author: "OMNIUS Core"
+category: web_application_scanning
+container: tools-exploit
+enabled: true
+tools:
+  - name: sqlmap-scan
+    description: "SQL injection scan"
+    category: web_application_scanning
+    container: tools-exploit
+    command: "sqlmap -u {{.Target}} --batch --output-dir=/output/{{.RunID}}_sqlmap"
+    output_parser: text
+    timeout: 1200

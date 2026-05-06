@@ -1,0 +1,21 @@
+query DashboardStats {
+  dashboardStats {
+    totalPentests
+    activePentests
+    criticalFindings
+    highFindings
+    mediumFindings
+  }
+}
+
+query Targets {
+  targets {
+    id
+    name
+    type
+    value
+    tags
+    findingsCount
+    createdAt
+  }
+}

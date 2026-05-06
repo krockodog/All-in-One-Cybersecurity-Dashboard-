@@ -1,121 +1,271 @@
-# OSINT-Dashboard
-Diese Integration im Dashboard macht es nicht nur einfacher, deine Ergebnisse zu versionieren, sondern unterstützt auch die Vorbereitung auf gängige **Security‑Zertifizierungen**. Wenn du dich auf Prüfungen wie **CompTIA Security+**, **Certified Ethical Hacker (CEH)** oder **Certified Information Systems Security Professional (CISSP)** vorbereitest, ist solide Git‑Kompetenz unerlässlich.
+# Cybersecurity Framework
 
-* **CompTIA Security+** validiert grundlegende Fähigkeiten in der Einschätzung von Sicherheitsrisiken, dem Überwachen und Absichern von Cloud‑, Mobile‑ und IoT‑Umgebungen und ist ideal für den Einstieg in das Thema Informationssicherheit.
-* **Certified Ethical Hacker (CEH)** fokussiert sich auf das Vorgehen von Angreifern, das Aufdecken von Schwachstellen und das Durchführen von Penetration‑Tests – ein ideales Anwendungsfeld für die Tools in diesem Dashboard.
-* **CISSP – Certified Information Systems Security Professional** ist eine anspruchsvolle Zertifizierung für erfahrene Expertinnen und Experten mit mindestens fünf Jahren Berufserfahrung und deckt acht verschiedene Sicherheitsdomänen ab. Das Dashboard hilft dir, praktische Erfahrungen zu sammeln und fundiertes Wissen zu vertiefen.
+> **Operative All-in-One Pentesting Dashboard** für zertifizierte Pentester und Cybersecurity Advisors
 
-### Verantwortung und Sicherheit
-
-Wir sehen uns der Verantwortung verpflichtet, dass Sicherheits‑Werkzeuge nicht für unethische Zwecke missbraucht werden. Daher verfügt das Dashboard über:
-
-- **Scope‑Validierung** und **Autorisation**: Du legst fest, welche Ziele getestet werden dürfen und dokumentierst die Freigabe durch Kundinnen und Kunden.
-- **Role‑Based Access Control (RBAC)**: Unterschiedliche Rollen (Admin, Pentester, Client) sorgen dafür, dass nur autorisierte Personen Zugriff auf sensible Funktionen erhalten.
-- **Audit Logging**: Sämtliche Aktionen werden nachvollziehbar protokolliert, um Compliance‑Anforderungen wie GDPR und SOC 2 zu erfüllen.
-
-## 
-Installation
-
-### Voraussetzungen
-
-- **Node.js 22+**
-- **pnpm** (Paketmanager)
-- **MySQL 8+** oder **TiDB** als Datenbank
-
-### Schnellstart
-
-```bash
-# Repository klonen
-git clone https://github.com/krockodog/OSINT-Dashboard.git
-cd OSINT-Dashboard
-
-# Abhängigkeiten installieren
-pnpm install
-
-# Environment‑Variablen konfigurieren
-cp .env.example .env
-
-# Datenbank‑Migration durchführen
-pnpm db:push
-
-# Entwicklungsserver starten
-pnpm dev
-```
-
-Nach dem Start erreichst du die Anwendung lokal unter **http://localhost:5173**.
-
-### Produktions‑Build
-
-```bash
-# Build generieren
-pnpm build
-
-# Produktionsserver starten
-pnpm start
-```
-
-### Konfiguration der Environment
-
-Erstelle eine `.env`‑Datei im Root‑Verzeichnis und setze die folgenden Variablen an deine Umgebung an:
-
-```env
-# Datenbank
-DATABASE_URL=mysql://user:password@localhost:3306/osint_dashboard
-
-# Authentifizierung
-JWT_SECRET=super‑secret‑key
-
-# OAuth
-VITE_APP_ID=deine‑app‑id
-OAUTH_SERVER_URL=https://oauth.server.com
-VITE_OAUTH_PORTAL_URL=https://portal.oauth.server.com
-
-# Owner‑Informationen
-OWNER_NAME=Dein Name
-OWNER_OPEN_ID=deine‑open‑id
-
-# Manus APIs (falls benötigt)
-BUILT_IN_FORGE_API_URL=https://api.manus.im
-BUILT_IN_FORGE_API_KEY=api‑key
-VITE_FRONTEND_FORGE_API_URL=https://api.manus.im
-VITE_FRONTEND_FORGE_API_KEY=frontend‑key
-```
-
-### KI‑Provider einrichten
-
-Nach dem ersten Start navigierst du zu **Settings → KI‑Assistenten** und hinterlegst API‑Keys für die gewünschten LLM‑Provider (ChatGPT, Claude, DeepSeek, Kimi, Gemini, Llama, Mistral usw.).
-
-### Datenbank vorbereiten
-
-```bash
-# Migrationen anwenden
-pnpm db:push
-
-# Optional: Seed‑Daten für Testzwecke
-pnpm db:seed
-```
-
-## Funktionsübersicht
-
-- **Vereinheitlichter Workflow**: OSINT‑Recherche → Reconnaissance → Pentest – alles in einem Dashboard.
-- **Echte Tool‑Integration**: Nutze bewährte Werkzeuge wie Nmap, Shodan, SQLMap, Burp Suite, Nuclei, Subfinder und weitere.
-- **KI‑Assistenz**: Zehn LLM‑Provider unterstützen bei der Analyse und Auswertung der Ergebnisse.
-- **Engagement Management**: Scope‑Definition, Autorisations‑Verwaltung und Audit Logging für Compliance.
-- **Live‑Execution‑Console**: Sieh den Output der Tools in Echtzeit und reagiere sofort auf Ergebnisse.
-- **Report‑Export**: Exportiere Berichte als JSON, HTML oder CSV direkt aus der Anwendung.
-- **Responsives Design**: Das Dashboard funktioniert auf Desktop und Mobilgeräten.
-
-## Marketing & Vision
-
-Stell dir vor, du öffnest eine Plattform, auf der alle wichtigen Sicherheits‑Tools harmonisch zusammenarbeiten. Das **OSINT Dashboard** ist mehr als ein Werkzeugkasten – es ist dein **Begleiter** auf dem Weg zum zertifizierten Security‑Professional. Während andere noch nach Screenshots, Terminalfenstern und Notizen suchen, arbeitest du strukturiert im gleichen Workspace. Die integrierte **TryGit**‑Funktion nimmt dir die Berührungsängste mit Git: In wenigen Minuten lernst du, wie man Repositories erstellt, Commits verwaltet und Branches richtig nutzt. So kannst du deine Erkenntnisse sofort versionieren und verlierst keine Zeit im Prüfungsstress.
-
-Ob du für die **Security+** lernst, dich auf den **CEH** vorbereitest oder die **CISSP** anstrebst – das Dashboard hilft dir, Theorie in die Praxis umzusetzen. Jede Sicherheitslücke, die du mit Nmap oder Burp Suite findest, bringt dich dem Zertifikat einen Schritt näher. Und wenn du mal eine Frage hast, steht der KI‑Assistent bereit, um Anleitungen und Hintergrundwissen zu liefern.
-
-## Keywords
-
-`osint`, `cybersecurity`, `penetration testing`, `pentest dashboard`, `nmap`, `shodan`, `sqlmap`, `burp suite`, `nuclei`, `subfinder`, `security report`, `ai assistant`, `trygit`, `git learning`, `git training`, `security certifications`, `comptia security+`, `ceh`, `cissp`, `ethical hacking`, `reconnaissance`, `rbac`, `audit logging`, `scope validation`, `manus`.
+[![Node.js](https://img.shields.io/badge/Node.js-22+-green)](https://nodejs.org)
+[![React](https://img.shields.io/badge/React-19-blue)](https://react.dev)
+[![License](https://img.shields.io/badge/License-MIT-yellow)](#license)
 
 ---
 
-© 2026 OSINT Dashboard – Entwickelt von engagierten Pentestern für eine sichere digitale Welt.
-weitere tools kommen :-) "stay save"
+## 🎯 Übersicht
+
+Das **Cybersecurity Framework** ist ein operatives Pentesting-Dashboard, das OSINT, Reconnaissance und Penetration Testing in einer einzigen Anwendung vereinheitlicht. Es wurde speziell für professionelle Pentester entwickelt, die mehrere Tools koordinieren möchten, ohne zwischen verschiedenen Fenster und Anwendungen zu wechseln.
+
+### Kernfeatures
+- ✅ **Unified Workflow** — OSINT → Recon → Pentest in einer App
+- ✅ **Echte Tool-Integration** — Nmap, Shodan, SQLMap, Burp Suite, Nuclei, Subfinder
+- ✅ **KI-Assistenten** — 10 LLM-Provider (ChatGPT, Claude, DeepSeek, Kimi, etc.)
+- ✅ **Engagement Management** — Scope Definition, Authorization, Audit Logging
+- ✅ **Live Execution Console** — Real-time Tool Output
+- ✅ **Report Export** — JSON, HTML, CSV
+- ✅ **Mobile-Ready** — Vollständig responsiv
+- ✅ **Compliance-Ready** — RBAC, Audit Trail, Scope Validation
+
+---
+
+## 🚀 Quick Start
+
+### Voraussetzungen
+- Node.js 22+
+- pnpm
+- MySQL 8+ oder TiDB
+
+### Installation
+
+```bash
+# Repository klonen
+git clone https://github.com/yourusername/cybersecurity-dashboard.git
+cd cybersecurity-dashboard
+
+# Dependencies installieren
+pnpm install
+
+# Environment Variablen konfigurieren
+cp .env.example .env
+
+# Datenbank-Migrationen durchführen
+pnpm db:push
+
+# Dev-Server starten
+pnpm dev
+```
+
+Die App läuft dann auf `http://localhost:5173`
+
+### Produktions-Build
+
+```bash
+# Build erstellen
+pnpm build
+
+# Produktions-Server starten
+pnpm start
+```
+
+---
+
+## 📋 Setup-Anleitung
+
+### 1. Environment Variablen
+
+Erstelle eine `.env` Datei im Root-Verzeichnis:
+
+```env
+# Database
+DATABASE_URL=mysql://user:password@localhost:3306/cybersecurity_db
+
+# Authentication
+JWT_SECRET=your-super-secret-key-change-this
+
+# OAuth
+VITE_APP_ID=your-app-id
+OAUTH_SERVER_URL=https://oauth.server.com
+VITE_OAUTH_PORTAL_URL=https://portal.oauth.server.com
+
+# Owner Info
+OWNER_NAME=Your Name
+OWNER_OPEN_ID=your-open-id
+
+# Manus APIs
+BUILT_IN_FORGE_API_URL=https://api.manus.im
+BUILT_IN_FORGE_API_KEY=your-api-key
+VITE_FRONTEND_FORGE_API_URL=https://api.manus.im
+VITE_FRONTEND_FORGE_API_KEY=your-frontend-key
+```
+
+### 2. Datenbank Setup
+
+```bash
+# Migrationen durchführen
+pnpm db:push
+
+# Optional: Seed-Daten laden
+pnpm db:seed
+```
+
+### 3. AI Provider konfigurieren
+
+Nach dem Start:
+1. Gehe zu **Settings** → **KI-Assistenten**
+2. Gib deine API-Keys für die gewünschten Provider ein:
+   - ChatGPT (OpenAI)
+   - Claude (Anthropic)
+   - DeepSeek
+   - Kimi (Moonshot)
+   - Nemotron (NVIDIA)
+   - Gemini (Google)
+   - Meta Llama
+   - Mistral
+   - Perplexity
+   - Hermes
+
+---
+
+## 🛠️ Deployment
+
+### Manus Hosting (Empfohlen)
+
+```bash
+# Checkpoint erstellen
+webdev_save_checkpoint "Production Release v1.0"
+
+# Deployen
+webdev_deploy_project
+```
+
+### Docker Deployment
+
+```dockerfile
+FROM node:22-alpine
+WORKDIR /app
+COPY . .
+RUN pnpm install
+RUN pnpm build
+EXPOSE 3000
+CMD ["pnpm", "start"]
+```
+
+```bash
+docker build -t cybersecurity-framework .
+docker run -p 3000:3000 -e DATABASE_URL=... cybersecurity-framework
+```
+
+### Railway / Render / Vercel
+
+Siehe [DEPLOYMENT.md](DEPLOYMENT.md) für detaillierte Anleitung.
+
+---
+
+## 📚 Dokumentation
+
+- **[WIKI.md](WIKI.md)** — Vollständige Feature-Dokumentation
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** — Contribution Guidelines
+- **[API.md](API.md)** — tRPC API Referenz
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** — System-Architektur
+
+---
+
+## 🔐 Sicherheit
+
+### Autorisierung
+- Role-Based Access Control (RBAC): Admin, Pentester, Client
+- Scope Validation für alle Tool-Ausführungen
+- Audit Logging für Compliance
+
+### Best Practices
+- Verwende starke Passwörter für API-Keys
+- Speichere API-Keys in Environment Variablen
+- Verwende HTTPS in Produktion
+- Regelmäßige Backups der Datenbank
+
+### Compliance
+- GDPR-konform (Datenschutz)
+- SOC 2 Audit Trail
+- Engagement Authorization Tracking
+
+---
+
+## 🧪 Testing
+
+```bash
+# Unit Tests
+pnpm test
+
+# Integration Tests
+pnpm test:integration
+
+# E2E Tests
+pnpm test:e2e
+
+# Coverage Report
+pnpm test:coverage
+```
+
+---
+
+## 📊 Architektur
+
+```
+cybersecurity-dashboard/
+├── client/                 # React Frontend
+│   ├── src/
+│   │   ├── components/     # UI Components
+│   │   ├── pages/          # Page Components
+│   │   ├── hooks/          # Custom Hooks
+│   │   └── lib/            # Utilities
+│   └── public/             # Static Assets
+├── server/                 # Express Backend
+│   ├── routers/            # tRPC Procedures
+│   ├── tools/              # Tool Wrappers
+│   ├── workflows/          # Workflow Engine
+│   ├── services/           # Business Logic
+│   └── db.ts               # Database Helpers
+├── drizzle/                # Database Schema
+│   ├── schema.ts           # Table Definitions
+│   └── migrations/         # Migration Files
+└── shared/                 # Shared Types
+```
+
+---
+
+## 🤝 Contributing
+
+Wir freuen uns über Contributions! Bitte lese [CONTRIBUTING.md](CONTRIBUTING.md) für Details.
+
+### Entwicklungs-Workflow
+
+1. Fork das Repository
+2. Erstelle einen Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit deine Änderungen (`git commit -m 'Add AmazingFeature'`)
+4. Push zum Branch (`git push origin feature/AmazingFeature`)
+5. Öffne einen Pull Request
+
+---
+
+## 📝 Lizenz
+
+Dieses Projekt ist unter der MIT Lizenz lizenziert. Siehe [LICENSE](LICENSE) für Details.
+
+---
+
+## 📞 Support
+
+- **Issues:** [GitHub Issues](https://github.com/yourusername/cybersecurity-dashboard/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/yourusername/cybersecurity-dashboard/discussions)
+- **Email:** support@example.com
+
+---
+
+## 🙏 Danksagungen
+
+- Manus Team für die Hosting-Infrastruktur
+- Alle Pentester, die Feedback gegeben haben
+- Open-Source Community für großartige Tools
+
+---
+
+**Made with ❤️ for Pentester**
+
+**Version:** 1.0.0  
+**Last Updated:** 2026-04-27

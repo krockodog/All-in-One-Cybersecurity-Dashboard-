@@ -1,0 +1,15 @@
+name: sliver
+version: "1.0.0"
+description: "Sliver C2 operations"
+author: "OMNIUS Core"
+category: c2
+container: tools-c2
+enabled: false
+tools:
+  - name: sliver-server
+    description: "Start Sliver server"
+    category: c2
+    container: tools-c2
+    command: "sliver-server"
+    output_parser: text
+    timeout: 3600

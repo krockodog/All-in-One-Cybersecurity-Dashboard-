@@ -1,0 +1,17 @@
+name: nuclei
+version: "1.0.0"
+description: "Nuclei fast scanner"
+author: "OMNIUS Core"
+category: scanning
+container: tools-recon
+enabled: true
+config:
+  severity: critical,high,medium
+tools:
+  - name: nuclei-scan
+    description: "Template based scan"
+    category: scanning
+    container: tools-recon
+    command: "nuclei -target {{.Target}} -json -o /output/{{.RunID}}_nuclei.json"
+    output_parser: json_lines
+    timeout: 900

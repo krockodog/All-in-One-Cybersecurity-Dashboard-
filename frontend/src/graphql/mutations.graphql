@@ -1,0 +1,17 @@
+mutation CreateTarget($input: CreateTargetInput!) {
+  createTarget(input: $input) {
+    id
+    name
+    type
+    value
+  }
+}
+
+mutation CreatePentest($input: CreatePentestInput!) {
+  createPentest(input: $input) {
+    id
+    name
+    mode
+    status
+  }
+}

@@ -1,0 +1,15 @@
+name: lynis
+version: "1.0.0"
+description: "Lynis host audit"
+author: "OMNIUS Core"
+category: defensive
+container: tools-recon
+enabled: true
+tools:
+  - name: lynis-audit
+    description: "System audit"
+    category: defensive
+    container: tools-recon
+    command: "lynis audit system --quick"
+    output_parser: text
+    timeout: 1800

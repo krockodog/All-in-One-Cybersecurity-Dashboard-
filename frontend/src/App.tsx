@@ -1,0 +1,30 @@
+import { Navigate, Route, Routes } from "react-router-dom";
+import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import DashboardPage from "@/pages/DashboardPage";
+import TargetsPage from "@/pages/TargetsPage";
+import PentestsPage from "@/pages/PentestsPage";
+import FindingsPage from "@/pages/FindingsPage";
+import RiskMatrixPage from "@/pages/RiskMatrixPage";
+import PluginsPage from "@/pages/PluginsPage";
+import SettingsPage from "@/pages/SettingsPage";
+import ReportsPage from "@/pages/ReportsPage";
+import UsersPage from "@/pages/UsersPage";
+
+export default function App() {
+  return (
+    <Routes>
+      <Route element={<DashboardLayout />}>
+        <Route path="/" element={<DashboardPage />} />
+        <Route path="/targets" element={<TargetsPage />} />
+        <Route path="/pentests" element={<PentestsPage />} />
+        <Route path="/findings" element={<FindingsPage />} />
+        <Route path="/risk-matrix" element={<RiskMatrixPage />} />
+        <Route path="/plugins" element={<PluginsPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/reports" element={<ReportsPage />} />
+        <Route path="/users" element={<UsersPage />} />
+      </Route>
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+}

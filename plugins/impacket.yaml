@@ -1,0 +1,15 @@
+name: impacket
+version: "1.0.0"
+description: "Impacket AD and SMB suite"
+author: "OMNIUS Core"
+category: credential_access
+container: tools-exploit
+enabled: true
+tools:
+  - name: secretsdump
+    description: "Dump hashes"
+    category: credential_access
+    container: tools-exploit
+    command: "secretsdump.py {{.Domain}}/{{.Username}}:{{.Password}}@{{.Target}}"
+    output_parser: text
+    timeout: 1200

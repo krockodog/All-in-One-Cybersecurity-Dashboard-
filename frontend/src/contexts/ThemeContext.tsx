@@ -13,7 +13,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setTheme] = useState<Theme>("dark");
   const toggleTheme = useCallback(() => {
     setTheme((previous) => (previous === "dark" ? "light" : "dark"));
-  }, []);
+  }, [setTheme]);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;

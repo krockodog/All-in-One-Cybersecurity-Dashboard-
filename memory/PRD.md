@@ -75,9 +75,15 @@ Build a production-ready, self-hosted OMNIUS RED-Team dashboard framework with G
 
 ## Validation Status
 - ✅ Frontend build validated: `pnpm build` succeeds in `/app/frontend`.
-- ✅ Backend API contract test validated: `pytest -q /app/backend/tests/test_api_v1_contract.py` → **5 passed** with `REACT_APP_BACKEND_URL=http://localhost:8001`.
+- ✅ Backend API contract test validated: `pytest -q /app/backend/tests/test_api_v1_contract.py` → **7 passed** with `REACT_APP_BACKEND_URL=http://localhost:8001`.
 - ✅ Manual curl lifecycle verification passed: login, targets create, pentest authorize/start, risk-matrix 5x5, websocket HTTP-upgrade contract (426 on plain GET).
 - ⚠️ Native Go compile step still not executable in this container (`go: command not found`).
+
+## Code Review Remediation (Latest)
+- Switched frontend auth storage away from `localStorage` token usage to cookie-session flow.
+- Refactored hook dependency-sensitive logic into dedicated helpers/hooks (`useSessionBootstrap`, `useSocketLifecycle`) and reduced long anonymous functions.
+- Split pentest contract test into smaller focused tests, reduced complexity, and removed boolean anti-pattern checks.
+- Re-validated after remediation: frontend build passes and backend contract suite now passes **7 tests**.
 
 ## Prioritized Backlog
 

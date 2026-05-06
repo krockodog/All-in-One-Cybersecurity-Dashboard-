@@ -14,7 +14,7 @@ export const LocaleProvider = ({ children }: { children: ReactNode }) => {
   const [locale, setLocale] = useState<Locale>("en");
   const toggleLocale = useCallback(() => {
     setLocale((current) => (current === "en" ? "de" : "en"));
-  }, []);
+  }, [setLocale]);
 
   const translate = useCallback(
     (en: string, de: string) => (locale === "de" ? de : en),

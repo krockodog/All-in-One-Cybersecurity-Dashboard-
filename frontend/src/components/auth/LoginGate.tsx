@@ -1,30 +1,14 @@
-import { FormEvent, ReactNode, useEffect, useState } from "react";
+import { FormEvent, ReactNode, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAuthContext } from "@/contexts/AuthContext";
-import { apiFetch } from "@/utils/api";
-import { User } from "@/types";
+import { useSessionBootstrap } from "@/hooks/useSessionBootstrap";
 
 export const LoginGate = ({ children }: { children: ReactNode }) => {
   const { login } = useAuth();
   const { authenticated, setUser, setAuthenticated } = useAuthContext();
   const [email, setEmail] = useState("admin@omnius.local");
   const [password, setPassword] = useState("change_me_admin_password");
-  const [checkingSession, setCheckingSession] = useState(true);
-
-  useEffect(() => {
-    const checkSession = async () => {
-      try {
-        const payload = await apiFetch<{ user: User }>("/api/v1/auth/me");
-        setUser(payload.user);
-        setAuthenticated(true);
-      } catch {
-        setAuthenticated(false);
-      } finally {
-        setCheckingSession(false);
-      }
-    };
-    void checkSession();
-  }, [setAuthenticated, setUser]);
+  const { checkingSession } = useSessionBootstrap({ setAuthenticated, setUser });
 
   if (checkingSession) {
     return <div className="flex min-h-screen items-center justify-center" data-testid="login-session-check">Checking session...</div>;

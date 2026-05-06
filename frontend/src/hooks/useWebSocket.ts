@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Dispatch, MutableRefObject, SetStateAction, useEffect, useMemo, useRef, useState } from "react";
 
 export interface TerminalEvent {
   time: string;
@@ -20,24 +20,36 @@ const parseTerminalEvent = (raw: string): TerminalEvent => JSON.parse(raw) as Te
 
 const nextRetryDelay = (retryCount: number): number => Math.min(MAX_RECONNECT_DELAY_MS, retryCount * RECONNECT_DELAY_MS);
 
-export const useWebSocket = (pentestId: string) => {
-  const [messages, setMessages] = useState<TerminalEvent[]>([]);
-  const [connected, setConnected] = useState(false);
-  const retryRef = useRef(0);
+const appendLimitedMessages = (previous: TerminalEvent[], event: TerminalEvent): TerminalEvent[] => [
+  ...previous.slice(-MAX_MESSAGES),
+  event
+];
 
-  const baseUrl = process.env.REACT_APP_BACKEND_URL ?? "";
+interface SocketHandlers {
+  onOpen: () => void;
+  onMessage: (event: TerminalEvent) => void;
+  onClose: () => void;
+}
 
-  const wsUrl = useMemo(() => {
-    if (!baseUrl) {
-      return "";
-    }
-    return toWebSocketUrl(baseUrl, pentestId);
-  }, [baseUrl, pentestId]);
+const createSocket = (wsUrl: string, handlers: SocketHandlers): WebSocket => {
+  const socket = new WebSocket(wsUrl);
+  socket.onopen = handlers.onOpen;
+  socket.onmessage = (messageEvent: MessageEvent<string>) => {
+    handlers.onMessage(parseTerminalEvent(messageEvent.data));
+  };
+  socket.onclose = handlers.onClose;
+  return socket;
+};
 
-  const appendMessage = useCallback((event: TerminalEvent) => {
-    setMessages((previous) => [...previous.slice(-MAX_MESSAGES), event]);
-  }, []);
+interface SocketLifecycleArgs {
+  pentestId: string;
+  wsUrl: string;
+  retryRef: MutableRefObject<number>;
+  setConnected: Dispatch<SetStateAction<boolean>>;
+  setMessages: Dispatch<SetStateAction<TerminalEvent[]>>;
+}
 
+const useSocketLifecycle = ({ pentestId, wsUrl, retryRef, setConnected, setMessages }: SocketLifecycleArgs): void => {
   useEffect(() => {
     if (!pentestId || !wsUrl) {
       return;
@@ -47,19 +59,20 @@ export const useWebSocket = (pentestId: string) => {
     let retryTimer: number | undefined;
 
     const connect = (): void => {
-      socket = new WebSocket(wsUrl);
-      socket.onopen = () => {
-        setConnected(true);
-        retryRef.current = 0;
-      };
-      socket.onmessage = (event) => {
-        appendMessage(parseTerminalEvent(event.data));
-      };
-      socket.onclose = () => {
-        setConnected(false);
-        retryRef.current += 1;
-        retryTimer = window.setTimeout(connect, nextRetryDelay(retryRef.current));
-      };
+      socket = createSocket(wsUrl, {
+        onOpen: () => {
+          setConnected(true);
+          retryRef.current = 0;
+        },
+        onMessage: (event: TerminalEvent) => {
+          setMessages((previous) => appendLimitedMessages(previous, event));
+        },
+        onClose: () => {
+          setConnected(false);
+          retryRef.current += 1;
+          retryTimer = window.setTimeout(connect, nextRetryDelay(retryRef.current));
+        }
+      });
     };
 
     connect();
@@ -77,7 +90,24 @@ export const useWebSocket = (pentestId: string) => {
       }
       socket?.close();
     };
-  }, [appendMessage, pentestId, wsUrl]);
+  }, [pentestId, retryRef, setConnected, setMessages, wsUrl]);
+};
+
+export const useWebSocket = (pentestId: string) => {
+  const [messages, setMessages] = useState<TerminalEvent[]>([]);
+  const [connected, setConnected] = useState(false);
+  const retryRef = useRef(0);
+
+  const baseUrl = process.env.REACT_APP_BACKEND_URL ?? "";
+
+  const wsUrl = useMemo(() => {
+    if (!baseUrl) {
+      return "";
+    }
+    return toWebSocketUrl(baseUrl, pentestId);
+  }, [baseUrl, pentestId, toWebSocketUrl]);
+
+  useSocketLifecycle({ pentestId, wsUrl, retryRef, setConnected, setMessages });
 
   return { messages, connected };
 };

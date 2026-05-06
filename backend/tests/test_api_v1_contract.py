@@ -45,25 +45,45 @@ def test_protected_targets_requires_bearer(api_client, api_base_url):
     assert response.status_code in (401, 403)
 
 
-def test_pentest_flow_create_authorize_start_stop(api_client, api_base_url, auth_payload):
+@pytest.fixture
+def auth_headers(api_client, api_base_url, auth_payload):
     login_response = api_client.post(f"{api_base_url}/api/v1/auth/login", json=auth_payload, timeout=10)
     assert login_response.status_code == 200
     token = login_response.json()["accessToken"]
-    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+    return {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
 
+
+def test_create_target_with_auth(api_client, api_base_url, auth_headers):
     target_payload = {
         "name": "TEST_target_contract",
         "type": "domain",
         "value": "test-contract.local",
         "tags": ["TEST"],
     }
-    target_response = api_client.post(f"{api_base_url}/api/v1/targets", json=target_payload, headers=headers, timeout=10)
+    target_response = api_client.post(
+        f"{api_base_url}/api/v1/targets", json=target_payload, headers=auth_headers, timeout=10
+    )
     assert target_response.status_code == 201
     target_data = target_response.json().get("data", {})
     assert target_data.get("name") == target_payload["name"]
-    target_id = target_data.get("id")
-    assert isinstance(target_id, str) and target_id
+    assert isinstance(target_data.get("id"), str) and target_data.get("id")
 
+
+def _create_target(api_client, api_base_url, headers):
+    target_payload = {
+        "name": "TEST_target_for_pentest",
+        "type": "domain",
+        "value": "test-pentest.local",
+        "tags": ["TEST"],
+    }
+    target_response = api_client.post(f"{api_base_url}/api/v1/targets", json=target_payload, headers=headers, timeout=10)
+    assert target_response.status_code == 201
+    target_id = target_response.json().get("data", {}).get("id")
+    assert isinstance(target_id, str) and target_id
+    return target_id
+
+
+def _create_pentest(api_client, api_base_url, headers, target_id):
     pentest_payload = {
         "name": "TEST_pentest_contract",
         "mode": "manual",
@@ -72,9 +92,20 @@ def test_pentest_flow_create_authorize_start_stop(api_client, api_base_url, auth
     }
     create_pentest = api_client.post(f"{api_base_url}/api/v1/pentests", json=pentest_payload, headers=headers, timeout=10)
     assert create_pentest.status_code == 201
-    pentest_data = create_pentest.json().get("data", {})
-    pentest_id = pentest_data.get("id")
+    pentest_id = create_pentest.json().get("data", {}).get("id")
     assert isinstance(pentest_id, str) and pentest_id
+    return pentest_id
+
+
+def test_create_pentest_with_target(api_client, api_base_url, auth_headers):
+    target_id = _create_target(api_client, api_base_url, auth_headers)
+    pentest_id = _create_pentest(api_client, api_base_url, auth_headers, target_id)
+    assert isinstance(pentest_id, str) and pentest_id
+
+
+def test_authorize_start_stop_pentest(api_client, api_base_url, auth_headers):
+    target_id = _create_target(api_client, api_base_url, auth_headers)
+    pentest_id = _create_pentest(api_client, api_base_url, auth_headers, target_id)
 
     authorize_payload = {
         "agreeToTerms": True,
@@ -82,16 +113,16 @@ def test_pentest_flow_create_authorize_start_stop(api_client, api_base_url, auth
         "scopeDocUrl": "https://docs.omnius.local/scope.pdf",
     }
     authorize_response = api_client.post(
-        f"{api_base_url}/api/v1/pentests/{pentest_id}/authorize", json=authorize_payload, headers=headers, timeout=10
+        f"{api_base_url}/api/v1/pentests/{pentest_id}/authorize", json=authorize_payload, headers=auth_headers, timeout=10
     )
     assert authorize_response.status_code == 200
-    assert authorize_response.json().get("data", {}).get("authorized") == True
+    assert authorize_response.json().get("data", {}).get("authorized")
 
-    start_response = api_client.post(f"{api_base_url}/api/v1/pentests/{pentest_id}/start", headers=headers, timeout=10)
+    start_response = api_client.post(f"{api_base_url}/api/v1/pentests/{pentest_id}/start", headers=auth_headers, timeout=10)
     assert start_response.status_code == 200
     assert start_response.json().get("data", {}).get("status") == "running"
 
-    stop_response = api_client.post(f"{api_base_url}/api/v1/pentests/{pentest_id}/stop", headers=headers, timeout=10)
+    stop_response = api_client.post(f"{api_base_url}/api/v1/pentests/{pentest_id}/stop", headers=auth_headers, timeout=10)
     assert stop_response.status_code == 200
     assert stop_response.json().get("data", {}).get("status") == "stopped"
 

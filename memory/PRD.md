@@ -97,6 +97,12 @@ Build a production-ready, self-hosted OMNIUS RED-Team dashboard framework with G
 - Added Python type hints across API contract fixtures/tests/helpers in `tests/test_api_v1_contract.py`.
 - Validation unchanged and passing: frontend build ✅, backend API contracts ✅ (**7/7**).
 
+## Code Review Remediation (Strict Hook Pass)
+- Rebuilt `useWebSocket` into strict, focused units: connection setup, reconnect scheduling, and heartbeat are split with stable callback references and scoped effects.
+- Reworked `useSessionBootstrap` to remove callback indirection and use a mount-safe async effect with explicit dependencies.
+- Kept magic websocket timing values as named constants and preserved strict lint cleanliness.
+- Re-validated: JS lint ✅, frontend build ✅, backend API contracts ✅ (**7/7**).
+
 ## Prioritized Backlog
 
 ### P0 (must complete next)

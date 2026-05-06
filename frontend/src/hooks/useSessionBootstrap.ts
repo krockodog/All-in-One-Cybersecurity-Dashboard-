@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { User } from "@/types";
 import { apiFetch } from "@/utils/api";
 
@@ -10,21 +10,34 @@ interface SessionBootstrapArgs {
 export const useSessionBootstrap = ({ setUser, setAuthenticated }: SessionBootstrapArgs) => {
   const [checkingSession, setCheckingSession] = useState(true);
 
-  const checkSession = useCallback(async () => {
-    try {
-      const payload = await apiFetch<{ user: User }>("/api/v1/auth/me");
-      setUser(payload.user);
-      setAuthenticated(true);
-    } catch {
-      setAuthenticated(false);
-    } finally {
-      setCheckingSession(false);
-    }
-  }, [apiFetch, setAuthenticated, setCheckingSession, setUser]);
-
   useEffect(() => {
-    void checkSession();
-  }, [checkSession]);
+    let mounted = true;
+
+    const runSessionCheck = async (): Promise<void> => {
+      try {
+        const payload = await apiFetch<{ user: User }>("/api/v1/auth/me");
+        if (!mounted) {
+          return;
+        }
+        setUser(payload.user);
+        setAuthenticated(true);
+      } catch {
+        if (mounted) {
+          setAuthenticated(false);
+        }
+      } finally {
+        if (mounted) {
+          setCheckingSession(false);
+        }
+      }
+    };
+
+    void runSessionCheck();
+
+    return () => {
+      mounted = false;
+    };
+  }, [setAuthenticated, setCheckingSession, setUser]);
 
   return { checkingSession };
 };

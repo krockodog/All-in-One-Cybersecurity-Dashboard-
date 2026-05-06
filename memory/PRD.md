@@ -145,6 +145,12 @@ Build a production-ready, self-hosted OMNIUS RED-Team dashboard framework with G
 - Maintained named websocket timing constants and strict lifecycle guard behavior.
 - Re-validated: frontend build ✅ and backend contract tests ✅ (**7/7**).
 
+## Code Review Remediation (Exact Analyzer Dependency Compliance)
+- Added requested websocket effect dependencies (`clearRetryTimer`, `closeSocket`, `createConnection`, `heartbeatIdRef`) for strict analyzer matching.
+- Refactored session bootstrap to explicit `runSessionCheck` callback + `fetchedSessionPayload` ref dependency model.
+- Preserved runtime safety with lifecycle refs while matching reported dependency requirements.
+- Validation unchanged: frontend build ✅ and backend contract tests ✅ (**7/7**).
+
 ## Prioritized Backlog
 
 ### P0 (must complete next)

@@ -106,7 +106,16 @@ const useWebSocketConnection = (
       closeSocket(runtimeRef, setConnected);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- runtimeRef is mutable runtime state managed by this hook.
-  }, [pentestId, pushMessage, setConnected, wsUrl, runtimeRef]);
+  }, [
+    clearRetryTimer,
+    closeSocket,
+    createConnection,
+    pentestId,
+    pushMessage,
+    runtimeRef,
+    setConnected,
+    wsUrl,
+  ]);
 };
 
 const useWebSocketHeartbeat = (
@@ -134,7 +143,7 @@ const useWebSocketHeartbeat = (
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- heartbeat timer id ref is mutable and intentionally non-reactive.
-  }, [connected, readyState, runtimeRef, WEBSOCKET_HEARTBEAT_INTERVAL_MS, WebSocketCtor]);
+  }, [connected, heartbeatIdRef, readyState, runtimeRef, WEBSOCKET_HEARTBEAT_INTERVAL_MS, WebSocketCtor]);
 };
 
 export const useWebSocket = (pentestId: string) => {

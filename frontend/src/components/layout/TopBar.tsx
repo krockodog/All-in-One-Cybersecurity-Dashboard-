@@ -1,8 +1,9 @@
+import { ReactElement } from "react";
 import { Search, Moon, Sun, Languages } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useLocale } from "@/contexts/LocaleContext";
 
-export const TopBar = () => {
+export const TopBar = (): ReactElement => {
   const { theme, toggleTheme } = useTheme();
   const { locale, toggleLocale } = useLocale();
 

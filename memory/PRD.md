@@ -85,6 +85,12 @@ Build a production-ready, self-hosted OMNIUS RED-Team dashboard framework with G
 - Split pentest contract test into smaller focused tests, reduced complexity, and removed boolean anti-pattern checks.
 - Re-validated after remediation: frontend build passes and backend contract suite now passes **7 tests**.
 
+## Code Review Remediation (Current Iteration)
+- Simplified Theme/Locale context hooks to avoid unnecessary callback/memo dependency pitfalls while keeping behavior stable.
+- Hardened websocket/session hooks with explicit stable references and expanded dependency-safe structure.
+- Increased explicit TypeScript annotation coverage across dashboard/layout/findings/settings/targets components.
+- Re-validated: frontend build still passes and backend contract tests remain green (**7/7**).
+
 ## Prioritized Backlog
 
 ### P0 (must complete next)

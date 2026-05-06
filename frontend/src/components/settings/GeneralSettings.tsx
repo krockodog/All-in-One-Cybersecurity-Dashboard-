@@ -1,7 +1,12 @@
+import { ChangeEvent, ReactElement } from "react";
 import { useLocale } from "@/contexts/LocaleContext";
 
-export const GeneralSettings = () => {
+export const GeneralSettings = (): ReactElement => {
   const { locale } = useLocale();
+
+  const handleReadOnlySelect = (_event: ChangeEvent<HTMLSelectElement>): void => {
+    return;
+  };
 
   return (
     <section className="space-y-3 rounded-xl border border-white/10 p-4" data-testid="general-settings">
@@ -17,7 +22,7 @@ export const GeneralSettings = () => {
         </label>
         <label className="space-y-1" data-testid="general-language-select">
           <span className="text-sm">Language</span>
-          <select value={locale} className="w-full rounded-lg border border-white/10 bg-black/20 p-2" onChange={() => undefined}>
+          <select value={locale} className="w-full rounded-lg border border-white/10 bg-black/20 p-2" onChange={handleReadOnlySelect}>
             <option value="en">EN</option>
             <option value="de">DE</option>
           </select>

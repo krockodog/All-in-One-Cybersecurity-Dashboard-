@@ -1,4 +1,4 @@
-import { ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { ReactNode, createContext, useContext, useEffect, useState } from "react";
 
 type Theme = "dark" | "light";
 
@@ -11,21 +11,15 @@ const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setTheme] = useState<Theme>("dark");
-  const toggleTheme = useCallback(() => {
+  const toggleTheme = (): void => {
     setTheme((previous) => (previous === "dark" ? "light" : "dark"));
-  }, [setTheme]);
+  };
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
   }, [theme]);
 
-  const value = useMemo(
-    () => ({
-      theme,
-      toggleTheme
-    }),
-    [theme, toggleTheme]
-  );
+  const value: ThemeContextValue = { theme, toggleTheme };
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 };

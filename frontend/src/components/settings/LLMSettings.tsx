@@ -1,8 +1,10 @@
+import { ReactElement } from "react";
 import { useSettings } from "@/hooks/useSettings";
+import { LLMConfig } from "@/types";
 
-export const LLMSettings = () => {
+export const LLMSettings = (): ReactElement => {
   const { settings } = useSettings();
-  const llmConfig = settings.data?.data.llm ?? {};
+  const llmConfig: Record<string, LLMConfig> = settings.data?.data.llm ?? {};
 
   return (
     <section className="space-y-3 rounded-xl border border-white/10 p-4" data-testid="llm-settings">

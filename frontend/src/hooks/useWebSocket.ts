@@ -90,7 +90,17 @@ const useSocketLifecycle = ({ pentestId, wsUrl, retryRef, setConnected, setMessa
       }
       socket?.close();
     };
-  }, [pentestId, retryRef, setConnected, setMessages, wsUrl]);
+  }, [
+    HEARTBEAT_INTERVAL_MS,
+    appendLimitedMessages,
+    createSocket,
+    nextRetryDelay,
+    pentestId,
+    retryRef,
+    setConnected,
+    setMessages,
+    wsUrl,
+  ]);
 };
 
 export const useWebSocket = (pentestId: string) => {

@@ -1,8 +1,9 @@
+import { ReactElement } from "react";
 import { useRiskMatrix } from "@/hooks/useRiskMatrix";
 
-const heatColors = ["bg-green-500/20", "bg-yellow-500/30", "bg-orange-500/40", "bg-red-500/50"];
+const heatColors: string[] = ["bg-green-500/20", "bg-yellow-500/30", "bg-orange-500/40", "bg-red-500/50"];
 
-export const RiskMatrix = () => {
+export const RiskMatrix = (): ReactElement => {
   const { data } = useRiskMatrix();
   const matrix = data?.matrix ?? Array.from({ length: 5 }, () => Array.from({ length: 5 }, () => 0));
 

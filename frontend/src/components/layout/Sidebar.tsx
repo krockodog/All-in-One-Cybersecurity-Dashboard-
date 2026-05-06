@@ -1,7 +1,14 @@
+import { ReactElement } from "react";
 import { NavLink } from "react-router-dom";
-import { Shield, Crosshair, Bug, AlertTriangle, Plug, Settings, FileText, Users, LayoutDashboard } from "lucide-react";
+import { LucideIcon, Shield, Crosshair, Bug, AlertTriangle, Plug, Settings, FileText, Users, LayoutDashboard } from "lucide-react";
 
-const links = [
+interface SidebarLink {
+  to: string;
+  label: string;
+  icon: LucideIcon;
+}
+
+const links: SidebarLink[] = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/targets", label: "Targets", icon: Crosshair },
   { to: "/pentests", label: "Pentests", icon: Shield },
@@ -13,7 +20,7 @@ const links = [
   { to: "/users", label: "Users", icon: Users }
 ];
 
-export const Sidebar = () => {
+export const Sidebar = (): ReactElement => {
   return (
     <aside className="panel h-full w-full p-4" data-testid="dashboard-sidebar">
       <h1 className="mono mb-6 text-xl font-bold text-neon" data-testid="sidebar-title">

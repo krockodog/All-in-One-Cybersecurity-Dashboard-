@@ -20,7 +20,7 @@ export const useSessionBootstrap = ({ setUser, setAuthenticated }: SessionBootst
     } finally {
       setCheckingSession(false);
     }
-  }, [setAuthenticated, setUser]);
+  }, [apiFetch, setAuthenticated, setUser]);
 
   useEffect(() => {
     void checkSession();

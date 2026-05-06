@@ -1,10 +1,12 @@
+import { ReactElement } from "react";
 import { TargetForm } from "./TargetForm";
 import { TargetList } from "./TargetList";
 import { useTargets } from "@/hooks/useTargets";
+import { Target } from "@/types";
 
-export const TargetManager = () => {
+export const TargetManager = (): ReactElement => {
   const { targets, createTarget } = useTargets();
-  const targetItems = targets.data?.data ?? [];
+  const targetItems: Target[] = targets.data?.data ?? [];
 
   return (
     <section className="space-y-4" data-testid="target-manager">

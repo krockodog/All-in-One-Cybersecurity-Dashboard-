@@ -1,9 +1,11 @@
+import { ReactElement } from "react";
 import { useFindings } from "@/hooks/useFindings";
+import { Finding } from "@/types";
 import { formatDate, severityClass } from "@/utils/formatters";
 
-export const FindingList = () => {
+export const FindingList = (): ReactElement => {
   const { findings } = useFindings();
-  const items = findings.data?.data ?? [];
+  const items: Finding[] = findings.data?.data ?? [];
 
   return (
     <section className="space-y-3" data-testid="finding-list-section">

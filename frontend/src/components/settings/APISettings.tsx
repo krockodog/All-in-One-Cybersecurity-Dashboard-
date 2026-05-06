@@ -1,6 +1,8 @@
-const providers = ["Shodan", "Censys", "VirusTotal", "SecurityTrails", "Hunter", "HaveIBeenPwned", "Dehashed"];
+import { ReactElement } from "react";
 
-export const APISettings = () => {
+const providers: string[] = ["Shodan", "Censys", "VirusTotal", "SecurityTrails", "Hunter", "HaveIBeenPwned", "Dehashed"];
+
+export const APISettings = (): ReactElement => {
   return (
     <section className="space-y-3 rounded-xl border border-white/10 p-4" data-testid="api-settings">
       <h3 className="text-lg font-semibold">External API Keys</h3>

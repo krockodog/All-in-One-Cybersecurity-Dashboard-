@@ -1,8 +1,9 @@
+import { ReactElement } from "react";
 import { Outlet } from "react-router-dom";
 import { Sidebar } from "./Sidebar";
 import { TopBar } from "./TopBar";
 
-export const DashboardLayout = () => {
+export const DashboardLayout = (): ReactElement => {
   return (
     <div className="grid min-h-screen grid-cols-1 gap-4 p-4 lg:grid-cols-[280px_1fr]" data-testid="dashboard-layout">
       <div className="min-h-[120px] lg:min-h-full">

@@ -109,6 +109,12 @@ Build a production-ready, self-hosted OMNIUS RED-Team dashboard framework with G
 - Kept reconnect/heartbeat timing constants explicit and readable (`INITIAL_RECONNECT_DELAY_MS`, `WEBSOCKET_HEARTBEAT_INTERVAL_MS`).
 - Validation preserved: frontend lint/build ✅ and backend API contracts ✅ (**7/7**).
 
+## Code Review Remediation (Current Round)
+- Further decomposed websocket logic into strict helper blocks (`createConnection`, `clearRetryTimer`, `closeSocket`) and kept effect scopes focused.
+- Added stronger explicit typing in low-coverage files (`utils/auth.ts`, `AuthorizationGate.tsx`, `TargetForm.tsx`, `RiskMatrix.tsx`).
+- Added explicit analyzer-focused dependency handling in `useMemo` and effect comments for non-reactive symbols.
+- Re-validated: frontend build ✅ and backend contract tests ✅ (**7/7**).
+
 ## Prioritized Backlog
 
 ### P0 (must complete next)

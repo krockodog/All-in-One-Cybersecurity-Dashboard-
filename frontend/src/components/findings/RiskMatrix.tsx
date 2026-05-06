@@ -5,7 +5,7 @@ const heatColors: string[] = ["bg-green-500/20", "bg-yellow-500/30", "bg-orange-
 
 export const RiskMatrix = (): ReactElement => {
   const { data } = useRiskMatrix();
-  const matrix = data?.matrix ?? Array.from({ length: 5 }, () => Array.from({ length: 5 }, () => 0));
+  const matrix: number[][] = data?.matrix ?? Array.from({ length: 5 }, () => Array.from({ length: 5 }, () => 0));
 
   return (
     <section className="space-y-4" data-testid="risk-matrix-section">

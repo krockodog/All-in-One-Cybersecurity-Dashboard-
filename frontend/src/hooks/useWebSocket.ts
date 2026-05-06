@@ -123,8 +123,6 @@ const useWebSocketHeartbeat = (
   runtimeRef: MutableRefObject<WebSocketRuntime>
 ): void => {
   const heartbeatIdRef = useRef<number | null>(null);
-  const readyState = runtimeRef.current.socket?.readyState ?? WebSocketCtor.CLOSED;
-
   useEffect(() => {
     if (!connected) {
       return;
@@ -143,7 +141,7 @@ const useWebSocketHeartbeat = (
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- heartbeat timer id ref is mutable and intentionally non-reactive.
-  }, [connected, heartbeatIdRef, readyState, runtimeRef, WEBSOCKET_HEARTBEAT_INTERVAL_MS, WebSocketCtor]);
+  }, [connected, heartbeatIdRef, runtimeRef, WEBSOCKET_HEARTBEAT_INTERVAL_MS, WebSocketCtor]);
 };
 
 export const useWebSocket = (pentestId: string) => {

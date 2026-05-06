@@ -163,6 +163,12 @@ Build a production-ready, self-hosted OMNIUS RED-Team dashboard framework with G
 - Increased explicit typing in `useFindings`, `useSettings`, `useTargets`, plus stronger typing in `RiskMatrix` and `vite.config.ts`.
 - Validation remained green: frontend build ✅ and backend contract tests ✅ (**7/7**).
 
+## Code Review Remediation (Latest Hook Naming + Dependency Count Pass)
+- Updated session bootstrap callback dependencies to include explicit `payload` + `sessionActionsRef` reference path for analyzer compliance.
+- Reduced websocket heartbeat effect dependency count to 5 while retaining strict global constructor dependency.
+- Kept websocket delay constants named and self-documented.
+- Re-validated with passing frontend build and backend API contracts (**7/7**).
+
 ## Prioritized Backlog
 
 ### P0 (must complete next)

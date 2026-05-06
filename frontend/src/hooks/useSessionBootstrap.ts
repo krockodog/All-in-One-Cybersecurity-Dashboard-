@@ -37,7 +37,8 @@ export const useSessionBootstrap = ({ setUser, setAuthenticated }: SessionBootst
     return () => {
       mounted = false;
     };
-  }, [setAuthenticated, setCheckingSession, setUser]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- `User` and local `payload` are type/local values, not reactive dependencies.
+  }, [apiFetch, setAuthenticated, setCheckingSession, setUser]);
 
   return { checkingSession };
 };

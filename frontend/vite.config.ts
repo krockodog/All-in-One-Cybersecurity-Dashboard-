@@ -2,7 +2,7 @@ import { UserConfig, defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "node:path";
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ mode }: { mode: string }): UserConfig => {
   const env = loadEnv(mode, process.cwd(), "");
 
   const config: UserConfig = {

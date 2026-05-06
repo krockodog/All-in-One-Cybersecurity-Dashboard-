@@ -12,8 +12,8 @@ export const RiskMatrix = (): ReactElement => {
       <h2 className="text-2xl font-semibold">NIST CSF 2.0 Risk Matrix</h2>
       <div className="overflow-x-auto">
         <div className="grid min-w-[500px] grid-cols-5 gap-2" data-testid="risk-matrix-grid">
-          {matrix.flatMap((row, rowIndex) =>
-            row.map((value, colIndex) => {
+          {matrix.flatMap((row: number[], rowIndex: number) =>
+            row.map((value: number, colIndex: number) => {
               const colorIndex = Math.min(3, Math.floor(value / 2));
               return (
                 <button

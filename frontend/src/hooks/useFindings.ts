@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { UseMutationResult, UseQueryResult, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Finding } from "@/types";
 import { apiFetch } from "@/utils/api";
 
@@ -6,7 +6,12 @@ interface FindingsResponse {
   data: Finding[];
 }
 
-export const useFindings = () => {
+interface UseFindingsResult {
+  findings: UseQueryResult<FindingsResponse, Error>;
+  createFinding: UseMutationResult<{ data: Finding }, Error, Omit<Finding, "id" | "createdAt">>;
+}
+
+export const useFindings = (): UseFindingsResult => {
   const queryClient = useQueryClient();
 
   const findings = useQuery({

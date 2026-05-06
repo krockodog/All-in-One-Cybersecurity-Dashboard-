@@ -157,6 +157,12 @@ Build a production-ready, self-hosted OMNIUS RED-Team dashboard framework with G
 - Renamed session bootstrap ref to explicit `payload` dependency path per latest hook dependency report.
 - Re-validated: frontend build ✅ and backend contract tests ✅ (**7/7**).
 
+## Code Review Remediation (Current Coverage + Dependency Follow-up)
+- Added requested `WebSocketCtor` dependency in websocket heartbeat effect and explicit `fetchedSessionPayload` callback dependency flow in session bootstrap.
+- Reduced callback dependency pressure in session bootstrap by moving setter calls through a stable action ref container.
+- Increased explicit typing in `useFindings`, `useSettings`, `useTargets`, plus stronger typing in `RiskMatrix` and `vite.config.ts`.
+- Validation remained green: frontend build ✅ and backend contract tests ✅ (**7/7**).
+
 ## Prioritized Backlog
 
 ### P0 (must complete next)

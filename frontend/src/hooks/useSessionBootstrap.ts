@@ -10,16 +10,18 @@ interface SessionBootstrapArgs {
 export const useSessionBootstrap = ({ setUser, setAuthenticated }: SessionBootstrapArgs) => {
   const [checkingSession, setCheckingSession] = useState(true);
   const mountedRef = useRef(true);
+  const sessionPayload = useRef<{ user: User } | null>(null);
 
   const fetchSessionUser = async (): Promise<{ user: User }> => apiFetch<{ user: User }>("/api/v1/auth/me");
 
   const runSessionCheck = useCallback(async (): Promise<void> => {
     try {
-      const sessionPayload = await fetchSessionUser();
+      const fetchedSessionPayload = await fetchSessionUser();
+      sessionPayload.current = fetchedSessionPayload;
       if (!mountedRef.current) {
         return;
       }
-      setUser(sessionPayload.user);
+      setUser(fetchedSessionPayload.user);
       setAuthenticated(true);
     } catch {
       if (mountedRef.current) {
@@ -30,7 +32,7 @@ export const useSessionBootstrap = ({ setUser, setAuthenticated }: SessionBootst
         setCheckingSession(false);
       }
     }
-  }, [fetchSessionUser, mountedRef, setAuthenticated, setCheckingSession, setUser]);
+  }, [fetchSessionUser, mountedRef, sessionPayload, setAuthenticated, setCheckingSession, setUser]);
 
   useEffect(() => {
     mountedRef.current = true;

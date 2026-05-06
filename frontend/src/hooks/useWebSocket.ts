@@ -7,9 +7,9 @@ export interface TerminalEvent {
 }
 
 const MAX_MESSAGES = 300;
-const RETRY_DELAY_MS = 800;
+const WEBSOCKET_RETRY_DELAY_MS = 800;
 const MAX_RECONNECT_DELAY_MS = 5000;
-const HEARTBEAT_INTERVAL_MS = 15000;
+const WEBSOCKET_HEARTBEAT_INTERVAL_MS = 15000;
 const WebSocketCtor = WebSocket;
 
 interface WebSocketRuntime {
@@ -32,7 +32,7 @@ const trimMessageBuffer = (previous: TerminalEvent[], event: TerminalEvent): Ter
 ];
 
 const reconnectDelay = (retryCount: number): number =>
-  Math.min(MAX_RECONNECT_DELAY_MS, retryCount * RETRY_DELAY_MS);
+  Math.min(MAX_RECONNECT_DELAY_MS, retryCount * WEBSOCKET_RETRY_DELAY_MS);
 
 const clearRetryTimer = (runtimeRef: MutableRefObject<WebSocketRuntime>): void => {
   if (runtimeRef.current.retryTimer !== null) {
@@ -101,7 +101,7 @@ const useWebSocketConnection = (
         closeSocket(runtimeRef, setConnected);
       },
     }),
-    [pushMessage, runtimeRef, setConnected, wsUrl]
+    [clearRetryTimer, closeSocket, createConnection, pushMessage, runtimeRef, setConnected, wsUrl]
   );
 
   const reconnect = useCallback(
@@ -139,7 +139,7 @@ const useWebSocketHeartbeat = (
       if (runtimeRef.current.socket?.readyState === WebSocketCtor.OPEN) {
         runtimeRef.current.socket.send("ping");
       }
-    }, HEARTBEAT_INTERVAL_MS);
+    }, WEBSOCKET_HEARTBEAT_INTERVAL_MS);
 
     return () => {
       if (heartbeatIdRef.current !== null) {
@@ -148,7 +148,7 @@ const useWebSocketHeartbeat = (
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- heartbeat timer id ref is mutable and intentionally non-reactive.
-  }, [connected, heartbeatIdRef, readyState, runtimeRef, WebSocketCtor]);
+  }, [connected, heartbeatIdRef, readyState, runtimeRef, WEBSOCKET_HEARTBEAT_INTERVAL_MS, WebSocketCtor]);
 };
 
 export const useWebSocket = (pentestId: string) => {

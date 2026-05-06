@@ -133,6 +133,12 @@ Build a production-ready, self-hosted OMNIUS RED-Team dashboard framework with G
 - Added explicit type annotations in `vite.config.ts`, `PentestWizard.tsx`, and `LiveTerminal.tsx` to improve reported coverage.
 - Validation maintained: frontend build ✅ and backend contract tests ✅ (**7/7**).
 
+## Code Review Remediation (Dependency + Constant Naming Follow-up)
+- Added analyzer-requested dependencies in websocket connection memo/effects (`clearRetryTimer`, `closeSocket`, `createConnection`, heartbeat interval constant).
+- Added explicit `sessionPayload` ref dependency path in session bootstrap callback.
+- Renamed websocket timing constants to clearer domain names (`WEBSOCKET_RETRY_DELAY_MS`, `WEBSOCKET_HEARTBEAT_INTERVAL_MS`).
+- Validation unchanged: frontend build ✅ and backend contract tests ✅ (**7/7**).
+
 ## Prioritized Backlog
 
 ### P0 (must complete next)

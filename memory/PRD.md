@@ -139,6 +139,12 @@ Build a production-ready, self-hosted OMNIUS RED-Team dashboard framework with G
 - Renamed websocket timing constants to clearer domain names (`WEBSOCKET_RETRY_DELAY_MS`, `WEBSOCKET_HEARTBEAT_INTERVAL_MS`).
 - Validation unchanged: frontend build ✅ and backend contract tests ✅ (**7/7**).
 
+## Code Review Remediation (Dependency Count Optimization Pass)
+- Simplified websocket connection hook to remove over-wide memo/callback dependency chains while retaining strict runtime safety.
+- Reworked session bootstrap from callback-driven flow to focused effect flow (lower dependency count, same behavior).
+- Maintained named websocket timing constants and strict lifecycle guard behavior.
+- Re-validated: frontend build ✅ and backend contract tests ✅ (**7/7**).
+
 ## Prioritized Backlog
 
 ### P0 (must complete next)

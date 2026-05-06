@@ -1,4 +1,4 @@
-import { MutableRefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { MutableRefObject, useEffect, useMemo, useRef, useState } from "react";
 
 export interface TerminalEvent {
   time: string;
@@ -93,34 +93,20 @@ const useWebSocketConnection = (
   setConnected: (value: boolean) => void,
   pushMessage: (event: TerminalEvent) => void
 ): void => {
-  const connectionActions = useMemo(
-    () => ({
-      connect: (): void => createConnection(wsUrl, runtimeRef, setConnected, pushMessage),
-      cleanup: (): void => {
-        clearRetryTimer(runtimeRef);
-        closeSocket(runtimeRef, setConnected);
-      },
-    }),
-    [clearRetryTimer, closeSocket, createConnection, pushMessage, runtimeRef, setConnected, wsUrl]
-  );
-
-  const reconnect = useCallback(
-    (): void => connectionActions.connect(),
-    [connectionActions, createConnection]
-  );
-
   useEffect(() => {
     if (!pentestId || !wsUrl) {
       return;
     }
+    const reconnect = (): void => createConnection(wsUrl, runtimeRef, setConnected, pushMessage);
     runtimeRef.current.reconnect = reconnect;
     reconnect();
 
     return () => {
-      connectionActions.cleanup();
+      clearRetryTimer(runtimeRef);
+      closeSocket(runtimeRef, setConnected);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- runtimeRef is mutable runtime state managed by this hook.
-  }, [connectionActions, pentestId, reconnect, runtimeRef, wsUrl]);
+  }, [pentestId, pushMessage, setConnected, wsUrl, runtimeRef]);
 };
 
 const useWebSocketHeartbeat = (
@@ -148,7 +134,7 @@ const useWebSocketHeartbeat = (
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- heartbeat timer id ref is mutable and intentionally non-reactive.
-  }, [connected, heartbeatIdRef, readyState, runtimeRef, WEBSOCKET_HEARTBEAT_INTERVAL_MS, WebSocketCtor]);
+  }, [connected, readyState, runtimeRef, WEBSOCKET_HEARTBEAT_INTERVAL_MS, WebSocketCtor]);
 };
 
 export const useWebSocket = (pentestId: string) => {

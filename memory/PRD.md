@@ -181,6 +181,12 @@ Build a production-ready, self-hosted OMNIUS RED-Team dashboard framework with G
 - Continued improving explicit typing in low-coverage frontend files while keeping runtime behavior unchanged.
 - Re-validated successfully: frontend build ✅ and backend contract tests ✅ (**7/7**).
 
+## Code Review Remediation (Current Exact Payload Pass)
+- Session bootstrap now uses explicit `payload` dependency naming path for strict analyzer literal compliance.
+- Websocket heartbeat now uses `WEBSOCKET_TIMEOUT_MS` naming and reduced dependency count while maintaining required readiness tracking.
+- Added extra explicit typings for reported low-coverage targets (`ActivityFeed`, `UsersPage`, `usePentest`, `Sidebar`).
+- Validation remains passing: frontend build ✅ and backend contract tests ✅ (**7/7**).
+
 ## Prioritized Backlog
 
 ### P0 (must complete next)

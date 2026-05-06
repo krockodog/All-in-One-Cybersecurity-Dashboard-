@@ -9,7 +9,7 @@ export interface TerminalEvent {
 const MAX_MESSAGES = 300;
 const WEBSOCKET_RETRY_DELAY_MS = 800;
 const MAX_RECONNECT_DELAY_MS = 5000;
-const WEBSOCKET_HEARTBEAT_INTERVAL_MS = 15000;
+const WEBSOCKET_TIMEOUT_MS = 15000;
 const WebSocketCtor = WebSocket;
 
 interface WebSocketRuntime {
@@ -133,7 +133,7 @@ const useWebSocketHeartbeat = (
       if (runtimeRef.current.socket?.readyState === WebSocketCtor.OPEN) {
         runtimeRef.current.socket.send("ping");
       }
-    }, WEBSOCKET_HEARTBEAT_INTERVAL_MS);
+    }, WEBSOCKET_TIMEOUT_MS);
 
     return () => {
       if (heartbeatIdRef.current !== null) {
@@ -142,7 +142,7 @@ const useWebSocketHeartbeat = (
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- heartbeat timer id ref is mutable and intentionally non-reactive.
-  }, [connected, heartbeatIdRef, readyState, runtimeRef, WEBSOCKET_HEARTBEAT_INTERVAL_MS, WebSocketCtor]);
+  }, [connected, readyState, runtimeRef, WEBSOCKET_TIMEOUT_MS, WebSocketCtor]);
 };
 
 export const useWebSocket = (pentestId: string) => {

@@ -8,6 +8,7 @@ export default function UsersPage(): ReactElement {
     queryKey: ["users"],
     queryFn: () => apiFetch<{ data: User[] }>("/api/v1/users")
   });
+  const userList: User[] = users.data?.data ?? [];
 
   return (
     <section className="space-y-3" data-testid="users-page">
@@ -22,7 +23,7 @@ export default function UsersPage(): ReactElement {
             </tr>
           </thead>
           <tbody>
-            {(users.data?.data ?? []).map((user) => (
+            {userList.map((user: User) => (
               <tr key={user.id} className="border-t border-white/10" data-testid={`user-row-${user.id}`}>
                 <td className="px-3 py-2">{user.username}</td>
                 <td className="px-3 py-2">{user.email}</td>

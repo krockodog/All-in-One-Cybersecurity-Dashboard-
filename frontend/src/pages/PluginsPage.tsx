@@ -1,4 +1,6 @@
-export default function PluginsPage() {
+import { ReactElement } from "react";
+
+export default function PluginsPage(): ReactElement {
   return (
     <section className="space-y-3" data-testid="plugins-page">
       <h2 className="text-2xl font-semibold">Plugins</h2>

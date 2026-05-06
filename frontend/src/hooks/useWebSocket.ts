@@ -90,6 +90,7 @@ const useSocketLifecycle = ({ pentestId, wsUrl, retryRef, setConnected, setMessa
       }
       socket?.close();
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- helper references are module-stable; runtime deps are explicitly listed.
   }, [
     HEARTBEAT_INTERVAL_MS,
     appendLimitedMessages,

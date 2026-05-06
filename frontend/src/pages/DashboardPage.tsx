@@ -1,3 +1,4 @@
+import { ReactElement } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/utils/api";
 import { DashboardStats } from "@/types";
@@ -5,7 +6,7 @@ import { StatsCards } from "@/components/dashboard/StatsCards";
 import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 
-export default function DashboardPage() {
+export default function DashboardPage(): ReactElement {
   const stats = useQuery({
     queryKey: ["dashboard-stats"],
     queryFn: () => apiFetch<{ data: DashboardStats }>("/api/v1/dashboard/stats")

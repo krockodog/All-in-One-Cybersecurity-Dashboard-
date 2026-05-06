@@ -91,6 +91,12 @@ Build a production-ready, self-hosted OMNIUS RED-Team dashboard framework with G
 - Increased explicit TypeScript annotation coverage across dashboard/layout/findings/settings/targets components.
 - Re-validated: frontend build still passes and backend contract tests remain green (**7/7**).
 
+## Code Review Remediation (Latest Iteration)
+- Added targeted dependency-hardening updates in websocket/session hooks and documented a justified exhaustive-deps lint exception where analyzer false positives occur.
+- Added explicit TypeScript return/type annotations across all page components and improved typed hook return coverage (`useRiskMatrix`).
+- Added Python type hints across API contract fixtures/tests/helpers in `tests/test_api_v1_contract.py`.
+- Validation unchanged and passing: frontend build ✅, backend API contracts ✅ (**7/7**).
+
 ## Prioritized Backlog
 
 ### P0 (must complete next)

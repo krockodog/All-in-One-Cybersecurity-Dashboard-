@@ -1,8 +1,9 @@
+import { ReactElement } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/utils/api";
 import { User } from "@/types";
 
-export default function UsersPage() {
+export default function UsersPage(): ReactElement {
   const users = useQuery({
     queryKey: ["users"],
     queryFn: () => apiFetch<{ data: User[] }>("/api/v1/users")

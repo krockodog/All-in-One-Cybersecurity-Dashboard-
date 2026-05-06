@@ -1,4 +1,6 @@
-export default function ReportsPage() {
+import { ReactElement } from "react";
+
+export default function ReportsPage(): ReactElement {
   return (
     <section className="space-y-3" data-testid="reports-page">
       <h2 className="text-2xl font-semibold">Reports</h2>

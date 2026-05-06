@@ -7,9 +7,10 @@ export interface TerminalEvent {
 }
 
 const MAX_MESSAGES = 300;
-const WEBSOCKET_RECONNECT_DELAY_MS = 800;
+const RETRY_DELAY_MS = 800;
 const MAX_RECONNECT_DELAY_MS = 5000;
-const WEBSOCKET_HEARTBEAT_INTERVAL_MS = 15000;
+const HEARTBEAT_INTERVAL_MS = 15000;
+const WebSocketCtor = WebSocket;
 
 interface WebSocketRuntime {
   socket: WebSocket | null;
@@ -31,7 +32,7 @@ const trimMessageBuffer = (previous: TerminalEvent[], event: TerminalEvent): Ter
 ];
 
 const reconnectDelay = (retryCount: number): number =>
-  Math.min(MAX_RECONNECT_DELAY_MS, retryCount * WEBSOCKET_RECONNECT_DELAY_MS);
+  Math.min(MAX_RECONNECT_DELAY_MS, retryCount * RETRY_DELAY_MS);
 
 const clearRetryTimer = (runtimeRef: MutableRefObject<WebSocketRuntime>): void => {
   if (runtimeRef.current.retryTimer !== null) {
@@ -106,7 +107,16 @@ const useWebSocketConnection = (
       closeSocket(runtimeRef, setConnected);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- runtimeRef is a mutable connection container by design.
-  }, [pentestId, pushMessage, setConnected, wsUrl, runtimeRef]);
+  }, [
+    clearRetryTimer,
+    closeSocket,
+    createConnection,
+    pentestId,
+    pushMessage,
+    runtimeRef,
+    setConnected,
+    wsUrl,
+  ]);
 };
 
 const useWebSocketHeartbeat = (
@@ -119,16 +129,16 @@ const useWebSocketHeartbeat = (
     }
 
     const heartbeatId = window.setInterval(() => {
-      if (runtimeRef.current.socket?.readyState === WebSocket.OPEN) {
+      if (runtimeRef.current.socket?.readyState === WebSocketCtor.OPEN) {
         runtimeRef.current.socket.send("ping");
       }
-    }, WEBSOCKET_HEARTBEAT_INTERVAL_MS);
+    }, HEARTBEAT_INTERVAL_MS);
 
     return () => {
       window.clearInterval(heartbeatId);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- WebSocket constructor and readyState are global/runtime values.
-  }, [connected, runtimeRef, WEBSOCKET_HEARTBEAT_INTERVAL_MS]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- heartbeatId/readyState are runtime locals, not reactive dependencies.
+  }, [connected, runtimeRef, HEARTBEAT_INTERVAL_MS, WebSocketCtor]);
 };
 
 export const useWebSocket = (pentestId: string) => {

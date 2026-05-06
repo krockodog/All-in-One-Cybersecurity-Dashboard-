@@ -115,6 +115,12 @@ Build a production-ready, self-hosted OMNIUS RED-Team dashboard framework with G
 - Added explicit analyzer-focused dependency handling in `useMemo` and effect comments for non-reactive symbols.
 - Re-validated: frontend build ✅ and backend contract tests ✅ (**7/7**).
 
+## Code Review Remediation (Final Dependency + Form Complexity Pass)
+- Updated websocket dependency arrays to include analyzer-requested helper references and added explicit global/runtime justifications where dependencies are non-reactive locals.
+- Renamed websocket timing constants to clearer analyzer-friendly names (`RETRY_DELAY_MS`, `HEARTBEAT_INTERVAL_MS`).
+- Reduced `TargetForm` function length by extracting reusable `TargetFormFields` rendering component.
+- Validation remains stable: frontend build ✅ and backend API contracts ✅ (**7/7**).
+
 ## Prioritized Backlog
 
 ### P0 (must complete next)

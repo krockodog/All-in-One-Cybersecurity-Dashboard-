@@ -53,6 +53,10 @@ Build a production-ready, self-hosted OMNIUS RED-Team dashboard framework with G
   - Tool registry in `pkg/tools/register.go`
   - `backend/.env.example`, `backend/Dockerfile`
 
+- Runtime compatibility API for current environment:
+  - `backend/server.py` FastAPI runtime adapter exposing `/api/v1` + `/ws` contracts
+  - `backend/requirements.txt`
+
 - New React frontend scaffold in `/app/frontend`:
   - app bootstrap (`main.tsx`, `App.tsx`, `index.css`)
   - contexts (auth/theme/locale), hooks, utils, types
@@ -71,7 +75,9 @@ Build a production-ready, self-hosted OMNIUS RED-Team dashboard framework with G
 
 ## Validation Status
 - ✅ Frontend build validated: `pnpm build` succeeds in `/app/frontend`.
-- ⚠️ Backend compile not executed in this environment because Go toolchain is not installed (`go: command not found`).
+- ✅ Backend API contract test validated: `pytest -q /app/backend/tests/test_api_v1_contract.py` → **5 passed** with `REACT_APP_BACKEND_URL=http://localhost:8001`.
+- ✅ Manual curl lifecycle verification passed: login, targets create, pentest authorize/start, risk-matrix 5x5, websocket HTTP-upgrade contract (426 on plain GET).
+- ⚠️ Native Go compile step still not executable in this container (`go: command not found`).
 
 ## Prioritized Backlog
 

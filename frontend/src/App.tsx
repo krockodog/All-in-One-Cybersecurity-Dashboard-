@@ -9,22 +9,25 @@ import PluginsPage from "@/pages/PluginsPage";
 import SettingsPage from "@/pages/SettingsPage";
 import ReportsPage from "@/pages/ReportsPage";
 import UsersPage from "@/pages/UsersPage";
+import { LoginGate } from "@/components/auth/LoginGate";
 
 export default function App() {
   return (
-    <Routes>
-      <Route element={<DashboardLayout />}>
-        <Route path="/" element={<DashboardPage />} />
-        <Route path="/targets" element={<TargetsPage />} />
-        <Route path="/pentests" element={<PentestsPage />} />
-        <Route path="/findings" element={<FindingsPage />} />
-        <Route path="/risk-matrix" element={<RiskMatrixPage />} />
-        <Route path="/plugins" element={<PluginsPage />} />
-        <Route path="/settings" element={<SettingsPage />} />
-        <Route path="/reports" element={<ReportsPage />} />
-        <Route path="/users" element={<UsersPage />} />
-      </Route>
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <LoginGate>
+      <Routes>
+        <Route element={<DashboardLayout />}>
+          <Route path="/" element={<DashboardPage />} />
+          <Route path="/targets" element={<TargetsPage />} />
+          <Route path="/pentests" element={<PentestsPage />} />
+          <Route path="/findings" element={<FindingsPage />} />
+          <Route path="/risk-matrix" element={<RiskMatrixPage />} />
+          <Route path="/plugins" element={<PluginsPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/reports" element={<ReportsPage />} />
+          <Route path="/users" element={<UsersPage />} />
+        </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </LoginGate>
   );
 }

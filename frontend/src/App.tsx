@@ -1,3 +1,4 @@
+import { ReactElement } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import DashboardPage from "@/pages/DashboardPage";
@@ -11,7 +12,7 @@ import ReportsPage from "@/pages/ReportsPage";
 import UsersPage from "@/pages/UsersPage";
 import { LoginGate } from "@/components/auth/LoginGate";
 
-export default function App() {
+export default function App(): ReactElement {
   return (
     <LoginGate>
       <Routes>
@@ -31,3 +32,4 @@ export default function App() {
     </LoginGate>
   );
 }
+

@@ -1,15 +1,36 @@
-import { FormEvent, ReactNode, useState } from "react";
+import { FormEvent, ReactNode, useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAuthContext } from "@/contexts/AuthContext";
-import { getAccessToken } from "@/utils/auth";
+import { apiFetch } from "@/utils/api";
+import { User } from "@/types";
 
 export const LoginGate = ({ children }: { children: ReactNode }) => {
   const { login } = useAuth();
-  const { setUser } = useAuthContext();
+  const { authenticated, setUser, setAuthenticated } = useAuthContext();
   const [email, setEmail] = useState("admin@omnius.local");
   const [password, setPassword] = useState("change_me_admin_password");
+  const [checkingSession, setCheckingSession] = useState(true);
 
-  if (getAccessToken()) {
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const payload = await apiFetch<{ user: User }>("/api/v1/auth/me");
+        setUser(payload.user);
+        setAuthenticated(true);
+      } catch {
+        setAuthenticated(false);
+      } finally {
+        setCheckingSession(false);
+      }
+    };
+    void checkSession();
+  }, [setAuthenticated, setUser]);
+
+  if (checkingSession) {
+    return <div className="flex min-h-screen items-center justify-center" data-testid="login-session-check">Checking session...</div>;
+  }
+
+  if (authenticated) {
     return <>{children}</>;
   }
 
@@ -17,6 +38,7 @@ export const LoginGate = ({ children }: { children: ReactNode }) => {
     event.preventDefault();
     const response = await login.mutateAsync({ email, password });
     setUser(response.user);
+    setAuthenticated(true);
   };
 
   return (

@@ -1,6 +1,4 @@
-import { ApolloClient, HttpLink, InMemoryCache, from } from "@apollo/client";
-import { setContext } from "@apollo/client/link/context";
-import { getAccessToken } from "./auth";
+import { ApolloClient, HttpLink, InMemoryCache } from "@apollo/client";
 
 const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
@@ -9,12 +7,11 @@ if (!backendUrl) {
 }
 
 export const apiFetch = async <T>(path: string, init?: RequestInit): Promise<T> => {
-  const token = getAccessToken();
   const response = await fetch(`${backendUrl}${path}`, {
     ...init,
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(init?.headers ?? {})
     }
   });
@@ -27,20 +24,11 @@ export const apiFetch = async <T>(path: string, init?: RequestInit): Promise<T> 
 };
 
 const httpLink = new HttpLink({
-  uri: `${backendUrl}/graphql`
-});
-
-const authLink = setContext((_, { headers }) => {
-  const token = getAccessToken();
-  return {
-    headers: {
-      ...headers,
-      ...(token ? { Authorization: `Bearer ${token}` } : {})
-    }
-  };
+  uri: `${backendUrl}/graphql`,
+  credentials: "include"
 });
 
 export const apolloClient = new ApolloClient({
-  link: from([authLink, httpLink]),
+  link: httpLink,
   cache: new InMemoryCache()
 });

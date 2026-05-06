@@ -181,6 +181,24 @@ func (a *app) login(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "token generation failed", http.StatusInternalServerError)
 		return
 	}
+	http.SetCookie(w, &http.Cookie{
+		Name:     "omnius_access_token",
+		Value:    tokens.AccessToken,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   false,
+		SameSite: http.SameSiteLaxMode,
+		MaxAge:   24 * 60 * 60,
+	})
+	http.SetCookie(w, &http.Cookie{
+		Name:     "omnius_refresh_token",
+		Value:    tokens.RefreshToken,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   false,
+		SameSite: http.SameSiteLaxMode,
+		MaxAge:   7 * 24 * 60 * 60,
+	})
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(map[string]any{
 		"accessToken":  tokens.AccessToken,

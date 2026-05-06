@@ -1,11 +1,13 @@
-const events = [
+import { ReactElement } from "react";
+
+const events: string[] = [
   "Finding detected: SQL Injection in login form",
   "Pentest started for staging-api.example.com",
   "New target imported via CSV",
   "Plugin update available: nuclei"
 ];
 
-export const ActivityFeed = () => {
+export const ActivityFeed = (): ReactElement => {
   return (
     <section className="rounded-xl border border-white/10 bg-black/20 p-4" data-testid="dashboard-activity-feed">
       <h3 className="mb-3 text-sm uppercase tracking-[0.2em] text-cyan">Live Activity</h3>

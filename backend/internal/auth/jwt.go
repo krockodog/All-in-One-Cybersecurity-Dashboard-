@@ -100,16 +100,25 @@ func (j *JWTManager) Parse(token string) (*Claims, error) {
 func (j *JWTManager) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		rawAuth := r.Header.Get("Authorization")
-		if rawAuth == "" {
-			http.Error(w, "missing authorization header", http.StatusUnauthorized)
+		token := ""
+		if rawAuth != "" {
+			parts := strings.SplitN(rawAuth, " ", 2)
+			if len(parts) != 2 || !strings.EqualFold(parts[0], "Bearer") {
+				http.Error(w, "invalid authorization header", http.StatusUnauthorized)
+				return
+			}
+			token = parts[1]
+		} else {
+			if cookie, err := r.Cookie("omnius_access_token"); err == nil {
+				token = cookie.Value
+			}
+		}
+
+		if token == "" {
+			http.Error(w, "missing authentication token", http.StatusUnauthorized)
 			return
 		}
-		parts := strings.SplitN(rawAuth, " ", 2)
-		if len(parts) != 2 || !strings.EqualFold(parts[0], "Bearer") {
-			http.Error(w, "invalid authorization header", http.StatusUnauthorized)
-			return
-		}
-		claims, err := j.Parse(parts[1])
+		claims, err := j.Parse(token)
 		if err != nil {
 			http.Error(w, "invalid token", http.StatusUnauthorized)
 			return

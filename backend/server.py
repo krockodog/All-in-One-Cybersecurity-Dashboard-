@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
-from fastapi import Depends, FastAPI, Header, HTTPException, Response, WebSocket, WebSocketDisconnect
+from fastapi import Cookie, Depends, FastAPI, Header, HTTPException, Request, Response, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
@@ -18,6 +18,16 @@ app.add_middleware(
     allow_headers=["*"],
     allow_credentials=True,
 )
+
+
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Content-Security-Policy"] = "default-src 'self'; connect-src 'self' ws: wss: http: https:; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self'; frame-ancestors 'none'"
+    return response
 
 
 class LoginInput(BaseModel):
@@ -99,10 +109,28 @@ def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def require_user(authorization: Optional[str] = Header(default=None)) -> Dict[str, str]:
-    if not authorization or not authorization.lower().startswith("bearer "):
-        raise HTTPException(status_code=401, detail="Missing bearer token")
-    token = authorization.split(" ", 1)[1]
+def severity_to_cell(severity: str) -> tuple[int, int]:
+    mapping: Dict[str, tuple[int, int]] = {
+        "critical": (4, 4),
+        "high": (3, 3),
+        "medium": (2, 2),
+        "low": (1, 1),
+        "info": (0, 0),
+    }
+    return mapping.get(severity, (0, 0))
+
+
+def require_user(
+    authorization: Optional[str] = Header(default=None),
+    omnius_access_token: Optional[str] = Cookie(default=None),
+) -> Dict[str, str]:
+    token = ""
+    if authorization and authorization.lower().startswith("bearer "):
+        token = authorization.split(" ", 1)[1]
+    elif omnius_access_token:
+        token = omnius_access_token
+    if not token:
+        raise HTTPException(status_code=401, detail="Missing authentication token")
     payload = tokens.get(token)
     if not payload:
         raise HTTPException(status_code=401, detail="Invalid token")
@@ -119,7 +147,7 @@ def health() -> Dict[str, str]:
 
 
 @app.post("/api/v1/auth/login")
-def login(payload: LoginInput) -> Dict[str, Any]:
+def login(payload: LoginInput, response: Response) -> Dict[str, Any]:
     if payload.email != admin_user["email"] or payload.password != admin_user["password"]:
         raise HTTPException(status_code=401, detail="Invalid credentials")
     access_token = f"at-{uuid4()}"
@@ -129,6 +157,24 @@ def login(payload: LoginInput) -> Dict[str, Any]:
         "email": admin_user["email"],
         "role": admin_user["role"],
     }
+    response.set_cookie(
+        key="omnius_access_token",
+        value=access_token,
+        httponly=True,
+        secure=False,
+        samesite="lax",
+        max_age=86400,
+        path="/",
+    )
+    response.set_cookie(
+        key="omnius_refresh_token",
+        value=refresh_token,
+        httponly=True,
+        secure=False,
+        samesite="lax",
+        max_age=604800,
+        path="/",
+    )
     return {
         "accessToken": access_token,
         "refreshToken": refresh_token,
@@ -139,6 +185,25 @@ def login(payload: LoginInput) -> Dict[str, Any]:
             "email": admin_user["email"],
             "role": admin_user["role"],
         },
+    }
+
+
+@app.post("/api/v1/auth/logout")
+def logout(response: Response) -> Dict[str, bool]:
+    response.delete_cookie(key="omnius_access_token", path="/")
+    response.delete_cookie(key="omnius_refresh_token", path="/")
+    return {"ok": True}
+
+
+@app.get("/api/v1/auth/me")
+def me(user: Dict[str, str] = Depends(require_user)) -> Dict[str, Any]:
+    return {
+        "user": {
+            "id": user["userId"],
+            "username": admin_user["username"],
+            "email": user["email"],
+            "role": user["role"],
+        }
     }
 
 
@@ -263,17 +328,8 @@ def create_finding(payload: CreateFindingInput, user: Dict[str, str] = Depends(r
 def risk_matrix(_: Dict[str, str] = Depends(require_user)) -> Dict[str, Any]:
     matrix = [[0 for _ in range(5)] for _ in range(5)]
     for finding in findings.values():
-        severity = finding.get("severity", "info")
-        if severity == "critical":
-            x, y = 4, 4
-        elif severity == "high":
-            x, y = 3, 3
-        elif severity == "medium":
-            x, y = 2, 2
-        elif severity == "low":
-            x, y = 1, 1
-        else:
-            x, y = 0, 0
+        severity = str(finding.get("severity", "info"))
+        x, y = severity_to_cell(severity)
         matrix[y][x] += 1
     return {
         "labels": {

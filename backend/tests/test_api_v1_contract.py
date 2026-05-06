@@ -40,6 +40,7 @@ def test_auth_login_and_token_contract(api_client, api_base_url, auth_payload):
 
 
 def test_protected_targets_requires_bearer(api_client, api_base_url):
+    api_client.cookies.clear()
     response = api_client.get(f"{api_base_url}/api/v1/targets", timeout=10)
     assert response.status_code in (401, 403)
 
@@ -84,7 +85,7 @@ def test_pentest_flow_create_authorize_start_stop(api_client, api_base_url, auth
         f"{api_base_url}/api/v1/pentests/{pentest_id}/authorize", json=authorize_payload, headers=headers, timeout=10
     )
     assert authorize_response.status_code == 200
-    assert authorize_response.json().get("data", {}).get("authorized") is True
+    assert authorize_response.json().get("data", {}).get("authorized") == True
 
     start_response = api_client.post(f"{api_base_url}/api/v1/pentests/{pentest_id}/start", headers=headers, timeout=10)
     assert start_response.status_code == 200

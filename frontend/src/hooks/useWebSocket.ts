@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export interface TerminalEvent {
   time: string;
@@ -6,18 +6,37 @@ export interface TerminalEvent {
   message: string;
 }
 
+const MAX_MESSAGES = 300;
+const RECONNECT_DELAY_MS = 800;
+const MAX_RECONNECT_DELAY_MS = 5000;
+const HEARTBEAT_INTERVAL_MS = 15000;
+
+const toWebSocketUrl = (baseUrl: string, pentestId: string): string => {
+  const wsBase = baseUrl.replace(/^http/, "ws");
+  return `${wsBase}/ws/pentest/${pentestId}`;
+};
+
+const parseTerminalEvent = (raw: string): TerminalEvent => JSON.parse(raw) as TerminalEvent;
+
+const nextRetryDelay = (retryCount: number): number => Math.min(MAX_RECONNECT_DELAY_MS, retryCount * RECONNECT_DELAY_MS);
+
 export const useWebSocket = (pentestId: string) => {
   const [messages, setMessages] = useState<TerminalEvent[]>([]);
   const [connected, setConnected] = useState(false);
   const retryRef = useRef(0);
 
+  const baseUrl = process.env.REACT_APP_BACKEND_URL ?? "";
+
   const wsUrl = useMemo(() => {
-    if (!process.env.REACT_APP_BACKEND_URL) {
+    if (!baseUrl) {
       return "";
     }
-    const base = process.env.REACT_APP_BACKEND_URL.replace(/^http/, "ws");
-    return `${base}/ws/pentest/${pentestId}`;
-  }, [pentestId]);
+    return toWebSocketUrl(baseUrl, pentestId);
+  }, [baseUrl, pentestId]);
+
+  const appendMessage = useCallback((event: TerminalEvent) => {
+    setMessages((previous) => [...previous.slice(-MAX_MESSAGES), event]);
+  }, []);
 
   useEffect(() => {
     if (!pentestId || !wsUrl) {
@@ -27,20 +46,19 @@ export const useWebSocket = (pentestId: string) => {
     let socket: WebSocket | null = null;
     let retryTimer: number | undefined;
 
-    const connect = () => {
+    const connect = (): void => {
       socket = new WebSocket(wsUrl);
       socket.onopen = () => {
         setConnected(true);
         retryRef.current = 0;
       };
       socket.onmessage = (event) => {
-        const parsed = JSON.parse(event.data) as TerminalEvent;
-        setMessages((previous) => [...previous.slice(-300), parsed]);
+        appendMessage(parseTerminalEvent(event.data));
       };
       socket.onclose = () => {
         setConnected(false);
         retryRef.current += 1;
-        retryTimer = window.setTimeout(connect, Math.min(5000, retryRef.current * 800));
+        retryTimer = window.setTimeout(connect, nextRetryDelay(retryRef.current));
       };
     };
 
@@ -50,7 +68,7 @@ export const useWebSocket = (pentestId: string) => {
       if (socket?.readyState === WebSocket.OPEN) {
         socket.send("ping");
       }
-    }, 15000);
+    }, HEARTBEAT_INTERVAL_MS);
 
     return () => {
       window.clearInterval(heartbeat);
@@ -59,7 +77,7 @@ export const useWebSocket = (pentestId: string) => {
       }
       socket?.close();
     };
-  }, [pentestId, wsUrl]);
+  }, [appendMessage, pentestId, wsUrl]);
 
   return { messages, connected };
 };

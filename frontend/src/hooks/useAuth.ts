@@ -1,11 +1,9 @@
 import { useMutation } from "@tanstack/react-query";
 import { apiFetch } from "@/utils/api";
-import { clearTokens, saveTokens } from "@/utils/auth";
+import { clearSessionCookies } from "@/utils/auth";
 import { User } from "@/types";
 
 interface LoginResponse {
-  accessToken: string;
-  refreshToken: string;
   user: User;
 }
 
@@ -16,10 +14,15 @@ export const useAuth = () => {
         method: "POST",
         body: JSON.stringify(credentials)
       }),
-    onSuccess: (payload) => saveTokens(payload.accessToken, payload.refreshToken)
   });
 
-  const logout = () => clearTokens();
+  const logout = async () => {
+    try {
+      await apiFetch<{ ok: boolean }>("/api/v1/auth/logout", { method: "POST" });
+    } finally {
+      clearSessionCookies();
+    }
+  };
 
   return { login, logout };
 };

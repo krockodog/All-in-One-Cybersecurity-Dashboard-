@@ -1,4 +1,4 @@
-import { ReactNode, createContext, useContext, useMemo, useState } from "react";
+import { ReactNode, createContext, useCallback, useContext, useMemo, useState } from "react";
 
 type Locale = "en" | "de";
 
@@ -12,13 +12,22 @@ const LocaleContext = createContext<LocaleContextValue | undefined>(undefined);
 
 export const LocaleProvider = ({ children }: { children: ReactNode }) => {
   const [locale, setLocale] = useState<Locale>("en");
+  const toggleLocale = useCallback(() => {
+    setLocale((current) => (current === "en" ? "de" : "en"));
+  }, []);
+
+  const translate = useCallback(
+    (en: string, de: string) => (locale === "de" ? de : en),
+    [locale]
+  );
+
   const value = useMemo(
     () => ({
       locale,
-      toggleLocale: () => setLocale((current) => (current === "en" ? "de" : "en")),
-      t: (en: string, de: string) => (locale === "de" ? de : en)
+      toggleLocale,
+      t: translate
     }),
-    [locale]
+    [locale, toggleLocale, translate]
   );
   return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>;
 };

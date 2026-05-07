@@ -102,3 +102,19 @@ docker compose down
 docker compose up -d --build
 docker compose logs --tail=200
 ```
+
+
+## 10) Kein Zugriff auf Zielserver (SSH) beheben
+```bash
+./scripts/check-server-access.sh 203.0.113.10 22
+```
+
+Wenn `SSH port NOT reachable` kommt:
+- In der Cloud-Firewall eingehend `TCP 22` erlauben.
+- Auf dem Server `ufw allow 22/tcp` (oder Security Group) setzen.
+- Sicherstellen, dass `sshd` läuft.
+
+Danach verbinden:
+```bash
+ssh -p 22 <dein-user>@203.0.113.10
+```

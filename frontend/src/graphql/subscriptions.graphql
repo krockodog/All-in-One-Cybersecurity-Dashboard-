@@ -1,0 +1,7 @@
+subscription LiveTerminal($pentestId: ID!) {
+  liveTerminal(pentestId: $pentestId) {
+    time
+    level
+    message
+  }
+}

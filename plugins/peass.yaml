@@ -1,0 +1,15 @@
+name: peass
+version: "1.0.0"
+description: "Privilege escalation checks"
+author: "OMNIUS Core"
+category: privilege_escalation
+container: tools-exploit
+enabled: true
+tools:
+  - name: linpeas
+    description: "Linux privilege escalation"
+    category: privilege_escalation
+    container: tools-exploit
+    command: "linpeas.sh > /output/{{.RunID}}_linpeas.txt"
+    output_parser: text
+    timeout: 1200

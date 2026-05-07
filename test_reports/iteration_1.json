@@ -1,0 +1,82 @@
+{
+  "summary": "Tested frontend route rendering and backend /api/v1 contract. Frontend routes render, but all backend integrations fail due unreachable configured backend URL.",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "http://localhost:8080/api/v1/auth/login",
+        "issue": "Connection refused; login contract cannot be validated.",
+        "priority": "CRITICAL"
+      },
+      {
+        "endpoint": "http://localhost:8080/api/v1/targets",
+        "issue": "Protected endpoint unreachable; auth middleware contract not testable.",
+        "priority": "CRITICAL"
+      },
+      {
+        "endpoint": "http://localhost:8080/api/v1/pentests/*",
+        "issue": "Pentest create->authorize->start/stop flow unreachable due backend not listening on configured URL.",
+        "priority": "CRITICAL"
+      },
+      {
+        "endpoint": "http://localhost:8080/api/v1/findings/risk-matrix",
+        "issue": "Cannot validate 5x5 matrix contract because backend URL is unreachable.",
+        "priority": "HIGH"
+      },
+      {
+        "endpoint": "http://localhost:8080/ws/pentest/{id}",
+        "issue": "WebSocket path contract cannot be verified; host/port not reachable.",
+        "priority": "HIGH"
+      }
+    ],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {
+        "flow": "Dashboard/Targets/Pentests/Findings/Risk/Settings data loading",
+        "issue": "Frontend calls to REACT_APP_BACKEND_URL fail with net::ERR_CONNECTION_REFUSED for /api/v1 endpoints.",
+        "affected_selectors": [
+          "[data-testid='dashboard-layout']",
+          "[data-testid='nav-link-targets']",
+          "[data-testid='nav-link-pentests']",
+          "[data-testid='nav-link-findings']",
+          "[data-testid='nav-link-risk-matrix']",
+          "[data-testid='nav-link-settings']"
+        ]
+      }
+    ],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_api_v1_contract.py",
+    "/app/test_reports/pytest/pytest_results.xml",
+    "/root/.emergent/automation_output/20260506_215700/console_20260506_215700.log"
+  ],
+  "action_items": [
+    "Bring Go backend online at REACT_APP_BACKEND_URL from frontend/.env (currently http://localhost:8080 is down).",
+    "Ensure runtime serves OMNIUS Go API /api/v1 routes, not unrelated FastAPI service at :8010.",
+    "After backend is reachable, rerun contract test file and pentest lifecycle verification.",
+    "Install/enable docker CLI in test container to validate docker-compose with `docker compose config -q`."
+  ],
+  "critical_code_review_comments": [
+    "Runtime environment is inconsistent with repository stack: supervisor backend logs reference uvicorn/server.py while repository backend is Go (cmd/server/main.go).",
+    "frontend/.env points to localhost:8080; this makes UI integration fail in current environment unless Go backend is explicitly started on that port.",
+    "No protected-route guard observed in frontend routing; all dashboard routes render without auth state checks."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_api_v1_contract.py",
+    "/app/test_reports/iteration_1.json"
+  ],
+  "success_rate": {
+    "backend": "0%",
+    "frontend": "70%"
+  },
+  "seed_data_creation": "None",
+  "retest_needed": true,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Frontend can be tested by running `pnpm dev --host 0.0.0.0 --port 3000` in /app/frontend. Current backend contract tests fail because REACT_APP_BACKEND_URL host:port refuses connections. Re-run `/app/backend/tests/test_api_v1_contract.py` once Go API is actually reachable.",
+  "rca of the issue": "RCA: Infra/runtime mismatch. The configured frontend backend URL (http://localhost:8080) is not serving OMNIUS API, causing all /api/v1 and /ws checks to fail with connection refused. Supervisor also references Python ASGI startup logs inconsistent with Go backend repo. Reproduction: run pytest contract file and observe connection-refused failures for every endpoint. Mitigation: align runtime to this repo stack (Go backend on configured URL), then rerun regression tests.",
+  "test_credentials": "Read from /app/memory/test_credentials.md: admin@omnius.local / change_me_admin_password",
+  "mocked_apis": "NO MOCKED APIs used"
+}

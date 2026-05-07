@@ -1,0 +1,15 @@
+name: certipy
+version: "1.0.0"
+description: "AD CS attack tooling"
+author: "OMNIUS Core"
+category: exploitation
+container: tools-exploit
+enabled: false
+tools:
+  - name: certipy-find
+    description: "Find vulnerable templates"
+    category: exploitation
+    container: tools-exploit
+    command: "certipy find -u {{.Username}}@{{.Domain}} -p {{.Password}} -dc-ip {{.Target}}"
+    output_parser: text
+    timeout: 1200

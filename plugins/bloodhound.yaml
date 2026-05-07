@@ -1,0 +1,15 @@
+name: bloodhound
+version: "1.0.0"
+description: "AD graph collection"
+author: "OMNIUS Core"
+category: post_exploitation
+container: tools-exploit
+enabled: true
+tools:
+  - name: bloodhound-python
+    description: "Collect AD graph data"
+    category: post_exploitation
+    container: tools-exploit
+    command: "bloodhound-python -d {{.Domain}} -u {{.Username}} -p {{.Password}} -ns {{.Target}} -c all"
+    output_parser: text
+    timeout: 1200

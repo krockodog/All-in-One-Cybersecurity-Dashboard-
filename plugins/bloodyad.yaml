@@ -1,0 +1,15 @@
+name: bloodyad
+version: "1.0.0"
+description: "AD abuse tooling"
+author: "OMNIUS Core"
+category: exploitation
+container: tools-exploit
+enabled: false
+tools:
+  - name: bloodyad-enum
+    description: "AD object enumeration"
+    category: exploitation
+    container: tools-exploit
+    command: "bloodyAD --host {{.Target}} --dc-ip {{.DCIP}} -d {{.Domain}} -u {{.Username}} -p {{.Password}} get writable"
+    output_parser: text
+    timeout: 900

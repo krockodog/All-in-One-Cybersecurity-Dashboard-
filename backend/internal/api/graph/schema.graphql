@@ -1,0 +1,82 @@
+schema {
+  query: Query
+  mutation: Mutation
+}
+
+type Target {
+  id: ID!
+  name: String!
+  type: String!
+  value: String!
+  tags: [String!]!
+  findingsCount: Int!
+  createdAt: String!
+}
+
+type Pentest {
+  id: ID!
+  name: String!
+  mode: String!
+  status: String!
+  targetIds: [String!]!
+  toolIds: [String!]!
+  createdAt: String!
+}
+
+type Finding {
+  id: ID!
+  name: String!
+  severity: String!
+  cvss: Float!
+  epss: Float!
+  cve: String!
+  tool: String!
+  pentestId: String!
+  targetId: String!
+  createdAt: String!
+}
+
+type DashboardStats {
+  totalPentests: Int!
+  activePentests: Int!
+  criticalFindings: Int!
+  highFindings: Int!
+  mediumFindings: Int!
+}
+
+input CreateTargetInput {
+  name: String!
+  type: String!
+  value: String!
+  tags: [String!]
+}
+
+input CreatePentestInput {
+  name: String!
+  mode: String!
+  targetIds: [String!]!
+  toolIds: [String!]
+}
+
+input CreateFindingInput {
+  name: String!
+  severity: String!
+  cvss: Float!
+  epss: Float!
+  pentestId: String!
+  targetId: String!
+  tool: String!
+}
+
+type Query {
+  targets: [Target!]!
+  pentests: [Pentest!]!
+  findings: [Finding!]!
+  dashboardStats: DashboardStats!
+}
+
+type Mutation {
+  createTarget(input: CreateTargetInput!): Target!
+  createPentest(input: CreatePentestInput!): Pentest!
+  createFinding(input: CreateFindingInput!): Finding!
+}

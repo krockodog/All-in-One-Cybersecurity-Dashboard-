@@ -1,0 +1,42 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@400;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #05070b;
+  --panel: #0d131e;
+  --text: #def4e8;
+  --neon: #00ff41;
+  --cyan: #00f5ff;
+  --magenta: #ff00d4;
+}
+
+:root[data-theme="light"] {
+  --bg: #f5f7fb;
+  --panel: #ffffff;
+  --text: #0e1a2a;
+  --neon: #007f3d;
+  --cyan: #006a99;
+  --magenta: #7b1fa2;
+}
+
+body {
+  margin: 0;
+  font-family: "Sora", sans-serif;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(0, 245, 255, 0.1), transparent 35%),
+    radial-gradient(circle at 80% 100%, rgba(255, 0, 212, 0.1), transparent 30%),
+    var(--bg);
+  color: var(--text);
+}
+
+.mono {
+  font-family: "Space Mono", monospace;
+}
+
+.panel {
+  @apply rounded-2xl border border-white/10 backdrop-blur;
+  background-color: color-mix(in oklab, var(--panel) 86%, transparent);
+}

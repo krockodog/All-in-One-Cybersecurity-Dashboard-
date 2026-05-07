@@ -121,3 +121,20 @@ Danach verbinden:
 ```bash
 ssh -p 22 <dein-user>@<DEINE_ECHTE_PUBLIC_IP>
 ```
+
+
+## 11) Wenn "membership expired" Seite erscheint
+
+Wenn du diese Meldung siehst (wie im Screenshot), kommt die Seite **nicht** von deinem Code, sondern vom Hosting-Anbieter der alten Verlinkung.
+
+Sofort-Fix über Domain-Panel (ohne Serverzugriff):
+1. Alte A/CNAME-Zuordnung zur abgelaufenen Instanz entfernen.
+2. Falls dein Panel **Web-Forwarding / URL Redirect** kann:
+   - Host: `@`
+   - Ziel: `https://cyberdash-xnbpkymb.manus.space`
+   - Typ: `301 Permanent`
+3. Falls dein Panel **CNAME bei apex** unterstützt (ALIAS/ANAME/Flattening):
+   - `@ -> cyberdash-xnbpkymb.manus.space`
+4. `www` zusätzlich auf dieselbe Ziel-Domain zeigen lassen.
+
+Hinweis: Der Text "author's membership has expired" bedeutet, dass die alte Hosting-Instanz deaktiviert wurde. DNS allein kann keinen abgelaufenen Account reaktivieren.

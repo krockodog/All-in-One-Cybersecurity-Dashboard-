@@ -1,0 +1,53 @@
+import { ChangeEvent, FormEvent, ReactElement, ReactNode, useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { useSessionBootstrap } from "@/hooks/useSessionBootstrap";
+
+interface LoginGateProps {
+  children: ReactNode;
+}
+
+export const LoginGate = ({ children }: LoginGateProps): ReactElement => {
+  const { login } = useAuth();
+  const { authenticated, setUser, setAuthenticated } = useAuthContext();
+  const [email, setEmail] = useState("admin@omnius.local");
+  const [password, setPassword] = useState("change_me_admin_password");
+  const { checkingSession } = useSessionBootstrap({ setAuthenticated, setUser });
+
+  if (checkingSession) {
+    return <div className="flex min-h-screen items-center justify-center" data-testid="login-session-check">Checking session...</div>;
+  }
+
+  if (authenticated) {
+    return <>{children}</>;
+  }
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
+    event.preventDefault();
+    const response = await login.mutateAsync({ email, password });
+    setUser(response.user);
+    setAuthenticated(true);
+  };
+
+  const handleEmailChange = (event: ChangeEvent<HTMLInputElement>): void => {
+    setEmail(event.target.value);
+  };
+
+  const handlePasswordChange = (event: ChangeEvent<HTMLInputElement>): void => {
+    setPassword(event.target.value);
+  };
+
+  return (
+    <div className="flex min-h-screen items-center justify-center p-4" data-testid="login-gate-screen">
+      <form onSubmit={handleSubmit} className="panel w-full max-w-md space-y-3 p-6" data-testid="login-form">
+        <h1 className="text-2xl font-semibold">OMNIUS Login</h1>
+        <input data-testid="login-email-input" value={email} onChange={handleEmailChange} className="w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2" />
+        <input data-testid="login-password-input" type="password" value={password} onChange={handlePasswordChange} className="w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2" />
+        {login.isError && <p className="text-sm text-red-400" data-testid="login-error-message">Login failed</p>}
+        <button data-testid="login-submit-button" type="submit" className="w-full rounded-lg bg-neon/25 px-4 py-2 transition hover:bg-neon/35">
+          Sign in
+        </button>
+      </form>
+    </div>
+  );
+};

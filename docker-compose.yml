@@ -1,0 +1,72 @@
+version: "3.9"
+
+services:
+  # ─────────────────────────────────────────────────
+  # CyberDash Application
+  # ─────────────────────────────────────────────────
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: cyberdash
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      # Database (optional — only needed for Engagement/Workflow features)
+      DATABASE_URL: ${DATABASE_URL:-}
+      # Auth (optional — only needed for protected tRPC procedures)
+      JWT_SECRET: ${JWT_SECRET:-changeme-in-production}
+      # OAuth (optional)
+      OAUTH_SERVER_URL: ${OAUTH_SERVER_URL:-}
+      OWNER_OPEN_ID: ${OWNER_OPEN_ID:-}
+      # AI integration (optional)
+      BUILT_IN_FORGE_API_URL: ${BUILT_IN_FORGE_API_URL:-}
+      BUILT_IN_FORGE_API_KEY: ${BUILT_IN_FORGE_API_KEY:-}
+    volumes:
+      # Mount a local .env for secrets — never commit .env to git
+      - ./.env.docker:/app/.env:ro
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    networks:
+      - cyberdash-net
+
+  # ─────────────────────────────────────────────────
+  # MySQL (optional — enables Engagement Dashboard)
+  # ─────────────────────────────────────────────────
+  db:
+    image: mysql:8.4
+    container_name: cyberdash-db
+    restart: unless-stopped
+    profiles:
+      - with-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-cyberdash}
+      MYSQL_USER: ${MYSQL_USER:-cyberdash}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-cyberdash}
+    volumes:
+      - cyberdash-db-data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-rootpassword}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - cyberdash-net
+
+volumes:
+  cyberdash-db-data:
+
+networks:
+  cyberdash-net:
+    driver: bridge

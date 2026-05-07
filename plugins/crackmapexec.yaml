@@ -1,0 +1,15 @@
+name: crackmapexec
+version: "1.0.0"
+description: "Lateral movement checks"
+author: "OMNIUS Core"
+category: lateral_movement
+container: tools-exploit
+enabled: true
+tools:
+  - name: cme-smb
+    description: "SMB enumeration"
+    category: lateral_movement
+    container: tools-exploit
+    command: "crackmapexec smb {{.Target}} -u {{.Username}} -p {{.Password}}"
+    output_parser: text
+    timeout: 900

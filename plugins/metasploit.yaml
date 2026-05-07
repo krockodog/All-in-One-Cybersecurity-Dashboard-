@@ -1,0 +1,15 @@
+name: metasploit
+version: "1.0.0"
+description: "Metasploit framework"
+author: "OMNIUS Core"
+category: exploitation
+container: tools-exploit
+enabled: true
+tools:
+  - name: msf-scan
+    description: "Metasploit auxiliary scan"
+    category: exploitation
+    container: tools-exploit
+    command: "msfconsole -q -x 'use auxiliary/scanner/portscan/tcp; set RHOSTS {{.Target}}; run; exit'"
+    output_parser: text
+    timeout: 1200

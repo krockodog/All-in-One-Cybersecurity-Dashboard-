@@ -8,8 +8,11 @@ cd osint-for-all.live
 
 ## Welche Werte musst du eintragen?
 
+
+> Wichtig: `203.0.113.x`, `198.51.100.x`, `192.0.2.x` sind nur Dokumentations-IP-Bereiche und funktionieren **nicht** im Live-Betrieb.
+
 - `DOMAIN`: `osint-for-all.live`
-- `SERVER_IP`: **öffentliche IPv4 deines VPS** (Beispiel: `203.0.113.10`)
+- `SERVER_IP`: **öffentliche IPv4 deines VPS** (Beispiel: `<DEINE_ECHTE_PUBLIC_IP>`)
 - `REPO_URL`: Git-URL von deinem Repository
 - `REPO_DIR`: lokaler Ordnername nach dem Klonen
 
@@ -20,7 +23,7 @@ cp .env.example .env
 
 ## 1) DNS setzen
 Trage bei deinem DNS-Provider ein:
-- `A` Record: Host `@` -> Wert `SERVER_IP` (z. B. `203.0.113.10`)
+- `A` Record: Host `@` -> Wert `SERVER_IP` (z. B. `<DEINE_ECHTE_PUBLIC_IP>`)
 - Optional `AAAA` Record für IPv6
 
 ## 2) Server vorbereiten (Ubuntu)
@@ -64,11 +67,11 @@ Wenn dieser Check fehlschlägt, ist meistens DNS oder Firewall (Ports 80/443) no
 
 ## DNS-Fehler aus deinem Screenshot (wichtig)
 
-Dein **erster TXT-Eintrag** (`openai-domain-verification=...`) ist korrekt und kann bleiben. Fehlerhaft ist nur `TXT @ = 203.0.113.10` – dieser muss gelöscht werden.
+Dein **erster TXT-Eintrag** (`openai-domain-verification=...`) ist korrekt und kann bleiben. Fehlerhaft ist nur `TXT @ = <DEINE_ECHTE_PUBLIC_IP>` – dieser muss gelöscht werden.
 
 Setze stattdessen genau so:
-- `A`  `@` -> `203.0.113.10`
-- `A`  `osint-for-all.live` -> `203.0.113.10` (optional, oft durch `@` bereits abgedeckt)
+- `A`  `@` -> `<DEINE_ECHTE_PUBLIC_IP>`
+- `A`  `osint-for-all.live` -> `<DEINE_ECHTE_PUBLIC_IP>` (optional, oft durch `@` bereits abgedeckt)
 - `CNAME` `www` -> `osint-for-all.live`
 - `TXT` Verifikationseinträge nur für echte Verifizierungs-Strings (nicht IP-Adressen)
 
@@ -106,7 +109,7 @@ docker compose logs --tail=200
 
 ## 10) Kein Zugriff auf Zielserver (SSH) beheben
 ```bash
-./scripts/check-server-access.sh 203.0.113.10 22
+./scripts/check-server-access.sh <DEINE_ECHTE_PUBLIC_IP> 22
 ```
 
 Wenn `SSH port NOT reachable` kommt:
@@ -116,5 +119,5 @@ Wenn `SSH port NOT reachable` kommt:
 
 Danach verbinden:
 ```bash
-ssh -p 22 <dein-user>@203.0.113.10
+ssh -p 22 <dein-user>@<DEINE_ECHTE_PUBLIC_IP>
 ```

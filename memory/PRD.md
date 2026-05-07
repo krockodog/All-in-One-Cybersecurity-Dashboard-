@@ -265,3 +265,16 @@ Build a production-ready, self-hosted OMNIUS RED-Team dashboard framework with G
 2. Agent Pipeline: Planner/Executor/Analyst/Verifier mit realen Toolergebnissen verdrahten.
 3. Persistenz ersetzen: In-Memory → PostgreSQL/Neo4j/Redis mit Migrationen.
 
+## Code Review Remediation (2026-05-07, Iteration 5)
+- Kritische Hook-Fixes umgesetzt:
+  - `useWebSocket.ts`: Dependency-Handling erweitert (Heartbeat + Connection), benannte Verbindungsfunktionen extrahiert, Magic Number Namen vereinheitlicht.
+  - `useSessionBootstrap.ts`: stabiler `bootstrapSession` Callback mit sauberem Mount/Unmount-Schutz.
+  - `LiveTerminal.tsx`: `terminalRef` Dependency explizit ergänzt und Typisierung weiter präzisiert.
+- Wichtige Refactors umgesetzt:
+  - `QualityPage.tsx` in kleinere Komponenten aufgeteilt (`QualityHeader`, `QualityChecks`, `QualityMetricsGrid`, `QualityReviewCycles`).
+  - `FindingList.tsx` mit expliziten Interfaces (`FindingColumn`, `FindingRowProps`) und strukturierter Tabellenlogik verbessert.
+- Validierung:
+  - Frontend Build ✅
+  - Backend Contracttests ✅ (`9/9`)
+  - Testing-Agent Iteration 5 ✅ (Frontend+Backend 100%, keine offenen Action Items)
+

@@ -1,0 +1,38 @@
+name: osint-for-all.live CI
+
+on:
+  push:
+    paths:
+      - 'osint-for-all.live/**'
+      - '.github/workflows/osint-static-ci.yml'
+  pull_request:
+    paths:
+      - 'osint-for-all.live/**'
+      - '.github/workflows/osint-static-ci.yml'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: osint-for-all.live
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate manifest JSON
+        run: python -m json.tool site.webmanifest >/dev/null
+
+      - name: Validate sitemap XML
+        run: xmllint --noout sitemap.xml
+
+      - name: Validate docker compose config
+        run: docker compose config >/dev/null
+
+      - name: Basic static checks
+        run: |
+          test -f index.html
+          test -f 404.html
+          test -f Caddyfile
+          test -f Dockerfile
+          test -f scripts/deploy.sh

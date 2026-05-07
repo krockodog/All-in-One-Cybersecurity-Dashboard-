@@ -1,0 +1,15 @@
+services:
+  web:
+    build: .
+    container_name: osint-for-all-live
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:

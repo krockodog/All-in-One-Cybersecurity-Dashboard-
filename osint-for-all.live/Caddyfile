@@ -1,0 +1,23 @@
+osint-for-all.live {
+  encode zstd gzip
+  root * /srv
+  file_server
+
+  header {
+    Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+    X-Content-Type-Options "nosniff"
+    X-Frame-Options "DENY"
+    Referrer-Policy "strict-origin-when-cross-origin"
+    Permissions-Policy "geolocation=(), microphone=(), camera=()"
+    Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests"
+    -Server
+  }
+
+  @notfound {
+    not path / /index.html /assets/* /site.webmanifest /robots.txt /sitemap.xml
+  }
+  handle @notfound {
+    rewrite * /404.html
+    file_server
+  }
+}

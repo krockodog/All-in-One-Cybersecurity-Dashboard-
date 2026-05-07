@@ -83,3 +83,22 @@ Danach 5-15 Minuten warten und prüfen:
 ```bash
 ./scripts/diagnose-live.sh osint-for-all.live
 ```
+
+
+## 9) SSL-Fehler `ERR_SSL_VERSION_OR_CIPHER_MISMATCH` beheben
+```bash
+./scripts/check-tls.sh osint-for-all.live
+```
+
+Wenn der Fehler erscheint, sind die häufigsten Ursachen:
+- Port `443` zeigt nicht auf den Caddy-Container.
+- Ein Proxy/CDN terminiert TLS falsch (vorübergehend Proxy deaktivieren / DNS-only).
+- Alter Reverse-Proxy läuft parallel und beantwortet 443.
+
+Direkt auf dem Server ausführen:
+```bash
+cd osint-for-all.live
+docker compose down
+docker compose up -d --build
+docker compose logs --tail=200
+```

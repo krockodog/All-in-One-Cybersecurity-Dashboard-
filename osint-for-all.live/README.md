@@ -60,3 +60,20 @@ git pull --ff-only
 ```
 
 Wenn dieser Check fehlschlägt, ist meistens DNS oder Firewall (Ports 80/443) noch nicht korrekt gesetzt.
+
+
+## DNS-Fehler aus deinem Screenshot (wichtig)
+
+Dein aktueller DNS hat einen Fehler: `TXT @ = 203.0.113.10` ist **falsch** und muss gelöscht werden.
+
+Setze stattdessen genau so:
+- `A`  `@` -> `203.0.113.10`
+- `A`  `osint-for-all.live` -> `203.0.113.10` (optional, oft durch `@` bereits abgedeckt)
+- `CNAME` `www` -> `osint-for-all.live`
+- `TXT` Verifikationseinträge nur für echte Verifizierungs-Strings (nicht IP-Adressen)
+
+Danach 5-15 Minuten warten und prüfen:
+```bash
+./scripts/go-live-check.sh osint-for-all.live
+./scripts/go-live-check.sh www.osint-for-all.live
+```

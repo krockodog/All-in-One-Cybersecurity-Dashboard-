@@ -1,7 +1,10 @@
+www.osint-for-all.live {
+  redir https://osint-for-all.live{uri} permanent
+}
+
 osint-for-all.live {
   encode zstd gzip
   root * /srv
-  file_server
 
   header {
     Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
@@ -13,10 +16,12 @@ osint-for-all.live {
     -Server
   }
 
-  @notfound {
-    not path / /index.html /assets/* /site.webmanifest /robots.txt /sitemap.xml
+  @known path / /index.html /assets/* /site.webmanifest /robots.txt /sitemap.xml /404.html
+  handle @known {
+    file_server
   }
-  handle @notfound {
+
+  handle {
     rewrite * /404.html
     file_server
   }

@@ -52,3 +52,11 @@ curl -I https://osint-for-all.live/sitemap.xml
 git pull --ff-only
 ./scripts/deploy.sh
 ```
+
+
+## 7) Live-Domain prüfen (muss extern erreichbar sein)
+```bash
+./scripts/go-live-check.sh osint-for-all.live
+```
+
+Wenn dieser Check fehlschlägt, ist meistens DNS oder Firewall (Ports 80/443) noch nicht korrekt gesetzt.

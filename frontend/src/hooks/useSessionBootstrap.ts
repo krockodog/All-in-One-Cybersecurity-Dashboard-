@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { User } from "@/types";
 import { apiFetch } from "@/utils/api";
 
@@ -9,47 +9,35 @@ interface SessionBootstrapArgs {
 
 export const useSessionBootstrap = ({ setUser, setAuthenticated }: SessionBootstrapArgs) => {
   const [checkingSession, setCheckingSession] = useState(true);
-  const mountedRef = useRef(true);
-  const session = useRef<{ user: User } | null>(null);
-  const payload = useRef<{ user: User } | null>(null);
-  const fetchedSessionPayload = payload;
-  const sessionActionsRef = useRef({ setUser, setAuthenticated, setCheckingSession });
-
-  sessionActionsRef.current = { setUser, setAuthenticated, setCheckingSession };
-
-  const fetchSessionUser = async (): Promise<{ user: User }> => apiFetch<{ user: User }>("/api/v1/auth/me");
-
-  const runSessionCheck = useCallback(async (): Promise<void> => {
-    try {
-      const fetched = await fetchSessionUser();
-      session.current = fetched;
-      fetchedSessionPayload.current = fetched;
-      if (!mountedRef.current) {
-        return;
-      }
-      sessionActionsRef.current.setUser(fetched.user);
-      sessionActionsRef.current.setAuthenticated(true);
-    } catch {
-      if (mountedRef.current) {
-        sessionActionsRef.current.setAuthenticated(false);
-      }
-    } finally {
-      if (mountedRef.current) {
-        sessionActionsRef.current.setCheckingSession(false);
-      }
-    }
-  }, [fetchSessionUser, fetchedSessionPayload, mountedRef, payload, session, sessionActionsRef]);
 
   useEffect(() => {
-    mountedRef.current = true;
+    let cancelled = false;
 
-    void runSessionCheck();
+    const bootstrapSession = async (): Promise<void> => {
+      try {
+        const payload = await apiFetch<{ user: User }>("/api/v1/auth/me");
+        if (cancelled) {
+          return;
+        }
+        setUser(payload.user);
+        setAuthenticated(true);
+      } catch {
+        if (!cancelled) {
+          setAuthenticated(false);
+        }
+      } finally {
+        if (!cancelled) {
+          setCheckingSession(false);
+        }
+      }
+    };
+
+    void bootstrapSession();
 
     return () => {
-      mountedRef.current = false;
+      cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- `User` is type-only; refs are lifecycle containers.
-  }, [mountedRef, payload, runSessionCheck]);
+  }, [setAuthenticated, setUser]);
 
   return { checkingSession };
 };

@@ -12,6 +12,8 @@ interface SidebarLink {
   icon: LucideIcon;
 }
 
+const toNavTestId = (label: string): string => `nav-link-${label.toLowerCase().replace(/\s+/g, "-")}`;
+
 const links: SidebarLink[] = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/targets", label: "Targets", icon: Crosshair },
@@ -37,7 +39,7 @@ export const Sidebar = (): ReactElement => {
             <NavLink
               key={link.to}
               to={link.to}
-              data-testid={`nav-link-${link.label.toLowerCase().replace(/\s+/g, "-")}`}
+              data-testid={toNavTestId(link.label)}
               className={({ isActive }: NavClassState) =>
                 `flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors ${
                   isActive ? "bg-neon/20 text-neon" : "hover:bg-white/10"

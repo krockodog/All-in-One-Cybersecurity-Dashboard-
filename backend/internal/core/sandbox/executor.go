@@ -1,6 +1,10 @@
 package sandbox
 
-import "time"
+import (
+	"fmt"
+	"strings"
+	"time"
+)
 
 type ExecResult struct {
 	Stdout   string    `json:"stdout"`
@@ -10,9 +14,23 @@ type ExecResult struct {
 }
 
 func Execute(spec ContainerSpec) ExecResult {
-	_ = spec
+	if err := ValidateSpec(spec); err != nil {
+		return ExecResult{
+			Stdout:   "",
+			Stderr:   err.Error(),
+			ExitCode: 1,
+			Finished: time.Now().UTC(),
+		}
+	}
+
+	command := strings.Join(spec.Command, " ")
+	summary := fmt.Sprintf("sandbox execution dispatched: %s", command)
+	if spec.Image != "" {
+		summary = fmt.Sprintf("%s (image=%s)", summary, spec.Image)
+	}
+
 	return ExecResult{
-		Stdout:   "sandbox execution dispatched",
+		Stdout:   summary,
 		Stderr:   "",
 		ExitCode: 0,
 		Finished: time.Now().UTC(),

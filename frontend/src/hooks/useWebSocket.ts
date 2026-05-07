@@ -1,4 +1,4 @@
-import { MutableRefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { MutableRefObject, useEffect, useRef, useState } from "react";
 
 export interface TerminalEvent {
   time: string;
@@ -10,6 +10,7 @@ const MAX_MESSAGES = 300;
 const WEBSOCKET_RETRY_DELAY_MS = 800;
 const MAX_RECONNECT_DELAY_MS = 5000;
 const WEBSOCKET_HEARTBEAT_INTERVAL_MS = 15000;
+const WebSocketCtor = WebSocket;
 const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
 if (!backendUrl) {
@@ -37,16 +38,37 @@ const trimMessageBuffer = (previous: TerminalEvent[], event: TerminalEvent): Ter
 
 const reconnectDelay = (retryCount: number): number =>
   Math.min(MAX_RECONNECT_DELAY_MS, retryCount * WEBSOCKET_RETRY_DELAY_MS);
-const useWebSocketHeartbeat = (connected: boolean, socketRef: MutableRefObject<WebSocket | null>): void => {
-  const heartbeatIdRef = useRef<number | null>(null);
 
+const clearRetryTimer = (retryTimerRef: MutableRefObject<number | null>): void => {
+  if (retryTimerRef.current !== null) {
+    window.clearTimeout(retryTimerRef.current);
+    retryTimerRef.current = null;
+  }
+};
+
+const closeCurrentSocket = (
+  socketRef: MutableRefObject<WebSocket | null>,
+  setConnected: (value: boolean) => void
+): void => {
+  if (socketRef.current) {
+    socketRef.current.close();
+    socketRef.current = null;
+  }
+  setConnected(false);
+};
+
+const useWebSocketHeartbeat = (
+  connected: boolean,
+  heartbeatIdRef: MutableRefObject<number | null>,
+  socketRef: MutableRefObject<WebSocket | null>
+): void => {
   useEffect(() => {
     if (!connected || !socketRef.current) {
       return;
     }
 
     heartbeatIdRef.current = window.setInterval(() => {
-      if (socketRef.current?.readyState === WebSocket.OPEN) {
+      if (socketRef.current?.readyState === WebSocketCtor.OPEN) {
         socketRef.current.send("ping");
       }
     }, WEBSOCKET_HEARTBEAT_INTERVAL_MS);
@@ -57,7 +79,7 @@ const useWebSocketHeartbeat = (connected: boolean, socketRef: MutableRefObject<W
         heartbeatIdRef.current = null;
       }
     };
-  }, [connected, socketRef]);
+  }, [WEBSOCKET_HEARTBEAT_INTERVAL_MS, WebSocketCtor, connected, heartbeatIdRef, socketRef]);
 };
 
 export const useWebSocket = (pentestId: string) => {
@@ -68,83 +90,60 @@ export const useWebSocket = (pentestId: string) => {
   const retryTimerRef = useRef<number | null>(null);
   const retryCountRef = useRef(0);
   const reconnectRef = useRef<() => void>(() => undefined);
-
-  const wsUrl = useMemo(() => toWebSocketUrl(backendUrl, pentestId), [pentestId]);
-
-  const clearRetryTimer = useCallback((): void => {
-    if (retryTimerRef.current !== null) {
-      window.clearTimeout(retryTimerRef.current);
-      retryTimerRef.current = null;
-    }
-  }, []);
-
-  const closeCurrentSocket = useCallback((): void => {
-    if (socketRef.current) {
-      socketRef.current.close();
-      socketRef.current = null;
-    }
-    setConnected(false);
-  }, []);
-
-  const pushMessage = useCallback((event: TerminalEvent): void => {
-    setMessages((previous) => trimMessageBuffer(previous, event));
-  }, []);
-
-  const connect = useCallback((): void => {
-    if (!pentestId) {
-      return;
-    }
-
-    clearRetryTimer();
-    closeCurrentSocket();
-
-    const socket = new WebSocket(wsUrl);
-    socketRef.current = socket;
-
-    socket.onopen = () => {
-      setConnected(true);
-      retryCountRef.current = 0;
-      clearRetryTimer();
-    };
-
-    socket.onmessage = (event: MessageEvent<string>) => {
-      pushMessage(parseTerminalEvent(event.data));
-    };
-
-    socket.onclose = () => {
-      if (socketRef.current !== socket) {
-        return;
-      }
-
-      setConnected(false);
-      retryCountRef.current += 1;
-      clearRetryTimer();
-
-      retryTimerRef.current = window.setTimeout(() => {
-        reconnectRef.current();
-      }, reconnectDelay(retryCountRef.current));
-    };
-  }, [clearRetryTimer, closeCurrentSocket, pentestId, pushMessage, wsUrl]);
+  const heartbeatIdRef = useRef<number | null>(null);
 
   useEffect(() => {
+    const wsUrl = toWebSocketUrl(backendUrl, pentestId);
+
+    const connect = (): void => {
+      clearRetryTimer(retryTimerRef);
+      closeCurrentSocket(socketRef, setConnected);
+
+      const socket = new WebSocketCtor(wsUrl);
+      socketRef.current = socket;
+
+      socket.onopen = () => {
+        setConnected(true);
+        retryCountRef.current = 0;
+        clearRetryTimer(retryTimerRef);
+      };
+
+      socket.onmessage = (event: MessageEvent<string>) => {
+        setMessages((previous) => trimMessageBuffer(previous, parseTerminalEvent(event.data)));
+      };
+
+      socket.onclose = () => {
+        if (socketRef.current !== socket) {
+          return;
+        }
+
+        setConnected(false);
+        retryCountRef.current += 1;
+        clearRetryTimer(retryTimerRef);
+        retryTimerRef.current = window.setTimeout(() => {
+          reconnectRef.current();
+        }, reconnectDelay(retryCountRef.current));
+      };
+    };
+
     reconnectRef.current = connect;
-  }, [connect]);
 
-  useEffect(() => {
     if (!pentestId) {
       setMessages([]);
+      clearRetryTimer(retryTimerRef);
+      closeCurrentSocket(socketRef, setConnected);
       return;
     }
 
     connect();
 
     return () => {
-      clearRetryTimer();
-      closeCurrentSocket();
+      clearRetryTimer(retryTimerRef);
+      closeCurrentSocket(socketRef, setConnected);
     };
-  }, [clearRetryTimer, closeCurrentSocket, connect, pentestId]);
+  }, [backendUrl, pentestId, reconnectRef, setMessages]);
 
-  useWebSocketHeartbeat(connected, socketRef);
+  useWebSocketHeartbeat(connected, heartbeatIdRef, socketRef);
 
   return { messages, connected };
 };

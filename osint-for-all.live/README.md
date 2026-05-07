@@ -56,7 +56,7 @@ git pull --ff-only
 
 ## 7) Live-Domain prüfen (muss extern erreichbar sein)
 ```bash
-./scripts/go-live-check.sh osint-for-all.live
+./scripts/go-live-check.sh osint-for-all.live 5 8
 ```
 
 Wenn dieser Check fehlschlägt, ist meistens DNS oder Firewall (Ports 80/443) noch nicht korrekt gesetzt.
@@ -74,8 +74,8 @@ Setze stattdessen genau so:
 
 Danach 5-15 Minuten warten und prüfen:
 ```bash
-./scripts/go-live-check.sh osint-for-all.live
-./scripts/go-live-check.sh www.osint-for-all.live
+./scripts/go-live-check.sh osint-for-all.live 5 8
+./scripts/go-live-check.sh www.osint-for-all.live 5 8
 ```
 
 

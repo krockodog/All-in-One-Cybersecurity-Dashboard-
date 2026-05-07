@@ -3,6 +3,37 @@ import { useFindings } from "@/hooks/useFindings";
 import { Finding } from "@/types";
 import { formatDate, severityClass } from "@/utils/formatters";
 
+interface FindingColumn {
+  key: "name" | "severity" | "cvss" | "epss" | "cve" | "tool" | "createdAt";
+  label: string;
+}
+
+interface FindingRowProps {
+  finding: Finding;
+}
+
+const FINDING_COLUMNS: FindingColumn[] = [
+  { key: "name", label: "Name" },
+  { key: "severity", label: "Severity" },
+  { key: "cvss", label: "CVSS" },
+  { key: "epss", label: "EPSS" },
+  { key: "cve", label: "CVE" },
+  { key: "tool", label: "Tool" },
+  { key: "createdAt", label: "Created" },
+];
+
+const FindingRow = ({ finding }: FindingRowProps): ReactElement => (
+  <tr key={finding.id} className="border-t border-white/10" data-testid={`finding-row-${finding.id}`}>
+    <td className="px-3 py-2">{finding.name}</td>
+    <td className={`px-3 py-2 font-semibold ${severityClass(finding.severity)}`}>{finding.severity.toUpperCase()}</td>
+    <td className="px-3 py-2">{finding.cvss.toFixed(1)}</td>
+    <td className="px-3 py-2">{finding.epss.toFixed(2)}</td>
+    <td className="px-3 py-2">{finding.cve || "-"}</td>
+    <td className="px-3 py-2">{finding.tool}</td>
+    <td className="px-3 py-2">{formatDate(finding.createdAt)}</td>
+  </tr>
+);
+
 export const FindingList = (): ReactElement => {
   const { findings } = useFindings();
   const items: Finding[] = findings.data?.data ?? [];
@@ -14,26 +45,14 @@ export const FindingList = (): ReactElement => {
         <table className="min-w-full text-left text-sm">
           <thead className="bg-white/5 text-xs uppercase tracking-wider">
             <tr>
-              <th className="px-3 py-2">Name</th>
-              <th className="px-3 py-2">Severity</th>
-              <th className="px-3 py-2">CVSS</th>
-              <th className="px-3 py-2">EPSS</th>
-              <th className="px-3 py-2">CVE</th>
-              <th className="px-3 py-2">Tool</th>
-              <th className="px-3 py-2">Created</th>
+              {FINDING_COLUMNS.map((column: FindingColumn) => (
+                <th key={column.key} className="px-3 py-2">{column.label}</th>
+              ))}
             </tr>
           </thead>
           <tbody>
-            {items.map((finding) => (
-              <tr key={finding.id} className="border-t border-white/10" data-testid={`finding-row-${finding.id}`}>
-                <td className="px-3 py-2">{finding.name}</td>
-                <td className={`px-3 py-2 font-semibold ${severityClass(finding.severity)}`}>{finding.severity.toUpperCase()}</td>
-                <td className="px-3 py-2">{finding.cvss.toFixed(1)}</td>
-                <td className="px-3 py-2">{finding.epss.toFixed(2)}</td>
-                <td className="px-3 py-2">{finding.cve || "-"}</td>
-                <td className="px-3 py-2">{finding.tool}</td>
-                <td className="px-3 py-2">{formatDate(finding.createdAt)}</td>
-              </tr>
+            {items.map((finding: Finding) => (
+              <FindingRow key={finding.id} finding={finding} />
             ))}
           </tbody>
         </table>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { User } from "@/types";
 import { apiFetch } from "@/utils/api";
 
@@ -9,35 +9,36 @@ interface SessionBootstrapArgs {
 
 export const useSessionBootstrap = ({ setUser, setAuthenticated }: SessionBootstrapArgs) => {
   const [checkingSession, setCheckingSession] = useState(true);
+  const cancelledRef = useRef(false);
+
+  const bootstrapSession = useCallback(async (): Promise<void> => {
+    try {
+      const payload = await apiFetch<{ user: User }>("/api/v1/auth/me");
+      if (cancelledRef.current) {
+        return;
+      }
+      setUser(payload.user);
+      setAuthenticated(true);
+    } catch {
+      if (!cancelledRef.current) {
+        setAuthenticated(false);
+      }
+    } finally {
+      if (!cancelledRef.current) {
+        setCheckingSession(false);
+      }
+    }
+  }, [apiFetch, cancelledRef, setAuthenticated, setUser]);
 
   useEffect(() => {
-    let cancelled = false;
-
-    const bootstrapSession = async (): Promise<void> => {
-      try {
-        const payload = await apiFetch<{ user: User }>("/api/v1/auth/me");
-        if (cancelled) {
-          return;
-        }
-        setUser(payload.user);
-        setAuthenticated(true);
-      } catch {
-        if (!cancelled) {
-          setAuthenticated(false);
-        }
-      } finally {
-        if (!cancelled) {
-          setCheckingSession(false);
-        }
-      }
-    };
+    cancelledRef.current = false;
 
     void bootstrapSession();
 
     return () => {
-      cancelled = true;
+      cancelledRef.current = true;
     };
-  }, [setAuthenticated, setUser]);
+  }, [apiFetch, bootstrapSession, cancelledRef]);
 
   return { checkingSession };
 };

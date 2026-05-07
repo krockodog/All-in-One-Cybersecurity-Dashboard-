@@ -1,5 +1,11 @@
 # osint-for-all.live Deployment (Produktiv)
 
+## 0) Sofort lokal testen
+```bash
+cd osint-for-all.live
+./scripts/run-local.sh
+```
+
 ## Welche Werte musst du eintragen?
 
 - `DOMAIN`: `osint-for-all.live`

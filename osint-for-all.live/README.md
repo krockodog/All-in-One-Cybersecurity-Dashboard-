@@ -64,7 +64,7 @@ Wenn dieser Check fehlschlägt, ist meistens DNS oder Firewall (Ports 80/443) no
 
 ## DNS-Fehler aus deinem Screenshot (wichtig)
 
-Dein aktueller DNS hat einen Fehler: `TXT @ = 203.0.113.10` ist **falsch** und muss gelöscht werden.
+Dein **erster TXT-Eintrag** (`openai-domain-verification=...`) ist korrekt und kann bleiben. Fehlerhaft ist nur `TXT @ = 203.0.113.10` – dieser muss gelöscht werden.
 
 Setze stattdessen genau so:
 - `A`  `@` -> `203.0.113.10`

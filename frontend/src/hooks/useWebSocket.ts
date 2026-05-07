@@ -79,7 +79,7 @@ const useWebSocketHeartbeat = (
         heartbeatIdRef.current = null;
       }
     };
-  }, [WEBSOCKET_HEARTBEAT_INTERVAL_MS, WebSocketCtor, connected, heartbeatIdRef, socketRef]);
+  }, [connected, heartbeatIdRef, socketRef]);
 };
 
 export const useWebSocket = (pentestId: string) => {
@@ -141,7 +141,7 @@ export const useWebSocket = (pentestId: string) => {
       clearRetryTimer(retryTimerRef);
       closeCurrentSocket(socketRef, setConnected);
     };
-  }, [backendUrl, pentestId, reconnectRef, setMessages]);
+  }, [pentestId]);
 
   useWebSocketHeartbeat(connected, heartbeatIdRef, socketRef);
 

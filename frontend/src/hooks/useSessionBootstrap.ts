@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { User } from "@/types";
 import { apiFetch } from "@/utils/api";
 
@@ -9,14 +9,13 @@ interface SessionBootstrapArgs {
 
 export const useSessionBootstrap = ({ setUser, setAuthenticated }: SessionBootstrapArgs) => {
   const [checkingSession, setCheckingSession] = useState(true);
-  const sessionFetcher = useMemo(() => apiFetch<{ user: User }>, [apiFetch]);
 
   useEffect(() => {
     let cancelled = false;
 
     const bootstrapSession = async (): Promise<void> => {
       try {
-        const payload = await sessionFetcher("/api/v1/auth/me");
+        const payload = await apiFetch<{ user: User }>("/api/v1/auth/me");
         if (cancelled) {
           return;
         }
@@ -38,7 +37,7 @@ export const useSessionBootstrap = ({ setUser, setAuthenticated }: SessionBootst
     return () => {
       cancelled = true;
     };
-  }, [sessionFetcher, setAuthenticated, setUser]);
+  }, [setAuthenticated, setUser]);
 
   return { checkingSession };
 };

@@ -238,3 +238,15 @@ Build a production-ready, self-hosted OMNIUS RED-Team dashboard framework with G
 - **MOCKED**: Deep AI-agent reasoning/execution remains foundational (phase-2 depth pending).
 - **MOCKED**: Sandbox dispatch still summary-level, not full Docker SDK isolated runtime.
 
+## Code Review Follow-up (2026-05-07, Iteration nach Findings)
+- React-Hook-Findings umgesetzt:
+  - `useWebSocket.ts` erneut bereinigt (Dependency-Arrays entschlackt, Heartbeat/Connection-Effekte stabilisiert, Funktionskomplexität durch Helper-Struktur reduziert).
+  - `useSessionBootstrap.ts` vereinfacht (direkter `apiFetch`-Pfad ohne unnötiges `useMemo`).
+  - `usePentestWizardController.ts` Callbacks auf direkte Handler umgestellt, um Dependency-Warnungen zu vermeiden.
+  - `LiveTerminal.tsx` Effekt-Abhängigkeiten auf notwendige Werte zurückgeführt.
+- Verifikation:
+  - Frontend Build: `pnpm build` ✅
+  - Backend Contract: `REACT_APP_BACKEND_URL=http://localhost:8001 pytest -q /app/backend/tests/test_api_v1_contract.py` ✅ (7/7)
+  - Testing Agent: `iteration_3.json` ✅ (Frontend 100%, keine funktionalen Bugs)
+  - Zusätzlicher UI-Smoke-Test (Login → Dashboard) via Screenshot ✅
+

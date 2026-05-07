@@ -219,3 +219,22 @@ Build a production-ready, self-hosted OMNIUS RED-Team dashboard framework with G
 4. Add report engine + PDF generation and report download APIs.
 5. Harden auth/session refresh flow and complete admin/user management workflows.
 
+## Progress Update (2026-05-07)
+- Closed current P0 frontend stability loop:
+  - Rebuilt `useWebSocket.ts` with reconnect/heartbeat refs and cleaner effect dependencies.
+  - Simplified `useSessionBootstrap.ts` to a mount-safe async bootstrap flow.
+  - Extracted `usePentestWizardController.ts` from `PentestWizard.tsx` to reduce complexity.
+- Improved explicit typing in flagged components:
+  - `LiveTerminal.tsx`, `ManualPentest.tsx`, `AgentPentest.tsx`, `Sidebar.tsx`.
+- Mixed-plan backend progression (user option C):
+  - Expanded sandbox foundation in `internal/core/sandbox/manager.go` and `executor.go` with request/spec preparation + validation paths.
+  - Upgraded `internal/core/agent/orchestrator.go` to modular orchestrator interfaces, phase/execution summaries, and context-aware run flow.
+- Test agent iteration results (`/app/test_reports/iteration_2.json`):
+  - Backend contract tests: **7/7 PASS**
+  - Frontend tested flows: login, sidebar navigation, pentest wizard, live terminal, targets, risk matrix = **PASS**
+  - Runtime fix applied by testing agent: CORS origin handling in `backend/server.py` for credentials-based frontend calls.
+
+## Current Known Mocked/Placeholder Areas
+- **MOCKED**: Deep AI-agent reasoning/execution remains foundational (phase-2 depth pending).
+- **MOCKED**: Sandbox dispatch still summary-level, not full Docker SDK isolated runtime.
+

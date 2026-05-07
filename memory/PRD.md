@@ -187,6 +187,11 @@ Build a production-ready, self-hosted OMNIUS RED-Team dashboard framework with G
 - Added extra explicit typings for reported low-coverage targets (`ActivityFeed`, `UsersPage`, `usePentest`, `Sidebar`).
 - Validation remains passing: frontend build ✅ and backend contract tests ✅ (**7/7**).
 
+## Code Review Remediation (Current Continuation Pass)
+- Extended explicit typing in high-traffic pentest/target flows (`PentestWizard` typed handlers/state usage and `TargetManager` typed submit payload path).
+- Kept strict hook dependency compliance paths for websocket/session hooks intact.
+- Re-validated after latest edits: frontend production build ✅ and backend API contract tests ✅ (**7/7**).
+
 ## Prioritized Backlog
 
 ### P0 (must complete next)

@@ -11,6 +11,7 @@ export const useSessionBootstrap = ({ setUser, setAuthenticated }: SessionBootst
   const [checkingSession, setCheckingSession] = useState(true);
   const mountedRef = useRef(true);
   const payload = useRef<{ user: User } | null>(null);
+  const fetchedSessionPayload = payload;
   const sessionActionsRef = useRef({ setUser, setAuthenticated, setCheckingSession });
 
   sessionActionsRef.current = { setUser, setAuthenticated, setCheckingSession };
@@ -19,12 +20,12 @@ export const useSessionBootstrap = ({ setUser, setAuthenticated }: SessionBootst
 
   const runSessionCheck = useCallback(async (): Promise<void> => {
     try {
-      const fetchedSessionPayload = await fetchSessionUser();
-      payload.current = fetchedSessionPayload;
+      const session = await fetchSessionUser();
+      fetchedSessionPayload.current = session;
       if (!mountedRef.current) {
         return;
       }
-      sessionActionsRef.current.setUser(fetchedSessionPayload.user);
+      sessionActionsRef.current.setUser(session.user);
       sessionActionsRef.current.setAuthenticated(true);
     } catch {
       if (mountedRef.current) {
@@ -35,7 +36,7 @@ export const useSessionBootstrap = ({ setUser, setAuthenticated }: SessionBootst
         sessionActionsRef.current.setCheckingSession(false);
       }
     }
-  }, [fetchSessionUser, mountedRef, payload, sessionActionsRef]);
+  }, [fetchSessionUser, fetchedSessionPayload, mountedRef, payload, sessionActionsRef]);
 
   useEffect(() => {
     mountedRef.current = true;

@@ -250,3 +250,18 @@ Build a production-ready, self-hosted OMNIUS RED-Team dashboard framework with G
   - Testing Agent: `iteration_3.json` ✅ (Frontend 100%, keine funktionalen Bugs)
   - Zusätzlicher UI-Smoke-Test (Login → Dashboard) via Screenshot ✅
 
+## Feature Add-on (2026-05-07) — Admin Code Quality Status Page
+- Neue Admin-Seite `/quality` integriert (Sidebar + Route + eigene Page-Komponente).
+- Neues Backend-Endpoint `/api/v1/quality/status` ergänzt (Checks, Review-Zyklen, Metriken).
+- UI umfasst Status-Karten, Metrik-Kacheln, Review-Zyklen-Tabelle und Refresh-Button.
+- Vollständige `data-testid`-Abdeckung für zentrale Elemente der neuen Seite ergänzt.
+- Validierung:
+  - Frontend Build ✅
+  - Backend Contracttests ✅ (`9/9`, inkl. `test_quality_status_requires_auth` und `test_quality_status_returns_valid_structure`)
+  - Testing-Agent Iteration 4 ✅ (Frontend+Backend 100%)
+
+## Aktualisierte Next Tasks
+1. Sandbox Runtime: echte Docker-Isolation + Tool-Lifecycle + Audit-Events statt Placeholder.
+2. Agent Pipeline: Planner/Executor/Analyst/Verifier mit realen Toolergebnissen verdrahten.
+3. Persistenz ersetzen: In-Memory → PostgreSQL/Neo4j/Redis mit Migrationen.
+

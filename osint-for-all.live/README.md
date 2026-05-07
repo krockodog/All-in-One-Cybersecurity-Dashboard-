@@ -77,3 +77,9 @@ Danach 5-15 Minuten warten und prüfen:
 ./scripts/go-live-check.sh osint-for-all.live
 ./scripts/go-live-check.sh www.osint-for-all.live
 ```
+
+
+## 8) Live-Diagnose (wenn Check fehlschlägt)
+```bash
+./scripts/diagnose-live.sh osint-for-all.live
+```

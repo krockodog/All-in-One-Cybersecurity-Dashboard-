@@ -161,3 +161,60 @@ def test_risk_matrix_contract_5x5(
 def test_websocket_endpoint_path_contract(api_client: requests.Session, api_base_url: str) -> None:
     response = api_client.get(f"{api_base_url}/ws/pentest/test-contract", timeout=10)
     assert response.status_code in (101, 400, 426)
+
+
+# Quality Status Endpoint Tests (Phase-1 Admin Code-Quality Page)
+def test_quality_status_requires_auth(api_client: requests.Session, api_base_url: str) -> None:
+    """Quality status endpoint should require authentication"""
+    api_client.cookies.clear()
+    response = api_client.get(f"{api_base_url}/api/v1/quality/status", timeout=10)
+    assert response.status_code in (401, 403), f"Expected 401/403, got {response.status_code}"
+
+
+def test_quality_status_returns_valid_structure(
+    api_client: requests.Session, api_base_url: str, auth_headers: dict[str, str]
+) -> None:
+    """Quality status endpoint should return valid structured data"""
+    response = api_client.get(f"{api_base_url}/api/v1/quality/status", headers=auth_headers, timeout=10)
+    assert response.status_code == 200
+    
+    payload = response.json()
+    assert "data" in payload
+    data = payload["data"]
+    
+    # Verify updatedAt field
+    assert "updatedAt" in data
+    assert isinstance(data["updatedAt"], str)
+    
+    # Verify checks array structure
+    assert "checks" in data
+    assert isinstance(data["checks"], list)
+    for check in data["checks"]:
+        assert "id" in check
+        assert "label" in check
+        assert "status" in check
+        assert check["status"] in ("pass", "warn", "fail")
+        assert "lastRun" in check
+        assert "detail" in check
+    
+    # Verify reviewCycles array structure
+    assert "reviewCycles" in data
+    assert isinstance(data["reviewCycles"], list)
+    for cycle in data["reviewCycles"]:
+        assert "id" in cycle
+        assert "title" in cycle
+        assert "status" in cycle
+        assert cycle["status"] in ("pass", "warn", "fail")
+        assert "critical" in cycle
+        assert "important" in cycle
+        assert "notes" in cycle
+    
+    # Verify metrics object structure
+    assert "metrics" in data
+    metrics = data["metrics"]
+    assert "targets" in metrics
+    assert "pentests" in metrics
+    assert "findings" in metrics
+    assert "activePentests" in metrics
+    assert "criticalFindings" in metrics
+    assert all(isinstance(metrics[k], int) for k in metrics)

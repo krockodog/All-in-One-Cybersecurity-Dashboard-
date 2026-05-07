@@ -1,6 +1,6 @@
 import { ReactElement } from "react";
 import { NavLink } from "react-router-dom";
-import { LucideIcon, Shield, Crosshair, Bug, AlertTriangle, Plug, Settings, FileText, Users, LayoutDashboard } from "lucide-react";
+import { LucideIcon, Shield, Crosshair, Bug, AlertTriangle, Plug, Settings, FileText, Users, LayoutDashboard, ClipboardCheck } from "lucide-react";
 
 interface NavClassState {
   isActive: boolean;
@@ -22,6 +22,7 @@ const links: SidebarLink[] = [
   { to: "/risk-matrix", label: "Risk Matrix", icon: AlertTriangle },
   { to: "/plugins", label: "Plugins", icon: Plug },
   { to: "/settings", label: "Settings", icon: Settings },
+  { to: "/quality", label: "Quality", icon: ClipboardCheck },
   { to: "/reports", label: "Reports", icon: FileText },
   { to: "/users", label: "Users", icon: Users }
 ];

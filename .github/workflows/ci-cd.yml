@@ -199,7 +199,7 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     environment:
       name: production
-      url: https://cyberdash-xnbpkymb.manus.space
+      url: https://osint-for-all.live
     steps:
       - uses: actions/checkout@v4
 
@@ -221,7 +221,7 @@ jobs:
               repo: context.repo.repo,
               deployment_id: context.payload.deployment.id,
               state: 'success',
-              environment_url: 'https://cyberdash-xnbpkymb.manus.space',
+              environment_url: 'osint-for-all.live',
               description: 'Deployment successful'
             })
 

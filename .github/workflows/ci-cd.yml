@@ -258,7 +258,7 @@ jobs:
             ${{ steps.changelog.outputs.CHANGELOG }}
 
             ## Deployment
-            - Deployed to: https://cyberdash-xnbpkymb.manus.space
+            - Deployed to: osint-for-all.live
             - Docker Image: ${{ needs.build.outputs.image-tag }}
 
             ## Testing

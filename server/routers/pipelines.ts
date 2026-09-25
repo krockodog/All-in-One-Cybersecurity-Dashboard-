@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
-import { activeScanRateLimit } from "../_core/rateLimit";
+import { activeScanRateLimit, requireLegalConsent } from "../_core/rateLimit";
 import { MAX_PIPELINE_STEPS } from "../_core/inputLimits";
 import {
   executePipeline,
@@ -77,10 +77,11 @@ export const pipelinesRouter = router({
   }),
 
   // Execute a pipeline
-  execute: protectedProcedure.use(activeScanRateLimit)
+  execute: protectedProcedure.use(activeScanRateLimit).use(requireLegalConsent).input(z.object({ legalConsent: z.literal(true) }))
     .input(pipelineSchema)
     .mutation(async ({ input }) => {
-      const execution = await executePipeline(input as Pipeline);
+      const { legalConsent: _consent, ...pipelineInput } = input as any;
+      const execution = await executePipeline(pipelineInput as unknown as Pipeline);
       return execution;
     }),
 

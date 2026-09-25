@@ -4,7 +4,7 @@
  */
 
 import { router, protectedProcedure } from '../_core/trpc';
-import { activeScanRateLimit, llmRateLimit } from '../_core/rateLimit';
+import { activeScanRateLimit, requireLegalConsent, llmRateLimit } from '../_core/rateLimit';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import { toolIdsSchema } from '../_core/inputLimits';
@@ -14,7 +14,7 @@ import { createScopeValidator } from '../services/scopeValidator';
 import { createISO27001ISMSService } from '../services/iso27001ISMS';
 import { createLiveExecutionEngine } from '../services/liveExecutionEngine';
 
-const scanProcedure = protectedProcedure.use(activeScanRateLimit);
+const scanProcedure = protectedProcedure.use(activeScanRateLimit).use(requireLegalConsent).input(z.object({ legalConsent: z.literal(true) }));
 const llmProcedure = protectedProcedure.use(llmRateLimit);
 
 const scopeValidator = createScopeValidator();

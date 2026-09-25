@@ -1,3 +1,4 @@
+import { useLegalScanConsent } from "@/components/legal/LegalScanConsent";
 /**
  * Tool Execution Page - Unified Tool Execution Platform
  * Server-side execution of 118 tools with Live Terminal Output
@@ -104,6 +105,7 @@ export default function ToolExecutionPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   const executeMutation = trpc.tools.run.useMutation();
+  const requestScanConsent = useLegalScanConsent();
 
   const filteredTools = useMemo(
     () =>
@@ -140,6 +142,7 @@ export default function ToolExecutionPage() {
     if (Object.keys(errors).length > 0) return;
 
     const { target, options } = formatCliOptions(selectedTool, parameters);
+    if (!(await requestScanConsent({ target, tool: selectedTool.name }))) return;
     const sessionId = `session-${Date.now()}`;
     const startTime = new Date();
 
@@ -166,6 +169,7 @@ export default function ToolExecutionPage() {
         target,
         options,
         category: selectedTool.category,
+        legalConsent: true,
       });
 
       setSessions(prev =>

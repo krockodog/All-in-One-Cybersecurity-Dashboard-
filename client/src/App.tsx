@@ -6,6 +6,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { LoadingScreen } from "./components/cyber/CyberShell";
 import { NotificationToast } from "./components/NotificationToast";
 import { AuditProvider } from "./contexts/AuditContext";
+import { LegalScanConsentProvider } from "./components/legal/LegalScanConsent";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { AIChatWindow } from "./components/AIChatWindow";
 import DashboardPage from "./pages/DashboardPage";
@@ -70,6 +71,7 @@ function App() {
     <ErrorBoundary>
       <ThemeProvider defaultTheme="dark">
         <AuditProvider>
+        <LegalScanConsentProvider>
           <Toaster />
           <NotificationToast />
           <AIChatWindow />
@@ -80,6 +82,7 @@ function App() {
               <AppRouter />
             </BrowserRouter>
           )}
+        </LegalScanConsentProvider>
         </AuditProvider>
       </ThemeProvider>
     </ErrorBoundary>

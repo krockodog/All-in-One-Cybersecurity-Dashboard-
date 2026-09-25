@@ -1,3 +1,4 @@
+import { useLegalScanConsent } from "@/components/legal/LegalScanConsent";
 import { useState, useRef, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,7 @@ export function AIChatInterface() {
 
   const chatMutation = trpc.aiChat.chat.useMutation();
   const executeScanMutation = trpc.aiChat.executeScanFromChat.useMutation();
+  const requestScanConsent = useLegalScanConsent();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -61,10 +63,22 @@ export function AIChatInterface() {
 
       // If AI wants to execute a scan
       if (response.action === "execute_scan" && response.actionData) {
+        const consent = await requestScanConsent({
+          target: response.actionData.target,
+          tool: (response.actionData.toolIds || []).join(", "),
+        });
+        if (!consent) {
+          setMessages((prev) => [
+            ...prev,
+            { role: "assistant", content: "Scan abgebrochen: Die Berechtigung für das Ziel wurde nicht bestätigt." },
+          ]);
+          return;
+        }
         const scanResult = await executeScanMutation.mutateAsync({
           target: response.actionData.target,
           scope: response.actionData.scope,
           toolIds: response.actionData.toolIds,
+          legalConsent: true,
         });
 
         setMessages((prev) => [

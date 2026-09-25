@@ -104,3 +104,37 @@ export function __resetRateLimitBuckets(): void {
   buckets.clear();
   lastSweep = 0;
 }
+
+/**
+ * Rechtliche Bestätigung für aktive Scans (§202a–c, §303b StGB).
+ * Der Client muss `legalConsent: true` mitsenden, nachdem der Nutzer den
+ * Warnhinweis bestätigt hat. Jeder akzeptierte Scan wird protokolliert.
+ */
+export const requireLegalConsent = t.middleware(async ({ ctx, path, getRawInput, next }) => {
+  const raw = (await getRawInput().catch(() => undefined)) as Record<string, unknown> | undefined;
+  if (!raw || typeof raw !== "object" || raw.legalConsent !== true) {
+    throw new TRPCError({
+      code: "PRECONDITION_FAILED",
+      message:
+        "Scan abgelehnt: Die Berechtigung für das Ziel muss bestätigt werden (§202a–c, §303b StGB).",
+    });
+  }
+  const target =
+    typeof raw.target === "string"
+      ? raw.target
+      : Array.isArray((raw as any).steps)
+        ? (raw as any).steps.map((s: any) => s?.inputs?.target ?? s?.inputs?.url ?? s?.inputs?.domain ?? s?.inputs?.host).filter(Boolean).join(",")
+        : "";
+  const tool =
+    typeof raw.toolId === "string"
+      ? raw.toolId
+      : Array.isArray(raw.toolIds)
+        ? (raw.toolIds as unknown[]).join(",")
+        : typeof raw.workflowId === "string"
+          ? raw.workflowId
+          : "";
+  console.info(
+    `[AUDIT] active-scan consent ts=${new Date().toISOString()} ip=${clientIp(ctx.req)} path=${path} target=${String(target).slice(0, 200)} tool=${String(tool).slice(0, 200)}`,
+  );
+  return next();
+});

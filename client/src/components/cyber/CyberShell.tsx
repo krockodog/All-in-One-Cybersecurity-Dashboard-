@@ -165,6 +165,7 @@ export function SidebarNav() {
       {/* Mobile top bar */}
       <div className="flex items-center justify-between px-4 py-3 lg:hidden">
         <div className="flex items-center gap-3">
+          <img src={assetUrls.krockodogLogo} alt="krockodog Logo" className="h-9 w-auto object-contain drop-shadow-[0_0_12px_rgba(34,211,238,0.35)]" />
           <span className="font-mono text-[0.72rem] uppercase tracking-[0.32em] text-cyan-300/70">Control Nexus</span>
           <span className="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 font-mono text-[0.65rem] uppercase tracking-[0.2em] text-emerald-200">Live</span>
         </div>
@@ -214,9 +215,9 @@ export function SidebarNav() {
                   to={item.to}
                   className={({ isActive }) =>
                     cx(
-                      "group flex min-h-[44px] items-center justify-between rounded-2xl border px-4 py-3 text-sm transition duration-300",
+                      "cyber-nav-link group flex min-h-[44px] items-center justify-between rounded-2xl border px-4 py-3 text-sm transition duration-300",
                       isActive
-                        ? "border-cyan-400/35 bg-cyan-400/12 text-white shadow-[0_0_0_1px_rgba(34,211,238,0.08),0_12px_40px_rgba(6,182,212,0.16)]"
+                        ? "is-active border-cyan-400/35 bg-cyan-400/12 text-white shadow-[0_0_0_1px_rgba(34,211,238,0.08),0_12px_40px_rgba(6,182,212,0.16)]"
                         : "border-white/5 bg-white/[0.03] text-slate-300 hover:border-emerald-400/20 hover:bg-white/[0.05] hover:text-white",
                     )
                   }

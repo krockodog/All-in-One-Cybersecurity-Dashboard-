@@ -1,3 +1,4 @@
+import { assetUrls } from "@/lib/cyber-data";
 import {
   Sidebar,
   SidebarContent,
@@ -147,7 +148,8 @@ function DashboardLayoutContent({ children, setSidebarWidth }: DashboardLayoutCo
               </button>
               {!isCollapsed ? (
                 <div className="flex min-w-0 items-center gap-2">
-                  <span className="truncate text-sm font-semibold tracking-tight sm:text-base">Navigation</span>
+                  <img src={assetUrls.krockodogLogo} alt="krockodog Logo" className="h-9 w-auto shrink-0 object-contain drop-shadow-[0_0_12px_rgba(34,211,238,0.35)]" />
+                  <span className="truncate font-mono text-xs uppercase tracking-[0.2em] text-cyan-300/80">osint-for-all.live</span>
                 </div>
               ) : null}
             </div>
@@ -162,7 +164,7 @@ function DashboardLayoutContent({ children, setSidebarWidth }: DashboardLayoutCo
                     <SidebarMenuButton
                       isActive={isActive}
                       tooltip={item.label}
-                      className="h-9 text-sm font-normal transition-all active:bg-accent/80 sm:h-10 sm:text-base"
+                      className="cyber-nav-link h-9 text-sm font-normal transition-all active:bg-accent/80 sm:h-10 sm:text-base"
                       asChild={false}
                       onClick={() => handleMenuItemClick(item.path)}
                     >

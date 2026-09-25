@@ -1,3 +1,4 @@
+import { useLegalScanConsent } from "@/components/legal/LegalScanConsent";
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -40,6 +41,7 @@ export default function PipelineBuilderPage() {
 
   const createPipelineMutation = trpc.pipelines.create.useMutation();
   const executePipelineMutation = trpc.pipelines.execute.useMutation();
+  const requestScanConsent = useLegalScanConsent();
   const getTemplatesMutation = trpc.pipelines.getTemplates.useQuery();
 
   const addStep = (toolId: string) => {
@@ -83,9 +85,14 @@ export default function PipelineBuilderPage() {
       return;
     }
 
+    const pipelineTargets = Array.from(
+      new Set(pipeline.steps.map((s: any) => s.inputs?.target || s.inputs?.url || s.inputs?.domain || s.inputs?.host).filter(Boolean))
+    ).join(", ");
+    if (!(await requestScanConsent({ target: pipelineTargets || undefined, tool: `Pipeline: ${pipeline.name || "unbenannt"}` }))) return;
+
     setIsExecuting(true);
     try {
-      const result = await executePipelineMutation.mutateAsync(pipeline as any);
+      const result = await executePipelineMutation.mutateAsync({ ...(pipeline as any), legalConsent: true });
       setExecutionSteps(result.steps);
       // Show success message in UI
       console.log(`Pipeline ausgeführt! Execution ID: ${result.executionId}`);

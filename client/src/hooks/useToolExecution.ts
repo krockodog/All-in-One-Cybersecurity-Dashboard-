@@ -1,9 +1,11 @@
 import { useCallback } from "react";
 import { trpc } from "@/lib/trpc";
 import { type ToolDefinition } from "@/lib/cyber-data";
+import { useLegalScanConsent } from "@/components/legal/LegalScanConsent";
 
 export function useToolExecution() {
   const runToolMutation = trpc.tools.run.useMutation();
+  const requestScanConsent = useLegalScanConsent();
 
   const executeToolWithFallback = useCallback(
     async (tool: ToolDefinition, payload: { target: string; options: string }) => {
@@ -29,6 +31,14 @@ export function useToolExecution() {
         };
       }
 
+      if (!(await requestScanConsent({ target, tool: tool.name }))) {
+        return {
+          success: false,
+          output: `[abgebrochen] ${tool.name}: Die Berechtigung für das Ziel wurde nicht bestätigt. Es wurde kein Scan gestartet.`,
+          executedAt: Date.now(),
+        };
+      }
+
       try {
         // Versuche, das Tool über tRPC auszuführen
         const result = await runToolMutation.mutateAsync({
@@ -38,6 +48,7 @@ export function useToolExecution() {
           target,
           options,
           category: tool.category,
+          legalConsent: true,
         });
 
         return {
@@ -61,7 +72,7 @@ export function useToolExecution() {
         };
       }
     },
-    [runToolMutation],
+    [requestScanConsent, runToolMutation],
   );
 
   return {

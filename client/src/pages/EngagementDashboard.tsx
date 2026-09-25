@@ -1,3 +1,4 @@
+import { useLegalScanConsent } from "@/components/legal/LegalScanConsent";
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -24,16 +25,20 @@ export default function EngagementDashboard() {
 
   // Start workflow mutation
   const startWorkflow = trpc.workflows.startWorkflow.useMutation();
+  const requestScanConsent = useLegalScanConsent();
 
   const handleStartWorkflow = async (engagementId: number, workflowId: string) => {
     if (!engagements?.[0]) return;
 
     const target = engagements[0].scope?.domains?.[0] || "unknown";
 
+    if (!(await requestScanConsent({ target, tool: `Workflow: ${workflowId}` }))) return;
+
     await startWorkflow.mutateAsync({
       engagementId,
       workflowId,
       target,
+      legalConsent: true,
     });
   };
 

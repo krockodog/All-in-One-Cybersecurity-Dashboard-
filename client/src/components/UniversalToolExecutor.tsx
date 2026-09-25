@@ -1,3 +1,4 @@
+import { useLegalScanConsent } from "@/components/legal/LegalScanConsent";
 /**
  * Universal Tool Executor Component
  * Execute any tool with dynamic parameter input and live output
@@ -103,6 +104,7 @@ export const UniversalToolExecutor: React.FC<UniversalToolExecutorProps> = ({
   onExecutionComplete,
 }) => {
   const executeMutation = trpc.tools.run.useMutation();
+  const requestScanConsent = useLegalScanConsent();
   const normalizedParameters = useMemo(() => normalizeToolParameters(tool), [tool]);
   const initialParameters = useMemo(() => createInitialParameters(normalizedParameters), [normalizedParameters]);
   const [state, setState] = useState<ExecutorState>({
@@ -145,6 +147,7 @@ export const UniversalToolExecutor: React.FC<UniversalToolExecutorProps> = ({
 
     const target = getPrimaryTarget(normalizedParameters, state.parameters);
     const options = buildOptions(normalizedParameters, state.parameters);
+    if (!(await requestScanConsent({ target, tool: tool.name }))) return;
     const sessionId = `session-${Date.now()}`;
 
     setState(prev => ({
@@ -164,6 +167,7 @@ export const UniversalToolExecutor: React.FC<UniversalToolExecutorProps> = ({
         target,
         options,
         category: tool.category as any,
+        legalConsent: true,
       });
 
       setState(prev => {

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
-import { activeScanRateLimit, llmRateLimit, localReportRateLimit } from "../_core/rateLimit";
+import { activeScanRateLimit, requireLegalConsent, llmRateLimit, localReportRateLimit } from "../_core/rateLimit";
 import {
   MAX_CHAT_HISTORY_CHARS,
   MAX_CHAT_HISTORY_ITEMS,
@@ -12,7 +12,7 @@ import { invokeLLM } from "../_core/llm";
 import { toolCatalog } from "../../client/src/lib/cyber-data";
 import { runTool } from "../toolRunner";
 
-const scanProcedure = protectedProcedure.use(activeScanRateLimit);
+const scanProcedure = protectedProcedure.use(activeScanRateLimit).use(requireLegalConsent).input(z.object({ legalConsent: z.literal(true) }));
 const llmProcedure = protectedProcedure.use(llmRateLimit);
 // Local (non-LLM) report computation: own quota so it doesn't eat the chat quota.
 const localReportProcedure = protectedProcedure.use(localReportRateLimit);

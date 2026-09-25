@@ -132,7 +132,7 @@ describe("review hardening for anonymous access", () => {
     const caller = appRouter.createCaller(createAnonymousContext("198.51.100.60"));
     const tooMany = Array.from({ length: 26 }, (_, i) => `tool-${i}`);
     await expect(
-      caller.pentest.runAutomated({ target: "example.com", toolIds: tooMany }),
+      caller.pentest.runAutomated({ target: "example.com", toolIds: tooMany, legalConsent: true }),
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
     await expect(
       caller.aiChat.chat({ message: "x".repeat(8_001), conversationHistory: [] }),
@@ -155,6 +155,7 @@ describe("review hardening for anonymous access", () => {
         engagementId: 1,
         workflowId: "network_recon",
         target: "example.com; id",
+        legalConsent: true,
       }),
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
   });
@@ -169,9 +170,29 @@ describe("review hardening for anonymous access", () => {
     const first = await caller.pentestWorkflow.startExecution({
       planId: "victim-plan",
       toolIds: ["subfinder"],
+      legalConsent: true,
     });
     expect(first.id).not.toBe("victim-plan");
     expect(first.id).toMatch(/^plan-[0-9a-f-]{36}$/);
     await caller.pentestWorkflow.cancelExecution({ planId: first.id });
+  });
+
+  it("rejects active scans without legal consent (§202a–c, §303b StGB)", async () => {
+    const caller = appRouter.createCaller(createAnonymousContext("198.51.100.70"));
+    await expect(
+      caller.pentest.runAutomated({ target: "example.com", toolIds: ["subfinder"] } as any),
+    ).rejects.toMatchObject({ code: "PRECONDITION_FAILED" });
+    await expect(
+      caller.workflows.startWorkflow({ engagementId: 1, workflowId: "network_recon", target: "example.com" } as any),
+    ).rejects.toMatchObject({ code: "PRECONDITION_FAILED" });
+    await expect(
+      caller.tools.run({ toolId: "nmap", toolName: "nmap", baseCommand: "nmap", target: "example.com", category: "recon" } as any),
+    ).rejects.toMatchObject({ code: "PRECONDITION_FAILED" });
+    await expect(
+      caller.aiChat.executeScanFromChat({ target: "example.com", scope: "x" } as any),
+    ).rejects.toMatchObject({ code: "PRECONDITION_FAILED" });
+    await expect(
+      caller.tools.run({ toolId: "nmap", toolName: "nmap", baseCommand: "nmap", target: "example.com", category: "recon", legalConsent: false } as any),
+    ).rejects.toMatchObject({ code: "PRECONDITION_FAILED" });
   });
 });

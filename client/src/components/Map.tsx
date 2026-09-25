@@ -87,13 +87,20 @@ declare global {
 }
 
 const API_KEY = import.meta.env.VITE_FRONTEND_FORGE_API_KEY;
-const FORGE_BASE_URL =
-  import.meta.env.VITE_FRONTEND_FORGE_API_URL ||
-  "https://forge.butterfly-effect.dev";
+// No default URL: the hosted (paid) Manus Forge maps proxy is never used implicitly.
+const FORGE_BASE_URL = (import.meta.env.VITE_FRONTEND_FORGE_API_URL || "").replace(/\/+$/, "");
 const MAPS_PROXY_URL = `${FORGE_BASE_URL}/v1/maps/proxy`;
 
 function loadMapScript() {
-  return new Promise(resolve => {
+  return new Promise((resolve, reject) => {
+    if (!FORGE_BASE_URL || !API_KEY) {
+      reject(
+        new Error(
+          "Karten-Dienst nicht konfiguriert: VITE_FRONTEND_FORGE_API_URL und VITE_FRONTEND_FORGE_API_KEY setzen"
+        )
+      );
+      return;
+    }
     const script = document.createElement("script");
     script.src = `${MAPS_PROXY_URL}/maps/api/js?key=${API_KEY}&v=weekly&libraries=marker,places,geocoding,geometry`;
     script.async = true;
@@ -126,7 +133,12 @@ export function MapView({
   const map = useRef<google.maps.Map | null>(null);
 
   const init = usePersistFn(async () => {
-    await loadMapScript();
+    try {
+      await loadMapScript();
+    } catch (error) {
+      console.error(error);
+      return;
+    }
     if (!mapContainer.current) {
       console.error("Map container not found");
       return;

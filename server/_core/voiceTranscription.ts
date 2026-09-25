@@ -77,14 +77,14 @@ export async function transcribeAudio(
     // Step 1: Validate environment configuration
     if (!ENV.forgeApiUrl) {
       return {
-        error: "Voice transcription service is not configured",
+        error: "Spracherkennung nicht konfiguriert",
         code: "SERVICE_ERROR",
         details: "BUILT_IN_FORGE_API_URL is not set"
       };
     }
     if (!ENV.forgeApiKey) {
       return {
-        error: "Voice transcription service authentication is missing",
+        error: "Spracherkennung nicht konfiguriert (API-Key fehlt)",
         code: "SERVICE_ERROR",
         details: "BUILT_IN_FORGE_API_KEY is not set"
       };

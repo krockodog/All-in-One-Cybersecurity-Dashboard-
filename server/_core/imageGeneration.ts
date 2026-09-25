@@ -35,10 +35,10 @@ export async function generateImage(
   options: GenerateImageOptions
 ): Promise<GenerateImageResponse> {
   if (!ENV.forgeApiUrl) {
-    throw new Error("BUILT_IN_FORGE_API_URL is not configured");
+    throw new Error("Bildgenerierung nicht konfiguriert: BUILT_IN_FORGE_API_URL fehlt");
   }
   if (!ENV.forgeApiKey) {
-    throw new Error("BUILT_IN_FORGE_API_KEY is not configured");
+    throw new Error("Bildgenerierung nicht konfiguriert: BUILT_IN_FORGE_API_KEY fehlt");
   }
 
   // Build the full URL by appending the service path to the base URL

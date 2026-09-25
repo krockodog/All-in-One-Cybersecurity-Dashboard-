@@ -5,6 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { trpc } from "@/lib/trpc";
 
+function describeChatError(error: unknown): string {
+  const message = error instanceof Error ? error.message : "";
+  if (/KI-Dienst|KI-Modell|Ollama/.test(message)) return message;
+  return "";
+}
+
 interface Message {
   id: string;
   role: "user" | "assistant";
@@ -82,7 +88,7 @@ export function AIChatWindow() {
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: "Fehler beim Verbinden mit dem KI-Provider. Bitte versuche es später erneut.",
+        content: describeChatError(error) || "Fehler beim Verbinden mit dem KI-Provider. Bitte versuche es später erneut.",
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, errorMessage]);

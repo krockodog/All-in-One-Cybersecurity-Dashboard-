@@ -177,6 +177,22 @@ pnpm build
 pnpm start
 ```
 
+#### KI über Ollama (lokal, kostenlos)
+Alle serverseitigen KI-Funktionen (KI-Chat, Scope-Validierung, Pentest-Planung,
+Report-Analyse, Workflows) laufen ausschließlich über einen eigenen
+[Ollama](https://ollama.com)-Server (OpenAI-kompatible API `/v1/chat/completions`).
+Es wird **kein** kostenpflichtiger LLM-Dienst verwendet und es gibt keinen Fallback.
+
+```bash
+ollama pull qwen2.5
+ollama serve            # lauscht standardmäßig auf http://localhost:11434
+```
+
+In `.env`: `OLLAMA_URL` (Standard `http://localhost:11434`), `OLLAMA_MODEL`
+(Standard `qwen2.5`), optional `OLLAMA_MAX_TOKENS` (Standard 4096) und
+`OLLAMA_API_KEY` (nur bei Reverse-Proxy mit Auth). Ist Ollama nicht erreichbar,
+meldet die App „KI-Dienst (Ollama) nicht erreichbar“, der Server läuft weiter.
+
 ---
 
 ### Option B: Docker Compose (Empfohlen für Quick Start)

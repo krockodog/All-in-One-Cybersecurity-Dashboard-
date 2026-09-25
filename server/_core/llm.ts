@@ -1,3 +1,4 @@
+import { TRPCError } from "@trpc/server";
 import { ENV } from "./env";
 
 export type Role = "system" | "user" | "assistant" | "tool" | "function";
@@ -209,15 +210,36 @@ const normalizeToolChoice = (
   return toolChoice;
 };
 
-const resolveApiUrl = () =>
-  ENV.forgeApiUrl && ENV.forgeApiUrl.trim().length > 0
-    ? `${ENV.forgeApiUrl.replace(/\/$/, "")}/v1/chat/completions`
-    : "https://forge.manus.im/v1/chat/completions";
+/**
+ * LLM backend: self-hosted Ollama via its OpenAI-compatible API.
+ * There is deliberately NO fallback to any hosted/paid endpoint (e.g. Manus
+ * Forge). If Ollama is unreachable, calls fail with a clear German error.
+ */
+export const OLLAMA_UNREACHABLE_MESSAGE = "KI-Dienst (Ollama) nicht erreichbar";
 
-const assertApiKey = () => {
-  if (!ENV.forgeApiKey) {
-    throw new Error("OPENAI_API_KEY is not configured");
+// Hosts of paid/hosted LLM proxies that must never be used for LLM calls.
+const FORBIDDEN_LLM_HOSTS = [/(^|\.)manus\.(im|space|computer)$/i, /(^|\.)butterfly-effect\.dev$/i];
+
+export const resolveOllamaChatUrl = (baseUrl: string = ENV.ollamaUrl): string => {
+  const trimmed = (baseUrl || "").trim() || "http://localhost:11434";
+  // Accept both "http://host:11434" and "http://host:11434/v1".
+  const base = trimmed.replace(/\/+$/, "").replace(/\/v1$/, "");
+  let host = "";
+  try {
+    host = new URL(base).hostname;
+  } catch {
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: `KI-Dienst (Ollama) nicht konfiguriert: ungültige OLLAMA_URL "${trimmed}"`,
+    });
   }
+  if (FORBIDDEN_LLM_HOSTS.some(re => re.test(host))) {
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: `OLLAMA_URL zeigt auf einen kostenpflichtigen Dienst (${host}) – nur ein eigener Ollama-Server ist erlaubt.`,
+    });
+  }
+  return `${base}/v1/chat/completions`;
 };
 
 const normalizeResponseFormat = ({
@@ -266,22 +288,26 @@ const normalizeResponseFormat = ({
 };
 
 export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
-  assertApiKey();
-
   const {
     messages,
     tools,
     toolChoice,
     tool_choice,
+    maxTokens,
+    max_tokens,
     outputSchema,
     output_schema,
     responseFormat,
     response_format,
   } = params;
 
+  const url = resolveOllamaChatUrl();
+  const model = ENV.ollamaModel;
+
   const payload: Record<string, unknown> = {
-    model: "gemini-2.5-flash",
+    model,
     messages: messages.map(normalizeMessage),
+    stream: false,
   };
 
   if (tools && tools.length > 0) {
@@ -296,10 +322,7 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     payload.tool_choice = normalizedToolChoice;
   }
 
-  payload.max_tokens = 32768
-  payload.thinking = {
-    "budget_tokens": 128
-  }
+  payload.max_tokens = maxTokens ?? max_tokens ?? ENV.ollamaMaxTokens;
 
   const normalizedResponseFormat = normalizeResponseFormat({
     responseFormat,
@@ -312,20 +335,46 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     payload.response_format = normalizedResponseFormat;
   }
 
-  const response = await fetch(resolveApiUrl(), {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      authorization: `Bearer ${ENV.forgeApiKey}`,
-    },
-    body: JSON.stringify(payload),
-  });
+  const headers: Record<string, string> = {
+    "content-type": "application/json",
+  };
+  if (ENV.ollamaApiKey) {
+    headers.authorization = `Bearer ${ENV.ollamaApiKey}`;
+  }
+
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(ENV.ollamaTimeoutMs),
+    });
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error);
+    console.warn(`[LLM] Ollama request to ${url} failed: ${reason}`);
+    throw new TRPCError({
+      code: "SERVICE_UNAVAILABLE",
+      message: `${OLLAMA_UNREACHABLE_MESSAGE} (${url}). Läuft \`ollama serve\` und ist das Modell "${model}" installiert?`,
+      cause: error,
+    });
+  }
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(
-      `LLM invoke failed: ${response.status} ${response.statusText} – ${errorText}`
+    const errorText = await response.text().catch(() => "");
+    console.warn(
+      `[LLM] Ollama responded ${response.status} ${response.statusText}: ${errorText}`
     );
+    if (response.status === 404 && /model/i.test(errorText)) {
+      throw new TRPCError({
+        code: "SERVICE_UNAVAILABLE",
+        message: `KI-Modell "${model}" ist in Ollama nicht installiert. Bitte \`ollama pull ${model}\` ausführen.`,
+      });
+    }
+    throw new TRPCError({
+      code: "BAD_GATEWAY",
+      message: `KI-Dienst (Ollama) Fehler: ${response.status} ${response.statusText}`.trim(),
+    });
   }
 
   return (await response.json()) as InvokeResult;

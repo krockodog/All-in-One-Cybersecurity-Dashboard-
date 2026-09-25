@@ -11,7 +11,7 @@ function getStorageConfig(): StorageConfig {
 
   if (!baseUrl || !apiKey) {
     throw new Error(
-      "Storage proxy credentials missing: set BUILT_IN_FORGE_API_URL and BUILT_IN_FORGE_API_KEY"
+      "Datei-Speicher nicht konfiguriert (Manus-Forge-Dienst nicht konfiguriert): BUILT_IN_FORGE_API_URL und BUILT_IN_FORGE_API_KEY setzen"
     );
   }
 

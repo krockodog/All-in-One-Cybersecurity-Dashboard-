@@ -6,6 +6,12 @@ import { Badge } from "@/components/ui/badge";
 import { Send, Loader, Bot, User } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 
+function describeChatError(error: unknown): string {
+  const message = error instanceof Error ? error.message : "";
+  if (/KI-Dienst|KI-Modell|Ollama/.test(message)) return message;
+  return "";
+}
+
 interface Message {
   role: "user" | "assistant";
   content: string;
@@ -72,7 +78,7 @@ export function AIChatInterface() {
         ...prev,
         {
           role: "assistant",
-          content: "Entschuldigung, es gab einen Fehler. Bitte versuche es erneut.",
+          content: describeChatError(error) || "Entschuldigung, es gab einen Fehler. Bitte versuche es erneut.",
         },
       ]);
     } finally {

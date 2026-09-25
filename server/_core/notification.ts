@@ -71,14 +71,14 @@ export async function notifyOwner(
   if (!ENV.forgeApiUrl) {
     throw new TRPCError({
       code: "INTERNAL_SERVER_ERROR",
-      message: "Notification service URL is not configured.",
+      message: "Benachrichtigungsdienst nicht konfiguriert: BUILT_IN_FORGE_API_URL fehlt.",
     });
   }
 
   if (!ENV.forgeApiKey) {
     throw new TRPCError({
       code: "INTERNAL_SERVER_ERROR",
-      message: "Notification service API key is not configured.",
+      message: "Benachrichtigungsdienst nicht konfiguriert: BUILT_IN_FORGE_API_KEY fehlt.",
     });
   }
 

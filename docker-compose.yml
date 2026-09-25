@@ -23,9 +23,15 @@ services:
       # OAuth (optional)
       OAUTH_SERVER_URL: ${OAUTH_SERVER_URL:-}
       OWNER_OPEN_ID: ${OWNER_OPEN_ID:-}
-      # AI integration (optional)
+      # KI: eigener Ollama-Server (einziges LLM-Backend, kein Bezahldienst)
+      OLLAMA_URL: ${OLLAMA_URL:-http://host.docker.internal:11434}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5}
+      OLLAMA_MAX_TOKENS: ${OLLAMA_MAX_TOKENS:-4096}
+      # Legacy Manus-Forge-Dienste (optional, NICHT für KI)
       BUILT_IN_FORGE_API_URL: ${BUILT_IN_FORGE_API_URL:-}
       BUILT_IN_FORGE_API_KEY: ${BUILT_IN_FORGE_API_KEY:-}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       # Mount a local .env for secrets — never commit .env to git
       - ./.env.docker:/app/.env:ro

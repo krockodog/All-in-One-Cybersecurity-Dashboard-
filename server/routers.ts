@@ -3,6 +3,7 @@ import { COOKIE_NAME } from "../shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
+import { activeScanRateLimit } from "./_core/rateLimit";
 import { runTool } from "./toolRunner";
 import { engagementRouter } from "./routers/engagements";
 import { workflowRouter } from "./routers/workflows";
@@ -41,7 +42,7 @@ export const appRouter = router({
     }),
   }),
   tools: router({
-    run: protectedProcedure.input(toolRunSchema).mutation(async ({ input }) => {
+    run: protectedProcedure.use(activeScanRateLimit).input(toolRunSchema).mutation(async ({ input }) => {
       const result = await runTool(input);
       return {
         ...result,

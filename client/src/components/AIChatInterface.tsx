@@ -6,6 +6,12 @@ import { Badge } from "@/components/ui/badge";
 import { Send, Loader, Bot, User } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 
+function describeChatError(error: unknown): string {
+  const message = error instanceof Error ? error.message : "";
+  if (/KI-Dienst|KI-Modell|Ollama/.test(message)) return message;
+  return "";
+}
+
 interface Message {
   role: "user" | "assistant";
   content: string;
@@ -44,8 +50,11 @@ export function AIChatInterface() {
 
     try {
       const response = await chatMutation.mutateAsync({
-        message: userMessage,
-        conversationHistory: messages,
+        message: userMessage.slice(0, 8000),
+        // Server caps history (see server/_core/inputLimits.ts): send recent turns only.
+        conversationHistory: messages
+          .slice(-20)
+          .map((m) => ({ role: m.role, content: m.content.slice(0, 2000) })),
       });
 
       setMessages((prev) => [...prev, { role: "assistant", content: response.message }]);
@@ -72,7 +81,7 @@ export function AIChatInterface() {
         ...prev,
         {
           role: "assistant",
-          content: "Entschuldigung, es gab einen Fehler. Bitte versuche es erneut.",
+          content: describeChatError(error) || "Entschuldigung, es gab einen Fehler. Bitte versuche es erneut.",
         },
       ]);
     } finally {

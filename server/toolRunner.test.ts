@@ -124,3 +124,40 @@ describe("toolRunner", () => {
     }, { timeout: 10000 });
   });
 });
+
+import { isPublicIp } from "./toolRunner";
+
+describe("SSRF guard", () => {
+  it("classifies private, loopback, metadata and mapped addresses as non-public", () => {
+    for (const ip of [
+      "127.0.0.1",
+      "10.1.2.3",
+      "172.16.0.1",
+      "192.168.1.1",
+      "169.254.169.254",
+      "100.64.0.1",
+      "0.0.0.0",
+      "::1",
+      "fd00::1",
+      "fe80::1",
+      "::ffff:127.0.0.1",
+    ]) {
+      expect(isPublicIp(ip), ip).toBe(false);
+    }
+    expect(isPublicIp("93.184.216.34")).toBe(true);
+    expect(isPublicIp("2606:4700:4700::1111")).toBe(true);
+  });
+
+  it("rejects hostnames that resolve to loopback", async () => {
+    const result = await runTool({
+      toolId: "httpx",
+      toolName: "httpx",
+      baseCommand: "httpx",
+      target: "localhost.",
+      options: "",
+      category: "recon",
+    });
+    expect(result.status).toBe("error");
+    expect(result.findings.join(" ")).toMatch(/Gesperrtes Ziel/);
+  });
+});

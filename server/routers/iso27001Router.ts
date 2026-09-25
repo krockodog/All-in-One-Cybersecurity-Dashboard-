@@ -4,6 +4,7 @@
  */
 
 import { router, protectedProcedure } from "../_core/trpc";
+import { llmRateLimit } from "../_core/rateLimit";
 import { z } from "zod";
 import {
   generateISO27001PDF,
@@ -12,13 +13,13 @@ import {
   generateISO27001JSON,
   ISO27001Report,
 } from "../services/iso27001Export";
-import { notifyOwner } from "../_core/notification";
+import { notifyOwnerForRequest } from "../_core/notification";
 
 export const iso27001Router = router({
   /**
    * Generate ISO 27001 compliance report
    */
-  generateReport: protectedProcedure
+  generateReport: protectedProcedure.use(llmRateLimit)
     .input(
       z.object({
         organizationName: z.string(),
@@ -59,7 +60,7 @@ export const iso27001Router = router({
         ),
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ ctx, input }) => {
       try {
         // Calculate risk score (0-100)
         const avgRiskScore = Math.round(
@@ -91,10 +92,10 @@ export const iso27001Router = router({
         };
 
         // Send notification
-        await notifyOwner({
+        await notifyOwnerForRequest(ctx.user, {
           title: "ISO 27001 Report Generated",
           content: `Compliance report for ${input.organizationName}: Risk Score ${avgRiskScore}/100, ${implementedCount}/${input.controls.length} controls implemented`,
-        }).catch(() => {});
+        });
 
         return {
           success: true,

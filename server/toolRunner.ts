@@ -51,11 +51,87 @@ const SSRF_BLOCKED_IPS = [
 ];
 
 function validateTarget(raw: string): void {
-  const host = hostFromTarget(raw).toLowerCase();
+  const host = hostFromTarget(raw).toLowerCase().replace(/^\[|\]$/g, "");
   if (SSRF_BLOCKED_RE.test(host)) throw new Error(`Gesperrtes Ziel: ${host}`);
   for (const re of SSRF_BLOCKED_IPS) {
     if (re.test(host)) throw new Error(`Gesperrtes Ziel (private/loopback): ${host}`);
   }
+  if (net.isIP(host) && !isPublicIp(host)) {
+    throw new Error(`Gesperrtes Ziel (private/loopback): ${host}`);
+  }
+}
+
+/**
+ * True only for globally routable unicast addresses. Blocks loopback, RFC1918,
+ * CGNAT, link-local (incl. cloud metadata 169.254.169.254), unspecified,
+ * multicast/reserved ranges and IPv6 ULA/link-local/IPv4-mapped private ranges.
+ */
+export function isPublicIp(ip: string): boolean {
+  const version = net.isIP(ip);
+  if (version === 4) {
+    const [a, b] = ip.split(".").map(Number) as [number, number];
+    if (a === 0 || a === 10 || a === 127) return false;
+    if (a === 100 && b >= 64 && b <= 127) return false; // CGNAT
+    if (a === 169 && b === 254) return false; // link-local / metadata
+    if (a === 172 && b >= 16 && b <= 31) return false;
+    if (a === 192 && b === 168) return false;
+    if (a === 192 && b === 0) return false; // 192.0.0.0/24, 192.0.2.0/24
+    if (a === 198 && (b === 18 || b === 19)) return false; // benchmarking
+    if (a >= 224) return false; // multicast + reserved + broadcast
+    return true;
+  }
+  if (version === 6) {
+    const v = ip.toLowerCase();
+    if (v === "::" || v === "::1") return false;
+    const mapped = v.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/);
+    if (mapped) return isPublicIp(mapped[1]!);
+    if (/^f[cd][0-9a-f]{2}:/.test(v)) return false; // ULA
+    if (/^fe[89ab][0-9a-f]:/.test(v)) return false; // link-local
+    if (/^ff[0-9a-f]{2}:/.test(v)) return false; // multicast
+    if (v.startsWith("64:ff9b:") || v.startsWith("2001:db8:")) return false;
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Resolve a hostname and reject it if ANY resolved address is not public, so a
+ * public-looking name (or redirect target) pointing at loopback, RFC1918 or the
+ * cloud metadata endpoint cannot be used to probe internal services.
+ * Unresolvable names are allowed through; the actual tool then simply fails.
+ */
+async function assertPublicHost(rawHost: string): Promise<void> {
+  const host = rawHost.toLowerCase().replace(/^\[|\]$/g, "");
+  if (!host) return;
+  if (SSRF_BLOCKED_RE.test(host)) throw new Error(`Gesperrtes Ziel: ${host}`);
+  if (net.isIP(host)) {
+    if (!isPublicIp(host)) throw new Error(`Gesperrtes Ziel (private/loopback): ${host}`);
+    return;
+  }
+  let addresses: Array<{ address: string }> = [];
+  try {
+    addresses = await dns.lookup(host, { all: true, verbatim: true });
+  } catch {
+    return;
+  }
+  for (const { address } of addresses) {
+    if (!isPublicIp(address)) {
+      throw new Error(`Gesperrtes Ziel (${host} löst auf private/loopback-Adresse ${address} auf)`);
+    }
+  }
+}
+
+async function validateTargetResolved(raw: string): Promise<void> {
+  validateTarget(raw);
+  let host: string;
+  try {
+    host = hostFromTarget(raw);
+  } catch {
+    return;
+  }
+  // CIDR ranges etc. are not hostnames; only check plausible host names/IPs.
+  if (host.includes("/")) return;
+  await assertPublicHost(host);
 }
 
 function buildCommand(baseCommand: string, target: string, options: string) {
@@ -94,19 +170,48 @@ function hostFromTarget(raw: string) {
   return sanitizeTarget(value).split("/")[0] || value;
 }
 
+const MAX_REDIRECTS = 5;
+
+/**
+ * SSRF-safe fetch: every hop (initial URL and each redirect target) is checked
+ * against private/loopback/link-local destinations after DNS resolution.
+ * Redirects are followed manually (never by fetch itself) so a public URL that
+ * redirects to an internal address is rejected instead of fetched.
+ */
 async function safeFetch(url: string, init?: RequestInit) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
+  const follow = (init?.redirect ?? "follow") === "follow";
 
   try {
-    return await fetch(url, {
-      ...init,
-      signal: controller.signal,
-      headers: {
-        "user-agent": "cybersecurity-dashboard/1.0",
-        ...(init?.headers ?? {}),
-      },
-    });
+    let current = url;
+    for (let hop = 0; ; hop++) {
+      const parsed = new URL(current);
+      if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+        throw new Error(`Gesperrtes Protokoll: ${parsed.protocol}`);
+      }
+      await assertPublicHost(parsed.hostname);
+
+      const response = await fetch(current, {
+        ...init,
+        redirect: "manual",
+        signal: controller.signal,
+        headers: {
+          "user-agent": "cybersecurity-dashboard/1.0",
+          ...(init?.headers ?? {}),
+        },
+      });
+
+      const location = response.headers.get("location");
+      if (!follow || response.status < 300 || response.status >= 400 || !location) {
+        return response;
+      }
+      if (hop >= MAX_REDIRECTS) {
+        throw new Error("Zu viele Weiterleitungen");
+      }
+      await response.body?.cancel().catch(() => {});
+      current = new URL(location, current).toString();
+    }
   } finally {
     clearTimeout(timer);
   }
@@ -1158,7 +1263,8 @@ function guidedFallback(input: ToolRunInput, reason: string): ToolRunResult {
 export async function runTool(input: ToolRunInput): Promise<ToolRunResult> {
   try {
     // Reject private/loopback targets to prevent SSRF
-    if (input.target.trim()) validateTarget(input.target);
+    // (literal check + DNS resolution, so hostnames pointing inside are blocked too).
+    if (input.target.trim()) await validateTargetResolved(input.target);
 
     switch (input.toolId) {
       // ── Original integrations ──────────────────────────────────────────────

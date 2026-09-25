@@ -1,8 +1,18 @@
-import { exec } from "child_process";
+import { execFile } from "child_process";
 import { promisify } from "util";
 import { parseStringPromise } from "xml2js";
 
-const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
+
+// Only hostnames/IPs/CIDR are allowed as nmap targets. Anything else (spaces,
+// shell metacharacters, flag-injection via a leading "-") is rejected so a
+// target can never smuggle extra nmap flags or shell commands.
+const NMAP_TARGET_RE = /^[A-Za-z0-9._:-]+(\/\d{1,3})?$/;
+function assertNmapTarget(target: string): void {
+  if (!NMAP_TARGET_RE.test(target) || target.startsWith("-")) {
+    throw new Error(`Ungültiges nmap-Ziel: ${target}`);
+  }
+}
 
 export interface NmapResult {
   hosts: Array<{
@@ -41,31 +51,25 @@ export async function executeNmapScan(
   } = {},
 ): Promise<NmapResult> {
   try {
-    // Build nmap command
-    let cmd = `nmap -oX - ${target}`;
+    assertNmapTarget(target);
+
+    // Build nmap arguments as an array (no shell) to prevent command injection.
+    const args = ["-oX", "-"];
 
     if (options.ports) {
-      cmd += ` -p ${options.ports}`;
+      if (!/^[0-9,\-]+$/.test(options.ports)) {
+        throw new Error(`Ungültige Portangabe: ${options.ports}`);
+      }
+      args.push("-p", options.ports);
     }
+    if (options.aggressive) args.push("-A");
+    if (options.osDetection) args.push("-O");
+    if (options.versionDetection) args.push("-sV");
+    if (options.scriptScan) args.push("--script", "default");
+    args.push(target);
 
-    if (options.aggressive) {
-      cmd += " -A";
-    }
-
-    if (options.osDetection) {
-      cmd += " -O";
-    }
-
-    if (options.versionDetection) {
-      cmd += " -sV";
-    }
-
-    if (options.scriptScan) {
-      cmd += " --script default";
-    }
-
-    // Execute nmap
-    const { stdout } = await execAsync(cmd, { timeout: 300000 });
+    // Execute nmap without a shell.
+    const { stdout } = await execFileAsync("nmap", args, { timeout: 300000, maxBuffer: 10 * 1024 * 1024 });
 
     // Parse XML output
     const parsed = await parseStringPromise(stdout);

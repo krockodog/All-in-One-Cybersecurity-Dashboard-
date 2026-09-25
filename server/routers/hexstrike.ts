@@ -4,12 +4,18 @@
  */
 
 import { router, protectedProcedure } from '../_core/trpc';
+import { activeScanRateLimit, llmRateLimit } from '../_core/rateLimit';
+import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
+import { toolIdsSchema } from '../_core/inputLimits';
 import { toolCatalog } from '../../client/src/lib/cyber-data';
 import { validateScopeWithLLM, generatePentestPlanWithLLM } from '../services/pentestPlanning';
 import { createScopeValidator } from '../services/scopeValidator';
 import { createISO27001ISMSService } from '../services/iso27001ISMS';
 import { createLiveExecutionEngine } from '../services/liveExecutionEngine';
+
+const scanProcedure = protectedProcedure.use(activeScanRateLimit);
+const llmProcedure = protectedProcedure.use(llmRateLimit);
 
 const scopeValidator = createScopeValidator();
 const ismsService = createISO27001ISMSService();
@@ -51,7 +57,7 @@ const selectLegacyPlanningTools = (type: LegacyTargetType) => {
 
 export const hexstrikeRouter = router({
   // Scope Validation
-  validateScope: protectedProcedure
+  validateScope: llmProcedure
     .input(
       z.object({
         target: z.string(),
@@ -95,7 +101,7 @@ export const hexstrikeRouter = router({
     }),
 
   // Generate Pentest Plan
-  generatePentestPlan: protectedProcedure
+  generatePentestPlan: llmProcedure
     .input(
       z.object({
         target: z.string(),
@@ -189,16 +195,26 @@ export const hexstrikeRouter = router({
     }),
 
   // Start Execution
-  startExecution: protectedProcedure
+  startExecution: scanProcedure
     .input(
       z.object({
-        planId: z.string(),
-        toolIds: z.array(z.string()),
+        // Client-supplied planId is ignored for storage (kept for API compatibility).
+        planId: z.string().max(128).optional(),
+        // Bounded + de-duplicated + only known tools.
+        toolIds: toolIdsSchema.refine(
+          (ids) => ids.every((id) => toolCatalog.some((tool) => tool.id === id)),
+          { message: 'Unbekannte Tool-ID' }
+        ),
       })
     )
     .mutation(async ({ input }) => {
-      const plan = executionEngine.createExecutionPlan(input.planId, input.toolIds);
-      executionEngine.startExecution(input.planId).catch(console.error);
+      // The plan ID is an unguessable, server-issued capability: only the caller who
+      // started the execution learns it, so anonymous visitors cannot read or
+      // control (pause/resume/cancel) someone else's run, and an existing plan can
+      // never be overwritten by a caller-chosen ID.
+      const planId = `plan-${randomUUID()}`;
+      const plan = executionEngine.createExecutionPlan(planId, input.toolIds);
+      executionEngine.startExecution(planId).catch(console.error);
       return plan;
     }),
 

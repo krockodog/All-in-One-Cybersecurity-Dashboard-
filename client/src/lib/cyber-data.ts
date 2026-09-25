@@ -1229,8 +1229,8 @@ const assetBase = (() => {
 export const assetUrls = {
   heroReference: `${assetBase}brand/hero-reference.svg`,
   earth: `${assetBase}brand/cyber-earth.svg`,
-  /** Placeholder wordmark until the original krockodog logo file is provided. */
-  krockodogLogo: `${assetBase}brand/krockodog-logo.svg`,
+  /** Original krockodog logo (cropped, 512px WebP with feathered edges). */
+  krockodogLogo: `${assetBase}brand/krockodog-logo.webp`,
 };
 
 export function categoryLabel(category: ToolCategory) {

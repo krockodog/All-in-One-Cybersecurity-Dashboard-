@@ -2,6 +2,8 @@ name: CI/CD Pipeline
 
 # Streamlined pipeline (replaces the previous template, which could not run):
 #  - quality:  install -> format check (non-blocking) -> type check -> build -> test
+#              (Node 20 + 22 matrix; this is the single CI workflow - the former
+#              duplicate webpack.yml was removed)
 #  - security: Trivy filesystem scan (SARIF upload) + pnpm audit (non-blocking)
 #  - docker:   build image; push to GHCR only on push events (not on PRs)
 # Removed jobs (were placeholders / broken): performance, deploy, release, notify.
@@ -28,8 +30,12 @@ jobs:
   # QUALITY: install, format, type check, build, test
   # ============================================================================
   quality:
-    name: Quality (check, build, test)
+    name: Quality (check, build, test) - Node ${{ matrix.node-version }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: ['20', '22']
     steps:
       - uses: actions/checkout@v4
 
@@ -41,7 +47,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
 
       - name: Install dependencies
@@ -76,7 +82,7 @@ jobs:
 
       - name: Run Trivy vulnerability scanner
         # pinned to v0.36.0 by commit SHA
-        uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
         with:
           scan-type: 'fs'
           scan-ref: '.'
@@ -84,6 +90,8 @@ jobs:
           output: 'trivy-results.sarif'
 
       - name: Upload Trivy results to GitHub Security tab
+        # Fork PRs get a read-only token, so the SARIF upload would fail there.
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: 'trivy-results.sarif'

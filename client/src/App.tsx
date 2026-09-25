@@ -76,7 +76,7 @@ function App() {
         {isBooting ? (
             <LoadingScreen />
           ) : (
-            <BrowserRouter>
+            <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/+$/, "")}>
               <AppRouter />
             </BrowserRouter>
           )}

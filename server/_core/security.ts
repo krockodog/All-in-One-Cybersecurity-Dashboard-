@@ -206,7 +206,7 @@ export function validateEnvironment(): void {
     "JWT_SECRET",
     "VITE_APP_ID",
     "OAUTH_SERVER_URL",
-    "BUILT_IN_FORGE_API_KEY",
+    // BUILT_IN_FORGE_API_KEY is optional (legacy Manus features only; never used for LLM).
   ];
 
   for (const env of required) {

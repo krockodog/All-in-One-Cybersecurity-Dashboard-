@@ -3,7 +3,17 @@ import { MessageCircle, X, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { useAuth } from "@/_core/hooks/useAuth";
+import { trpc } from "@/lib/trpc";
+
+function describeChatError(error: unknown): string {
+  const message = error instanceof Error ? error.message : "";
+  if (/KI-Dienst|KI-Modell|Ollama/.test(message)) return message;
+  return "";
+}
+
+// Stays well within the server caps in server/_core/inputLimits.ts
+const MAX_HISTORY_MESSAGES = 20;
+const MAX_MESSAGE_CHARS = 2000;
 
 interface Message {
   id: string;
@@ -13,20 +23,17 @@ interface Message {
 }
 
 export function AIChatWindow() {
-  const { user } = useAuth();
+  const chatMutation = trpc.aiChat.chat.useMutation();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Get active AI provider from localStorage
-  const getActiveAIProvider = () => {
-    const keys = localStorage.getItem("ai_keys");
-    if (!keys) return null;
-    const parsed = JSON.parse(keys);
-    return Object.keys(parsed).find(key => parsed[key]);
-  };
+  // All chat requests go to the server's own Ollama backend (no browser-side
+  // provider keys involved), so the window is always available and shows the
+  // backend that actually answers.
+  const backendLabel = "Ollama (Server)";
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -38,7 +45,7 @@ export function AIChatWindow() {
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || !user) return;
+    if (!input.trim()) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -52,39 +59,19 @@ export function AIChatWindow() {
     setIsLoading(true);
 
     try {
-      const activeProvider = getActiveAIProvider();
-      if (!activeProvider) {
-        setMessages(prev => [...prev, {
-          id: (Date.now() + 1).toString(),
-          role: "assistant",
-          content: "Bitte konfiguriere zuerst einen KI-Provider in den AI Settings.",
-          timestamp: new Date(),
-        }]);
-        setIsLoading(false);
-        return;
-      }
-
-      // Call AI API through tRPC or direct API
-      const response = await fetch("/api/ai/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: input,
-          provider: activeProvider,
-          context: {
-            userId: user.id,
-            framework: "cybersecurity-dashboard",
-          },
-        }),
+      // No-login mode: works anonymously via the (rate-limited) public tRPC endpoint.
+      const data = await chatMutation.mutateAsync({
+        message: userMessage.content,
+        // Server caps history length; send only the most recent turns.
+        conversationHistory: messages
+          .slice(-MAX_HISTORY_MESSAGES)
+          .map(m => ({ role: m.role, content: m.content.slice(0, MAX_MESSAGE_CHARS) })),
       });
-
-      if (!response.ok) throw new Error("AI request failed");
-      const data = await response.json();
 
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: data.response || "Keine Antwort vom KI-Provider",
+        content: data.message || "Keine Antwort vom KI-Provider",
         timestamp: new Date(),
       };
 
@@ -93,7 +80,7 @@ export function AIChatWindow() {
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: "Fehler beim Verbinden mit dem KI-Provider. Bitte versuche es später erneut.",
+        content: describeChatError(error) || "Fehler beim Verbinden mit dem KI-Provider. Bitte versuche es später erneut.",
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, errorMessage]);
@@ -101,9 +88,6 @@ export function AIChatWindow() {
       setIsLoading(false);
     }
   };
-
-  const activeProvider = getActiveAIProvider();
-  if (!activeProvider) return null;
 
   return (
     <>
@@ -122,7 +106,7 @@ export function AIChatWindow() {
           {/* Header */}
           <div className="p-4 border-b border-cyan-500/20 flex justify-between items-center">
             <h3 className="font-mono text-sm font-bold text-cyan-300">KI-Assistent</h3>
-            <span className="text-xs text-slate-400">{activeProvider}</span>
+            <span className="text-xs text-slate-400">{backendLabel}</span>
           </div>
 
           {/* Messages */}
@@ -169,6 +153,7 @@ export function AIChatWindow() {
               value={input}
               onChange={e => setInput(e.target.value)}
               placeholder="Nachricht..."
+              maxLength={8000}
               className="text-sm bg-slate-900 border-cyan-500/30 text-white placeholder-slate-500"
               disabled={isLoading}
             />

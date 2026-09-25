@@ -1,6 +1,4 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, Play, Pause, BarChart3, AlertCircle } from "lucide-react";
 
 export default function EngagementDashboard() {
-  const { user } = useAuth();
   const [selectedEngagement, setSelectedEngagement] = useState<number | null>(null);
   const [selectedWorkflow, setSelectedWorkflow] = useState<string | null>(null);
 
@@ -39,26 +36,6 @@ export default function EngagementDashboard() {
       target,
     });
   };
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-8">
-        <div className="max-w-md text-center space-y-4">
-          <AlertCircle className="h-12 w-12 mx-auto text-amber-400 opacity-70" />
-          <h2 className="text-2xl font-bold text-foreground">Authentication Required</h2>
-          <p className="text-muted-foreground">
-            The Engagement Dashboard requires an active session. Use the main dashboard to access all cybersecurity tools without authentication.
-          </p>
-          <Link
-            to="/"
-            className="inline-block rounded-full border border-cyan-400/30 bg-cyan-500/10 px-5 py-2.5 text-sm text-cyan-100 transition hover:bg-cyan-500/20"
-          >
-            ← Back to Dashboard
-          </Link>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background p-8">

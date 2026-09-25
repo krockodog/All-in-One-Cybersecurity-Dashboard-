@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { notifyOwner } from "./notification";
-import { adminProcedure, publicProcedure, router } from "./trpc";
+import { ownerOnlyProcedure, publicProcedure, router } from "./trpc";
 
 export const systemRouter = router({
   health: publicProcedure
@@ -13,7 +13,8 @@ export const systemRouter = router({
       ok: true,
     })),
 
-  notifyOwner: adminProcedure
+  // Internal owner notification endpoint (not a user-facing feature): stays restricted.
+  notifyOwner: ownerOnlyProcedure
     .input(
       z.object({
         title: z.string().min(1, "title is required"),

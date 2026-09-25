@@ -30,11 +30,8 @@ export const engagementRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // Only admins can create engagements
-      if (ctx.user.role !== "admin") {
-        throw new Error("Unauthorized");
-      }
-
+      // No-login mode: anyone may create an engagement. It is owned by the caller
+      // (anonymous visitors share the anonymous workspace, user id 0).
       const result = await createEngagement({
         name: input.name,
         clientId: input.clientId,
@@ -86,8 +83,17 @@ export const engagementRouter = router({
    * List engagements for current user
    */
   list: protectedProcedure.query(async ({ ctx }) => {
-    // Return engagements for current user
-    return await listEngagements(ctx.user.id);
+    // Return engagements for current user (anonymous visitors: shared workspace).
+    // Without a configured database, return an empty list instead of failing so the
+    // Engagement Dashboard still renders anonymously.
+    try {
+      return await listEngagements(ctx.user.id);
+    } catch (error) {
+      if (error instanceof Error && error.message === "Database not available") {
+        return [];
+      }
+      throw error;
+    }
   }),
 
   /**

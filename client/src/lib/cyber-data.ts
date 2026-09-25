@@ -1218,13 +1218,19 @@ export const defaultSettings = {
   evidenceSnapshots: true,
 };
 
+// Local brand assets (served from client/public/brand). The previous Manus CloudFront
+// URLs return HTTP 403. This module is also imported by the server (toolCatalog),
+// where `import.meta.env` is undefined, hence the defensive lookup.
+const assetBase = (() => {
+  const base = (import.meta as { env?: { BASE_URL?: string } }).env?.BASE_URL ?? "/";
+  return base.endsWith("/") ? base : `${base}/`;
+})();
+
 export const assetUrls = {
-  heroReference:
-    "https://d2xsxph8kpxj0f.cloudfront.net/310519663552661904/XNBpKyMBuA4rXy2AbmJ3JH/cyber-control-room-reference-YuiGUiu5E8SwHPBbxaxfTj.webp",
-  earth:
-    "https://d2xsxph8kpxj0f.cloudfront.net/310519663552661904/XNBpKyMBuA4rXy2AbmJ3JH/cyber-earth-core-5Qav3BvyDf2yAtd4zZwSEy.webp",
-  krockodogLogo:
-    "https://d2xsxph8kpxj0f.cloudfront.net/310519663552661904/XNBpKyMBuA4rXy2AbmJ3JH/krockodog-frontpage-logo-dXLNrmhcavSYdiUsvafheK.webp",
+  heroReference: `${assetBase}brand/hero-reference.svg`,
+  earth: `${assetBase}brand/cyber-earth.svg`,
+  /** Original krockodog logo (cropped, 512px WebP with feathered edges). */
+  krockodogLogo: `${assetBase}brand/krockodog-logo.webp`,
 };
 
 export function categoryLabel(category: ToolCategory) {

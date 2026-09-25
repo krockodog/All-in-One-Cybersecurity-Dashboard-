@@ -27,9 +27,23 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
   throw new Error(`No available port found starting from ${startPort}`);
 }
 
+function parseTrustProxy(raw: string | undefined): boolean | number | string {
+  const value = raw?.trim();
+  if (!value) return "loopback, linklocal, uniquelocal";
+  if (value === "false") return false;
+  if (value === "true") return true;
+  if (/^\d+$/.test(value)) return Number(value);
+  return value;
+}
+
 async function startServer() {
   const app = express();
   const server = createServer(app);
+  // Trusted-proxy boundary for `req.ip` (used by the per-IP rate limits).
+  // X-Forwarded-For is only honoured when the immediate peer is a trusted proxy.
+  // Default: loopback + private networks (e.g. nginx/Docker reverse proxy in front
+  // of the app). Override via TRUST_PROXY (e.g. "1", "false", or a CIDR list).
+  app.set("trust proxy", parseTrustProxy(process.env.TRUST_PROXY));
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));

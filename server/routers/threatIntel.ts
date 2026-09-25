@@ -1,4 +1,4 @@
-import { protectedProcedure, router } from "../_core/trpc";
+import { ownerOnlyProcedure, protectedProcedure, router } from "../_core/trpc";
 import { z } from "zod";
 import { getThreatIntelligenceService } from "../threatIntelligence";
 
@@ -58,7 +58,8 @@ export const threatIntelRouter = router({
   /**
    * Clear threat intelligence cache
    */
-  clearCache: protectedProcedure.mutation(async () => {
+  // Mutates a process-wide cache shared by all visitors -> owner/admin only.
+  clearCache: ownerOnlyProcedure.mutation(async () => {
     const service = getThreatIntelligenceService();
     service.clearCache();
     return { success: true, message: "Cache cleared" };

@@ -111,3 +111,28 @@ temp/
 
 # Manus version file (auto-generated, not part of source)
 client/public/__manus__/version.json
+
+# ── Added during structure audit (2026-09-25) ────────────────────────────────
+# NOTE: these rules do NOT untrack files that are already committed
+# (e.g. cybersecurity-dashboard.zip, frontend/.yarn/install-state.gz).
+# Removing those from the index requires an explicit `git rm --cached`.
+
+# Vite dev debug-collector logs (written by vite.config.ts)
+.manus-logs/
+
+# Yarn state/cache (project uses pnpm)
+.yarn/
+**/.yarn/
+
+# Archives / snapshot zips in repo root
+/*.zip
+
+# Python (backend/server.py)
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# Go build output (backend/)
+backend/bin/

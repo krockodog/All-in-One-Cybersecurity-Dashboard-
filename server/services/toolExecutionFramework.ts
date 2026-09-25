@@ -5,6 +5,7 @@
 
 import { EventEmitter } from 'events';
 import { spawn } from 'child_process';
+import { randomUUID } from 'crypto';
 
 export interface ToolParameter {
   name: string;
@@ -100,7 +101,7 @@ export class ToolExecutionFramework extends EventEmitter {
     }
 
     const session: ExecutionSession = {
-      id: `session-${Date.now()}-${Math.random()}`,
+      id: `session-${randomUUID()}`,
       toolId,
       status: 'running',
       startTime: new Date(),

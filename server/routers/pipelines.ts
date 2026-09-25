@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
+import { activeScanRateLimit } from "../_core/rateLimit";
 import {
   executePipeline,
   createPipelineTemplate,
@@ -74,7 +75,7 @@ export const pipelinesRouter = router({
   }),
 
   // Execute a pipeline
-  execute: protectedProcedure
+  execute: protectedProcedure.use(activeScanRateLimit)
     .input(pipelineSchema)
     .mutation(async ({ input }) => {
       const execution = await executePipeline(input as Pipeline);

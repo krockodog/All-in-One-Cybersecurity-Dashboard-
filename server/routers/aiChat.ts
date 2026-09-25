@@ -1,8 +1,12 @@
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
+import { activeScanRateLimit, llmRateLimit } from "../_core/rateLimit";
 import { invokeLLM } from "../_core/llm";
 import { toolCatalog } from "../../client/src/lib/cyber-data";
 import { runTool } from "../toolRunner";
+
+const scanProcedure = protectedProcedure.use(activeScanRateLimit);
+const llmProcedure = protectedProcedure.use(llmRateLimit);
 
 const chatMessageSchema = z.object({
   message: z.string().min(1),
@@ -22,7 +26,7 @@ const executeScanFromChatSchema = z.object({
 
 export const aiChatRouter = router({
   // Chat with AI that can execute scans
-  chat: protectedProcedure
+  chat: llmProcedure
     .input(chatMessageSchema)
     .mutation(async ({ input }) => {
       const systemPrompt = `Du bist ein Cybersecurity-Experte und KI-Assistent für ein Penetration Testing Dashboard.
@@ -96,7 +100,7 @@ Wenn der Nutzer Fragen stellt, antworte normal mit hilfreichen Informationen.`;
     }),
 
   // Execute scan based on chat request
-  executeScanFromChat: protectedProcedure
+  executeScanFromChat: scanProcedure
     .input(executeScanFromChatSchema)
     .mutation(async ({ input }) => {
       const toolIds = input.toolIds || toolCatalog.map((t) => t.id).slice(0, 20); // Default: first 20 tools
@@ -166,7 +170,7 @@ Wenn der Nutzer Fragen stellt, antworte normal mit hilfreichen Informationen.`;
     }),
 
   // Generate ISO 27001 report from chat context
-  generateISO27001FromChat: protectedProcedure
+  generateISO27001FromChat: llmProcedure
     .input(
       z.object({
         target: z.string(),

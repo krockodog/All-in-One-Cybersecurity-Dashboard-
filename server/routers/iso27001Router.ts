@@ -4,6 +4,7 @@
  */
 
 import { router, protectedProcedure } from "../_core/trpc";
+import { llmRateLimit } from "../_core/rateLimit";
 import { z } from "zod";
 import {
   generateISO27001PDF,
@@ -18,7 +19,7 @@ export const iso27001Router = router({
   /**
    * Generate ISO 27001 compliance report
    */
-  generateReport: protectedProcedure
+  generateReport: protectedProcedure.use(llmRateLimit)
     .input(
       z.object({
         organizationName: z.string(),

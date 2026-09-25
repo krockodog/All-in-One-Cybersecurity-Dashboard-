@@ -1,10 +1,3 @@
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Sidebar,
   SidebarContent,
@@ -17,14 +10,10 @@ import {
   SidebarProvider,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { getLoginUrl } from "@/const";
-import { useAuth } from "@/_core/hooks/useAuth";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, Menu, X } from "lucide-react";
+import { LayoutDashboard, Menu, ShieldCheck, X } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
-import { Button } from "./ui/button";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
@@ -55,41 +44,11 @@ export default function DashboardLayout({
     const saved = localStorage.getItem(SIDEBAR_WIDTH_KEY);
     return saved ? parseInt(saved, 10) : DEFAULT_WIDTH;
   });
-  const { loading, user } = useAuth();
+  // No-login mode: the dashboard is always accessible, no auth gate / sign-in screen.
 
   useEffect(() => {
     localStorage.setItem(SIDEBAR_WIDTH_KEY, sidebarWidth.toString());
   }, [sidebarWidth]);
-
-  if (loading) {
-    return <DashboardLayoutSkeleton />;
-  }
-
-  if (!user) {
-    return (
-      <div className="flex min-h-screen items-center justify-center px-4">
-        <div className="flex w-full max-w-md flex-col items-center gap-8 p-4 sm:p-8">
-          <div className="flex flex-col items-center gap-6">
-            <h1 className="text-center text-2xl font-semibold tracking-tight sm:text-3xl">
-              Sign in to continue
-            </h1>
-            <p className="max-w-sm text-center text-sm text-muted-foreground">
-              Access to this dashboard requires authentication. Continue to launch the login flow.
-            </p>
-          </div>
-          <Button
-            onClick={() => {
-              window.location.href = getLoginUrl();
-            }}
-            size="lg"
-            className="w-full shadow-lg transition-all hover:shadow-xl"
-          >
-            Sign in
-          </Button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <SidebarProvider
@@ -110,7 +69,6 @@ type DashboardLayoutContentProps = {
 };
 
 function DashboardLayoutContent({ children, setSidebarWidth }: DashboardLayoutContentProps) {
-  const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const { state, toggleSidebar } = useSidebar();
@@ -216,36 +174,11 @@ function DashboardLayoutContent({ children, setSidebarWidth }: DashboardLayoutCo
           </SidebarContent>
 
           <SidebarFooter className="border-t p-2">
-            <div className="flex w-full items-center justify-between gap-2">
-              <div className="flex min-w-0 items-center gap-2">
-                <Avatar className="h-8 w-8 flex-shrink-0">
-                  <AvatarFallback className="text-xs">
-                    {user?.name?.substring(0, 2).toUpperCase() || "U"}
-                  </AvatarFallback>
-                </Avatar>
-                {!isCollapsed && (
-                  <div className="flex min-w-0 flex-col">
-                    <p className="truncate text-xs font-medium sm:text-sm">{user?.name || "User"}</p>
-                    <p className="truncate text-xs text-muted-foreground">{user?.role || "user"}</p>
-                  </div>
-                )}
-              </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    className="h-8 w-8 rounded-lg transition-colors hover:bg-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-ring active:bg-accent/80"
-                    aria-label="User menu"
-                    type="button"
-                  >
-                    <LogOut className="h-4 w-4 text-muted-foreground" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem onClick={logout} className="cursor-pointer text-sm">
-                    Logout
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+            <div className="flex w-full items-center gap-2 px-1 py-1 text-muted-foreground">
+              <ShieldCheck className="h-4 w-4 flex-shrink-0 text-primary" />
+              {!isCollapsed && (
+                <p className="truncate text-xs">Kein Login erforderlich</p>
+              )}
             </div>
           </SidebarFooter>
         </Sidebar>

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
+import { activeScanRateLimit, llmRateLimit } from "../_core/rateLimit";
 import {
   executeWorkflow,
   generateWorkflowRecommendations,
@@ -37,7 +38,7 @@ export const workflowRouter = router({
   /**
    * Start a workflow execution
    */
-  startWorkflow: protectedProcedure
+  startWorkflow: protectedProcedure.use(activeScanRateLimit)
     .input(
       z.object({
         engagementId: z.number(),
@@ -89,7 +90,7 @@ export const workflowRouter = router({
   /**
    * Get workflow recommendations for a target
    */
-  getRecommendations: protectedProcedure
+  getRecommendations: protectedProcedure.use(llmRateLimit)
     .input(
       z.object({
         target: z.string(),

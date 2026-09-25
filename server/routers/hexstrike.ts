@@ -4,12 +4,16 @@
  */
 
 import { router, protectedProcedure } from '../_core/trpc';
+import { activeScanRateLimit, llmRateLimit } from '../_core/rateLimit';
 import { z } from 'zod';
 import { toolCatalog } from '../../client/src/lib/cyber-data';
 import { validateScopeWithLLM, generatePentestPlanWithLLM } from '../services/pentestPlanning';
 import { createScopeValidator } from '../services/scopeValidator';
 import { createISO27001ISMSService } from '../services/iso27001ISMS';
 import { createLiveExecutionEngine } from '../services/liveExecutionEngine';
+
+const scanProcedure = protectedProcedure.use(activeScanRateLimit);
+const llmProcedure = protectedProcedure.use(llmRateLimit);
 
 const scopeValidator = createScopeValidator();
 const ismsService = createISO27001ISMSService();
@@ -51,7 +55,7 @@ const selectLegacyPlanningTools = (type: LegacyTargetType) => {
 
 export const hexstrikeRouter = router({
   // Scope Validation
-  validateScope: protectedProcedure
+  validateScope: llmProcedure
     .input(
       z.object({
         target: z.string(),
@@ -95,7 +99,7 @@ export const hexstrikeRouter = router({
     }),
 
   // Generate Pentest Plan
-  generatePentestPlan: protectedProcedure
+  generatePentestPlan: llmProcedure
     .input(
       z.object({
         target: z.string(),
@@ -189,7 +193,7 @@ export const hexstrikeRouter = router({
     }),
 
   // Start Execution
-  startExecution: protectedProcedure
+  startExecution: scanProcedure
     .input(
       z.object({
         planId: z.string(),

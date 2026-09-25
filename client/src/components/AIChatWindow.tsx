@@ -3,7 +3,7 @@ import { MessageCircle, X, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { useAuth } from "@/_core/hooks/useAuth";
+import { trpc } from "@/lib/trpc";
 
 interface Message {
   id: string;
@@ -13,7 +13,7 @@ interface Message {
 }
 
 export function AIChatWindow() {
-  const { user } = useAuth();
+  const chatMutation = trpc.aiChat.chat.useMutation();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -38,7 +38,7 @@ export function AIChatWindow() {
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || !user) return;
+    if (!input.trim()) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -64,27 +64,16 @@ export function AIChatWindow() {
         return;
       }
 
-      // Call AI API through tRPC or direct API
-      const response = await fetch("/api/ai/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: input,
-          provider: activeProvider,
-          context: {
-            userId: user.id,
-            framework: "cybersecurity-dashboard",
-          },
-        }),
+      // No-login mode: works anonymously via the (rate-limited) public tRPC endpoint.
+      const data = await chatMutation.mutateAsync({
+        message: userMessage.content,
+        conversationHistory: messages.map(m => ({ role: m.role, content: m.content })),
       });
-
-      if (!response.ok) throw new Error("AI request failed");
-      const data = await response.json();
 
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: data.response || "Keine Antwort vom KI-Provider",
+        content: data.message || "Keine Antwort vom KI-Provider",
         timestamp: new Date(),
       };
 

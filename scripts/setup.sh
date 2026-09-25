@@ -13,8 +13,13 @@ if [ ! -f backend/.env ]; then
   cp backend/.env.example backend/.env
 fi
 
+# Secret is read from the environment - never hardcode keys in this repo.
+EMERGENT_LLM_KEY="${EMERGENT_LLM_KEY:?EMERGENT_LLM_KEY muss als Umgebungsvariable gesetzt sein}"
+
 if grep -q "EMERGENT_LLM_KEY=" backend/.env; then
-  sed -i 's|EMERGENT_LLM_KEY=.*|EMERGENT_LLM_KEY=sk-emergent-b3315241431575d3dE|g' backend/.env
+  # Escape characters that are special in the sed replacement (\, |, &)
+  escaped_key=$(printf '%s' "$EMERGENT_LLM_KEY" | sed -e 's/[\\|&]/\\&/g')
+  sed -i "s|EMERGENT_LLM_KEY=.*|EMERGENT_LLM_KEY=${escaped_key}|g" backend/.env
 fi
 
 docker-compose pull postgres neo4j redis minio clickhouse

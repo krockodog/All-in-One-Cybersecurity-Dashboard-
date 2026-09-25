@@ -1,4 +1,4 @@
-# Simple workflow for deploying static content to GitHub Pages
+# Builds the Vite frontend and deploys ONLY dist/public to GitHub Pages
 name: Deploy static content to Pages
 
 on:
@@ -31,13 +31,26 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      # pnpm version is taken from "packageManager" in package.json
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build
+        run: pnpm run build
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload entire repository
-          path: '.'
+          # Publish ONLY the built frontend - never the repository itself
+          # (sources, scripts, docs or credentials must not end up on Pages).
+          path: 'dist/public'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5

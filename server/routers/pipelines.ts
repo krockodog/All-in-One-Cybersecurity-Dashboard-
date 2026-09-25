@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
 import { activeScanRateLimit } from "../_core/rateLimit";
+import { MAX_PIPELINE_STEPS } from "../_core/inputLimits";
 import {
   executePipeline,
   createPipelineTemplate,
@@ -22,8 +23,9 @@ const pipelineSchema = z.object({
   id: z.string(),
   name: z.string(),
   description: z.string(),
-  steps: z.array(pipelineStepSchema),
-  scope: z.string(),
+  // Bounded: one rate-limited execute request must not run unbounded work.
+  steps: z.array(pipelineStepSchema).min(1).max(MAX_PIPELINE_STEPS),
+  scope: z.string().max(2000),
 });
 
 export const pipelinesRouter = router({

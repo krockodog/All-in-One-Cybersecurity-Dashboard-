@@ -103,3 +103,75 @@ describe("per-IP rate limit middleware", () => {
     await expect(other.limited()).resolves.toBe("ok");
   });
 });
+
+describe("review hardening for anonymous access", () => {
+  it("keys rate limits per procedure and ignores a spoofed X-Forwarded-For", async () => {
+    const limiter = rateLimit({ windowMs: 60_000, max: 1, name: "shared-class" });
+    const r = router({
+      a: t.procedure.use(limiter).query(() => "a"),
+      b: t.procedure.use(limiter).query(() => "b"),
+    });
+    const ctx = createAnonymousContext("198.51.100.50");
+    const caller = r.createCaller(ctx);
+    await expect(caller.a()).resolves.toBe("a");
+    // Same limiter class, different procedure -> independent quota.
+    await expect(caller.b()).resolves.toBe("b");
+    await expect(caller.a()).rejects.toMatchObject({ code: "TOO_MANY_REQUESTS" });
+
+    // A client-supplied X-Forwarded-For must not create a fresh bucket.
+    const spoofed = createAnonymousContext("198.51.100.50");
+    (spoofed.req as unknown as { headers: Record<string, string> }).headers = {
+      "x-forwarded-for": "1.2.3.4",
+    };
+    await expect(r.createCaller(spoofed).a()).rejects.toMatchObject({
+      code: "TOO_MANY_REQUESTS",
+    });
+  });
+
+  it("rejects unbounded tool lists and oversized chat input", async () => {
+    const caller = appRouter.createCaller(createAnonymousContext("198.51.100.60"));
+    const tooMany = Array.from({ length: 26 }, (_, i) => `tool-${i}`);
+    await expect(
+      caller.pentest.runAutomated({ target: "example.com", toolIds: tooMany }),
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    await expect(
+      caller.aiChat.chat({ message: "x".repeat(8_001), conversationHistory: [] }),
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    await expect(
+      caller.aiChat.chat({
+        message: "hi",
+        conversationHistory: Array.from({ length: 41 }, () => ({
+          role: "user" as const,
+          content: "x",
+        })),
+      }),
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+  });
+
+  it("rejects shell metacharacters in workflow targets", async () => {
+    const caller = appRouter.createCaller(createAnonymousContext("198.51.100.61"));
+    await expect(
+      caller.workflows.startWorkflow({
+        engagementId: 1,
+        workflowId: "network_recon",
+        target: "example.com; id",
+      }),
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+  });
+
+  it("keeps the global threat-intel cache reset owner-only", async () => {
+    const caller = appRouter.createCaller(createAnonymousContext("198.51.100.62"));
+    await expect(caller.threatIntel.clearCache()).rejects.toMatchObject({ code: "FORBIDDEN" });
+  });
+
+  it("issues unguessable server-side HexStrike plan IDs", async () => {
+    const caller = appRouter.createCaller(createAnonymousContext("198.51.100.63"));
+    const first = await caller.pentestWorkflow.startExecution({
+      planId: "victim-plan",
+      toolIds: ["subfinder"],
+    });
+    expect(first.id).not.toBe("victim-plan");
+    expect(first.id).toMatch(/^plan-[0-9a-f-]{36}$/);
+    await caller.pentestWorkflow.cancelExecution({ planId: first.id });
+  });
+});

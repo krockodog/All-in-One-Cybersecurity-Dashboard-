@@ -24,9 +24,25 @@ services:
       OAUTH_SERVER_URL: ${OAUTH_SERVER_URL:-}
       OWNER_OPEN_ID: ${OWNER_OPEN_ID:-}
       # KI: eigener Ollama-Server (einziges LLM-Backend, kein Bezahldienst)
+      # WICHTIG (Linux): Ollama bindet standardmäßig nur an 127.0.0.1 und ist dann
+      # aus dem Container über host.docker.internal NICHT erreichbar. Auf dem Host:
+      #   sudo systemctl edit ollama  ->  [Service]
+      #                                    Environment="OLLAMA_HOST=0.0.0.0:11434"
+      #   sudo systemctl restart ollama
+      # und Port 11434 per Firewall nur für das Docker-Netz freigeben, z. B.:
+      #   sudo ufw allow from 172.16.0.0/12 to any port 11434 proto tcp
+      #   sudo ufw deny 11434/tcp
+      # Alternativ Ollama selbst als Container im selben Compose-Netz betreiben und
+      # OLLAMA_URL=http://ollama:11434 setzen.
       OLLAMA_URL: ${OLLAMA_URL:-http://host.docker.internal:11434}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5}
       OLLAMA_MAX_TOKENS: ${OLLAMA_MAX_TOKENS:-4096}
+      # Nur bei eigenem Ollama unter öffentlichem Hostnamen (dann HTTPS + Key):
+      OLLAMA_ALLOWED_HOSTS: ${OLLAMA_ALLOWED_HOSTS:-}
+      OLLAMA_API_KEY: ${OLLAMA_API_KEY:-}
+      # Vertrauenswürdige Reverse-Proxys für X-Forwarded-For (Rate-Limits pro IP).
+      # Standard: loopback + private Netze (z. B. nginx im Docker-Netz).
+      TRUST_PROXY: ${TRUST_PROXY:-}
       # Legacy Manus-Forge-Dienste (optional, NICHT für KI)
       BUILT_IN_FORGE_API_URL: ${BUILT_IN_FORGE_API_URL:-}
       BUILT_IN_FORGE_API_KEY: ${BUILT_IN_FORGE_API_KEY:-}

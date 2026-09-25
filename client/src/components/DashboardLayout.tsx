@@ -11,7 +11,8 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, Menu, ShieldCheck, X } from "lucide-react";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { LayoutDashboard, LogOut, Menu, ShieldCheck, X } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -69,6 +70,9 @@ type DashboardLayoutContentProps = {
 };
 
 function DashboardLayoutContent({ children, setSidebarWidth }: DashboardLayoutContentProps) {
+  // No login is required, but visitors who still carry an old session cookie
+  // get a way to end it.
+  const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const { state, toggleSidebar } = useSidebar();
@@ -177,7 +181,18 @@ function DashboardLayoutContent({ children, setSidebarWidth }: DashboardLayoutCo
             <div className="flex w-full items-center gap-2 px-1 py-1 text-muted-foreground">
               <ShieldCheck className="h-4 w-4 flex-shrink-0 text-primary" />
               {!isCollapsed && (
-                <p className="truncate text-xs">Kein Login erforderlich</p>
+                <p className="min-w-0 flex-1 truncate text-xs">Kein Login erforderlich</p>
+              )}
+              {user && (
+                <button
+                  type="button"
+                  onClick={() => void logout()}
+                  className="ml-auto flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  aria-label="Bestehende Sitzung abmelden"
+                  title="Bestehende Sitzung abmelden"
+                >
+                  <LogOut className="h-4 w-4" />
+                </button>
               )}
             </div>
           </SidebarFooter>

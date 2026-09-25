@@ -217,27 +217,84 @@ const normalizeToolChoice = (
  */
 export const OLLAMA_UNREACHABLE_MESSAGE = "KI-Dienst (Ollama) nicht erreichbar";
 
-// Hosts of paid/hosted LLM proxies that must never be used for LLM calls.
-const FORBIDDEN_LLM_HOSTS = [/(^|\.)manus\.(im|space|computer)$/i, /(^|\.)butterfly-effect\.dev$/i];
+// Hosted/paid LLM APIs that must never be used, even if listed in
+// OLLAMA_ALLOWED_HOSTS (defence in depth for the "only own Ollama" policy).
+const FORBIDDEN_LLM_HOSTS = [
+  /(^|\.)manus\.(im|space|computer)$/i,
+  /(^|\.)butterfly-effect\.dev$/i,
+  /(^|\.)openai\.com$/i,
+  /(^|\.)openai\.azure\.com$/i,
+  /(^|\.)anthropic\.com$/i,
+  /(^|\.)googleapis\.com$/i,
+  /(^|\.)mistral\.ai$/i,
+  /(^|\.)deepseek\.com$/i,
+  /(^|\.)groq\.com$/i,
+  /(^|\.)together\.(ai|xyz)$/i,
+  /(^|\.)openrouter\.ai$/i,
+  /(^|\.)x\.ai$/i,
+  /(^|\.)cohere\.(ai|com)$/i,
+  /(^|\.)perplexity\.ai$/i,
+  /(^|\.)fireworks\.ai$/i,
+  /(^|\.)huggingface\.co$/i,
+];
 
-export const resolveOllamaChatUrl = (baseUrl: string = ENV.ollamaUrl): string => {
+/**
+ * Hosts that are self-hosted by construction: loopback, private/link-local IPs,
+ * single-label names (e.g. a Docker service "ollama" or "gpu-box") and LAN /
+ * Docker-internal suffixes. Anything else is a public endpoint and must be
+ * explicitly declared as your own server via OLLAMA_ALLOWED_HOSTS.
+ */
+const isSelfHostedHost = (host: string): boolean => {
+  const h = host.toLowerCase().replace(/^\[|\]$/g, "");
+  if (h === "localhost" || h === "host.docker.internal") return true;
+  if (!h.includes(".") && !h.includes(":")) return true; // single-label
+  if (/\.(local|lan|internal|home\.arpa|localhost)$/.test(h)) return true;
+  if (/^127\./.test(h) || /^10\./.test(h) || /^192\.168\./.test(h)) return true;
+  if (/^172\.(1[6-9]|2\d|3[01])\./.test(h) || /^169\.254\./.test(h)) return true;
+  if (/^100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\./.test(h)) return true; // CGNAT/Tailscale
+  if (h === "::1" || /^f[cd][0-9a-f]{2}:/.test(h) || /^fe80:/.test(h)) return true;
+  return false;
+};
+
+const configError = (message: string) =>
+  new TRPCError({ code: "INTERNAL_SERVER_ERROR", message });
+
+export const resolveOllamaChatUrl = (
+  baseUrl: string = ENV.ollamaUrl,
+  opts: { apiKey?: string; allowedHosts?: string[] } = {},
+): string => {
+  const apiKey = opts.apiKey ?? ENV.ollamaApiKey;
+  const allowedHosts = opts.allowedHosts ?? ENV.ollamaAllowedHosts;
   const trimmed = (baseUrl || "").trim() || "http://localhost:11434";
   // Accept both "http://host:11434" and "http://host:11434/v1".
   const base = trimmed.replace(/\/+$/, "").replace(/\/v1$/, "");
-  let host = "";
+  let parsed: URL;
   try {
-    host = new URL(base).hostname;
+    parsed = new URL(base);
   } catch {
-    throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: `KI-Dienst (Ollama) nicht konfiguriert: ungültige OLLAMA_URL "${trimmed}"`,
-    });
+    throw configError(`KI-Dienst (Ollama) nicht konfiguriert: ungültige OLLAMA_URL "${trimmed}"`);
   }
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+    throw configError(`KI-Dienst (Ollama) nicht konfiguriert: OLLAMA_URL muss http(s) sein.`);
+  }
+  const host = parsed.hostname.toLowerCase();
   if (FORBIDDEN_LLM_HOSTS.some(re => re.test(host))) {
-    throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: `OLLAMA_URL zeigt auf einen kostenpflichtigen Dienst (${host}) – nur ein eigener Ollama-Server ist erlaubt.`,
-    });
+    throw configError(
+      `OLLAMA_URL zeigt auf einen kostenpflichtigen Dienst (${host}) – nur ein eigener Ollama-Server ist erlaubt.`,
+    );
+  }
+  const selfHosted = isSelfHostedHost(host);
+  if (!selfHosted && !allowedHosts.includes(host)) {
+    throw configError(
+      `OLLAMA_URL (${host}) ist kein lokaler/privater Host. Nur eigene Ollama-Server sind erlaubt – ` +
+        `trage den Host in OLLAMA_ALLOWED_HOSTS ein, wenn es dein eigener Server ist.`,
+    );
+  }
+  // Never send the bearer token in cleartext over the public internet.
+  if (apiKey && !selfHosted && parsed.protocol !== "https:") {
+    throw configError(
+      `OLLAMA_API_KEY ist gesetzt, aber OLLAMA_URL (${host}) nutzt kein HTTPS – Token würde im Klartext übertragen.`,
+    );
   }
   return `${base}/v1/chat/completions`;
 };

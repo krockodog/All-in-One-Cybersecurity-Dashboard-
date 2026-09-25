@@ -1,27 +1,46 @@
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
-import { activeScanRateLimit, llmRateLimit } from "../_core/rateLimit";
+import { activeScanRateLimit, llmRateLimit, localReportRateLimit } from "../_core/rateLimit";
+import {
+  MAX_CHAT_HISTORY_CHARS,
+  MAX_CHAT_HISTORY_ITEMS,
+  MAX_CHAT_MESSAGE_CHARS,
+  MAX_TOOLS_PER_REQUEST,
+  optionalToolIdsSchema,
+} from "../_core/inputLimits";
 import { invokeLLM } from "../_core/llm";
 import { toolCatalog } from "../../client/src/lib/cyber-data";
 import { runTool } from "../toolRunner";
 
 const scanProcedure = protectedProcedure.use(activeScanRateLimit);
 const llmProcedure = protectedProcedure.use(llmRateLimit);
+// Local (non-LLM) report computation: own quota so it doesn't eat the chat quota.
+const localReportProcedure = protectedProcedure.use(localReportRateLimit);
 
-const chatMessageSchema = z.object({
-  message: z.string().min(1),
-  conversationHistory: z.array(
-    z.object({
-      role: z.enum(["user", "assistant"]),
-      content: z.string(),
-    })
-  ),
-});
+const chatMessageSchema = z
+  .object({
+    message: z.string().min(1).max(MAX_CHAT_MESSAGE_CHARS),
+    conversationHistory: z
+      .array(
+        z.object({
+          role: z.enum(["user", "assistant"]),
+          content: z.string().max(MAX_CHAT_MESSAGE_CHARS),
+        })
+      )
+      .max(MAX_CHAT_HISTORY_ITEMS),
+  })
+  .refine(
+    (v) =>
+      v.message.length + v.conversationHistory.reduce((n, m) => n + m.content.length, 0) <=
+      MAX_CHAT_HISTORY_CHARS,
+    { message: `Konversation zu lang (max. ${MAX_CHAT_HISTORY_CHARS} Zeichen insgesamt).` }
+  );
 
 const executeScanFromChatSchema = z.object({
-  target: z.string().min(1),
-  scope: z.string(),
-  toolIds: z.array(z.string()).optional(),
+  target: z.string().min(1).max(255),
+  scope: z.string().max(2000),
+  // Bounded + de-duplicated: one rate-limited request must not launch unbounded scans.
+  toolIds: optionalToolIdsSchema,
 });
 
 export const aiChatRouter = router({
@@ -103,7 +122,10 @@ Wenn der Nutzer Fragen stellt, antworte normal mit hilfreichen Informationen.`;
   executeScanFromChat: scanProcedure
     .input(executeScanFromChatSchema)
     .mutation(async ({ input }) => {
-      const toolIds = input.toolIds || toolCatalog.map((t) => t.id).slice(0, 20); // Default: first 20 tools
+      const toolIds =
+        input.toolIds && input.toolIds.length > 0
+          ? input.toolIds
+          : toolCatalog.map((t) => t.id).slice(0, Math.min(20, MAX_TOOLS_PER_REQUEST)); // Default: first 20 tools
 
       const toolResults = [];
       const documentation: string[] = [
@@ -170,12 +192,12 @@ Wenn der Nutzer Fragen stellt, antworte normal mit hilfreichen Informationen.`;
     }),
 
   // Generate ISO 27001 report from chat context
-  generateISO27001FromChat: llmProcedure
+  generateISO27001FromChat: localReportProcedure
     .input(
       z.object({
-        target: z.string(),
-        findings: z.array(z.string()),
-        scope: z.string(),
+        target: z.string().max(255),
+        findings: z.array(z.string().max(4000)).max(1000),
+        scope: z.string().max(2000),
       })
     )
     .mutation(async ({ input }) => {

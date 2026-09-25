@@ -1,8 +1,36 @@
 import { protectedProcedure, router } from "../_core/trpc";
 import { z } from "zod";
 import { getDb } from "../db";
-import { executionJobs } from "../../drizzle/schema";
+import { engagements, executionJobs, type User } from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
+
+type Db = NonNullable<Awaited<ReturnType<typeof getDb>>>;
+
+/**
+ * Load a job only if the caller may see it.
+ *
+ * The dashboard runs without login, so these endpoints are reachable
+ * anonymously. Job IDs are sequential, so we must never return a job purely by
+ * its ID: the job's engagement has to belong to the caller (pentester or
+ * client), unless the caller is an authenticated admin. Jobs the caller does not
+ * own are reported as "not found" so their existence is not leaked either.
+ */
+async function findOwnedJob(db: Db, jobId: number, user: User) {
+  const job = await db.query.executionJobs.findFirst({
+    where: eq(executionJobs.id, jobId),
+  });
+  if (!job) return undefined;
+  if (user.role === "admin") return job;
+
+  const engagement = await db.query.engagements.findFirst({
+    where: eq(engagements.id, job.engagementId),
+  });
+  if (!engagement) return undefined;
+  if (engagement.pentesterId !== user.id && engagement.clientId !== user.id) {
+    return undefined;
+  }
+  return job;
+}
 
 /**
  * Streaming router using polling-based approach
@@ -14,7 +42,7 @@ export const streamingRouter = router({
    */
   getJobStatus: protectedProcedure
     .input(z.object({ jobId: z.number().int().positive() }))
-    .query(async ({ input }) => {
+    .query(async ({ ctx, input }) => {
       const db = await getDb();
       if (!db) {
         return {
@@ -26,9 +54,7 @@ export const streamingRouter = router({
         };
       }
 
-      const job = await db.query.executionJobs.findFirst({
-        where: eq(executionJobs.id, input.jobId),
-      });
+      const job = await findOwnedJob(db, input.jobId, ctx.user);
 
       if (!job) {
         return {
@@ -63,7 +89,7 @@ export const streamingRouter = router({
         limit: z.number().int().positive().default(1000),
       })
     )
-    .query(async ({ input }) => {
+    .query(async ({ ctx, input }) => {
       const db = await getDb();
       if (!db) {
         return {
@@ -74,9 +100,7 @@ export const streamingRouter = router({
         };
       }
 
-      const job = await db.query.executionJobs.findFirst({
-        where: eq(executionJobs.id, input.jobId),
-      });
+      const job = await findOwnedJob(db, input.jobId, ctx.user);
 
       if (!job || !job.output) {
         return {
@@ -110,7 +134,7 @@ export const streamingRouter = router({
         maxLines: z.number().int().positive().default(100),
       })
     )
-    .query(async ({ input }) => {
+    .query(async ({ ctx, input }) => {
       const db = await getDb();
       if (!db) {
         return {
@@ -121,9 +145,7 @@ export const streamingRouter = router({
         };
       }
 
-      const job = await db.query.executionJobs.findFirst({
-        where: eq(executionJobs.id, input.jobId),
-      });
+      const job = await findOwnedJob(db, input.jobId, ctx.user);
 
       if (!job || !job.output) {
         return {
@@ -157,7 +179,7 @@ export const streamingRouter = router({
         lastSeenAt: z.number().int().nonnegative().default(0),
       })
     )
-    .query(async ({ input }) => {
+    .query(async ({ ctx, input }) => {
       const db = await getDb();
       if (!db) {
         return {
@@ -166,9 +188,7 @@ export const streamingRouter = router({
         };
       }
 
-      const job = await db.query.executionJobs.findFirst({
-        where: eq(executionJobs.id, input.jobId),
-      });
+      const job = await findOwnedJob(db, input.jobId, ctx.user);
 
       if (!job) {
         return {

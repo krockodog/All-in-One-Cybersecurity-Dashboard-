@@ -14,25 +14,51 @@ import { t } from "./trpcBase";
 type Bucket = { count: number; resetAt: number };
 const buckets = new Map<string, Bucket>();
 
-function clientIp(req: unknown): string {
-  const r = req as
-    | { ip?: string; headers?: Record<string, string | string[] | undefined> }
-    | undefined;
-  // Use the RIGHT-most X-Forwarded-For entry: it is appended by the nearest
-  // reverse proxy and cannot be forged by the client (the left-most can).
-  const raw = r?.headers?.["x-forwarded-for"];
-  const fwd = Array.isArray(raw) ? raw.join(",") : raw;
-  if (typeof fwd === "string" && fwd.trim().length > 0) {
-    const parts = fwd.split(",").map((p) => p.trim()).filter(Boolean);
-    if (parts.length > 0) return parts[parts.length - 1]!;
+// Bounded to avoid unbounded memory growth from many distinct anonymous IPs.
+const MAX_BUCKETS = 50_000;
+let lastSweep = 0;
+
+function sweepExpired(now: number): void {
+  // Amortised cleanup: at most once per 60s we drop expired buckets so that
+  // traffic from many one-off IPs cannot grow the map without bound.
+  if (now - lastSweep < 60_000) return;
+  lastSweep = now;
+  buckets.forEach((bucket, key) => {
+    if (bucket.resetAt <= now) buckets.delete(key);
+  });
+  // Hard cap: if still oversized (e.g. a burst within one window), evict the
+  // oldest-resetting entries until back under the limit.
+  if (buckets.size > MAX_BUCKETS) {
+    const sorted = Array.from(buckets.entries()).sort((a, b) => a[1].resetAt - b[1].resetAt);
+    for (let i = 0; i < sorted.length && buckets.size > MAX_BUCKETS; i++) {
+      buckets.delete(sorted[i]![0]);
+    }
   }
-  return r?.ip || "unknown";
+}
+
+/**
+ * Derive the client IP from trusted data only.
+ *
+ * Express is configured with `trust proxy` in `server/_core/index.ts`, so
+ * `req.ip` already reflects the real client when running behind a known proxy
+ * and the raw socket address otherwise. We deliberately do NOT read
+ * `X-Forwarded-For` ourselves: that header is client-controlled and, without a
+ * trusted-proxy boundary, a caller could send a different value on every
+ * request to bypass the per-IP limits.
+ */
+function clientIp(req: unknown): string {
+  const r = req as { ip?: string; socket?: { remoteAddress?: string } } | undefined;
+  return r?.ip || r?.socket?.remoteAddress || "unknown";
 }
 
 export function rateLimit(opts: { windowMs: number; max: number; name: string }) {
-  return t.middleware(async ({ ctx, next }) => {
-    const key = `${opts.name}:${clientIp(ctx.req)}`;
+  return t.middleware(async ({ ctx, path, next }) => {
     const now = Date.now();
+    sweepExpired(now);
+    // Key on BOTH the limiter name and the concrete procedure path so that each
+    // endpoint enforces its own quota instead of sharing one bucket across every
+    // procedure in the same class.
+    const key = `${opts.name}:${path}:${clientIp(ctx.req)}`;
     const bucket = buckets.get(key);
 
     if (!bucket || bucket.resetAt <= now) {
@@ -65,3 +91,16 @@ export const llmRateLimit = rateLimit({
   max: 40,
   name: "llm",
 });
+
+/** Cheap local computations (no LLM, no scan) that should still be bounded. */
+export const localReportRateLimit = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1h
+  max: 120,
+  name: "local-report",
+});
+
+/** Test-only helper to reset limiter state between cases. */
+export function __resetRateLimitBuckets(): void {
+  buckets.clear();
+  lastSweep = 0;
+}

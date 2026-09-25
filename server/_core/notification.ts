@@ -112,3 +112,21 @@ export async function notifyOwner(
     return false;
   }
 }
+
+/**
+ * Owner notification triggered as a side effect of a user-facing request.
+ *
+ * Because the dashboard is usable without login, these request handlers are
+ * reachable anonymously. Only an authenticated admin (the site owner) may cause
+ * an owner notification; for everyone else this is a silent no-op so anonymous
+ * callers cannot spam the operator. Errors are swallowed (best effort).
+ */
+export async function notifyOwnerForRequest(
+  user: { id: number; role: string; openId?: string } | null | undefined,
+  payload: NotificationPayload,
+): Promise<boolean> {
+  if (!user || user.role !== "admin" || user.id === 0 || user.openId === "anonymous") {
+    return false;
+  }
+  return notifyOwner(payload).catch(() => false);
+}

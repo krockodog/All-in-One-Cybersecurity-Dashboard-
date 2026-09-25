@@ -19,6 +19,12 @@ export const ENV = {
   ollamaUrl: (process.env.OLLAMA_URL ?? "").trim() || "http://localhost:11434",
   ollamaModel: (process.env.OLLAMA_MODEL ?? "").trim() || "qwen2.5",
   ollamaApiKey: (process.env.OLLAMA_API_KEY ?? "").trim(),
+  // Public hostnames of your OWN Ollama servers (comma-separated). Needed only if
+  // OLLAMA_URL is not localhost / a private IP / a LAN or Docker-internal name.
+  ollamaAllowedHosts: (process.env.OLLAMA_ALLOWED_HOSTS ?? "")
+    .split(",")
+    .map((h) => h.trim().toLowerCase())
+    .filter(Boolean),
   ollamaMaxTokens: parsePositiveInt(process.env.OLLAMA_MAX_TOKENS, 4096),
   ollamaTimeoutMs: parsePositiveInt(process.env.OLLAMA_TIMEOUT_MS, 120_000),
 };

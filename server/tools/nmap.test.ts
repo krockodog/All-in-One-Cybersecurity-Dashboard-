@@ -149,3 +149,19 @@ describe("Nmap Tool Wrapper", () => {
     });
   });
 });
+
+import { executeNmapScan } from "./nmap";
+
+describe("nmap command-injection guard", () => {
+  it("rejects targets with shell metacharacters or flag injection before executing", async () => {
+    for (const target of ["example.com; id", "$(id)", "-iL /etc/passwd", "a b"]) {
+      await expect(executeNmapScan(target)).rejects.toThrow(/Ungültiges nmap-Ziel/);
+    }
+  });
+
+  it("rejects invalid port specifications", async () => {
+    await expect(executeNmapScan("example.com", { ports: "80;id" })).rejects.toThrow(
+      /Ungültige Portangabe/
+    );
+  });
+});

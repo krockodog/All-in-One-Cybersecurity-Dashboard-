@@ -50,8 +50,11 @@ export function AIChatInterface() {
 
     try {
       const response = await chatMutation.mutateAsync({
-        message: userMessage,
-        conversationHistory: messages,
+        message: userMessage.slice(0, 8000),
+        // Server caps history (see server/_core/inputLimits.ts): send recent turns only.
+        conversationHistory: messages
+          .slice(-20)
+          .map((m) => ({ role: m.role, content: m.content.slice(0, 2000) })),
       });
 
       setMessages((prev) => [...prev, { role: "assistant", content: response.message }]);

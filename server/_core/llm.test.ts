@@ -151,4 +151,43 @@ describe("invokeLLM (Ollama)", () => {
     expect(resolveOllamaChatUrl("")).toBe("http://localhost:11434/v1/chat/completions");
     expect(() => resolveOllamaChatUrl("https://forge.manus.im")).toThrow(/kostenpflichtig/);
   });
+
+  it("only accepts self-hosted or explicitly allowed Ollama hosts", () => {
+    expect(() => resolveOllamaChatUrl("https://api.openai.com", { allowedHosts: [] })).toThrow(
+      /kostenpflichtig/
+    );
+    expect(() =>
+      resolveOllamaChatUrl("https://api.openai.com", { allowedHosts: ["api.openai.com"] })
+    ).toThrow(/kostenpflichtig/);
+    expect(() => resolveOllamaChatUrl("https://llm.example.org", { allowedHosts: [] })).toThrow(
+      /OLLAMA_ALLOWED_HOSTS/
+    );
+    expect(
+      resolveOllamaChatUrl("https://llm.example.org", { allowedHosts: ["llm.example.org"] })
+    ).toBe("https://llm.example.org/v1/chat/completions");
+    expect(resolveOllamaChatUrl("http://192.168.1.20:11434", { allowedHosts: [] })).toBe(
+      "http://192.168.1.20:11434/v1/chat/completions"
+    );
+    expect(resolveOllamaChatUrl("http://ollama:11434", { allowedHosts: [] })).toBe(
+      "http://ollama:11434/v1/chat/completions"
+    );
+  });
+
+  it("refuses to send the API key over plain HTTP to a remote host", () => {
+    expect(() =>
+      resolveOllamaChatUrl("http://llm.example.org", {
+        apiKey: "secret",
+        allowedHosts: ["llm.example.org"],
+      })
+    ).toThrow(/HTTPS/);
+    expect(
+      resolveOllamaChatUrl("https://llm.example.org", {
+        apiKey: "secret",
+        allowedHosts: ["llm.example.org"],
+      })
+    ).toBe("https://llm.example.org/v1/chat/completions");
+    expect(resolveOllamaChatUrl("http://localhost:11434", { apiKey: "secret" })).toBe(
+      "http://localhost:11434/v1/chat/completions"
+    );
+  });
 });

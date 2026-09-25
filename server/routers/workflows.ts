@@ -8,6 +8,7 @@ import {
   PREDEFINED_WORKFLOWS,
 } from "../workflows/workflowEngine";
 import { getEngagementById, logAuditEvent } from "../db";
+import { safeTargetSchema } from "../_core/inputLimits";
 
 export const workflowRouter = router({
   /**
@@ -43,7 +44,8 @@ export const workflowRouter = router({
       z.object({
         engagementId: z.number(),
         workflowId: z.string(),
-        target: z.string(),
+        // Rejects shell metacharacters; native tools additionally run without a shell.
+        target: safeTargetSchema,
       }),
     )
     .mutation(async ({ ctx, input }) => {

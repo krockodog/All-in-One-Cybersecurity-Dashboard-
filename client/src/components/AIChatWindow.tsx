@@ -11,6 +11,10 @@ function describeChatError(error: unknown): string {
   return "";
 }
 
+// Stays well within the server caps in server/_core/inputLimits.ts
+const MAX_HISTORY_MESSAGES = 20;
+const MAX_MESSAGE_CHARS = 2000;
+
 interface Message {
   id: string;
   role: "user" | "assistant";
@@ -26,13 +30,10 @@ export function AIChatWindow() {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Get active AI provider from localStorage
-  const getActiveAIProvider = () => {
-    const keys = localStorage.getItem("ai_keys");
-    if (!keys) return null;
-    const parsed = JSON.parse(keys);
-    return Object.keys(parsed).find(key => parsed[key]);
-  };
+  // All chat requests go to the server's own Ollama backend (no browser-side
+  // provider keys involved), so the window is always available and shows the
+  // backend that actually answers.
+  const backendLabel = "Ollama (Server)";
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -58,22 +59,13 @@ export function AIChatWindow() {
     setIsLoading(true);
 
     try {
-      const activeProvider = getActiveAIProvider();
-      if (!activeProvider) {
-        setMessages(prev => [...prev, {
-          id: (Date.now() + 1).toString(),
-          role: "assistant",
-          content: "Bitte konfiguriere zuerst einen KI-Provider in den AI Settings.",
-          timestamp: new Date(),
-        }]);
-        setIsLoading(false);
-        return;
-      }
-
       // No-login mode: works anonymously via the (rate-limited) public tRPC endpoint.
       const data = await chatMutation.mutateAsync({
         message: userMessage.content,
-        conversationHistory: messages.map(m => ({ role: m.role, content: m.content })),
+        // Server caps history length; send only the most recent turns.
+        conversationHistory: messages
+          .slice(-MAX_HISTORY_MESSAGES)
+          .map(m => ({ role: m.role, content: m.content.slice(0, MAX_MESSAGE_CHARS) })),
       });
 
       const assistantMessage: Message = {
@@ -97,9 +89,6 @@ export function AIChatWindow() {
     }
   };
 
-  const activeProvider = getActiveAIProvider();
-  if (!activeProvider) return null;
-
   return (
     <>
       {/* Floating Button */}
@@ -117,7 +106,7 @@ export function AIChatWindow() {
           {/* Header */}
           <div className="p-4 border-b border-cyan-500/20 flex justify-between items-center">
             <h3 className="font-mono text-sm font-bold text-cyan-300">KI-Assistent</h3>
-            <span className="text-xs text-slate-400">{activeProvider}</span>
+            <span className="text-xs text-slate-400">{backendLabel}</span>
           </div>
 
           {/* Messages */}
@@ -164,6 +153,7 @@ export function AIChatWindow() {
               value={input}
               onChange={e => setInput(e.target.value)}
               placeholder="Nachricht..."
+              maxLength={8000}
               className="text-sm bg-slate-900 border-cyan-500/30 text-white placeholder-slate-500"
               disabled={isLoading}
             />
